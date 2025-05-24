@@ -46,7 +46,7 @@ export default function RootLayout({
       <head>
         <title>Uduuka - Shop Local, Trade Smart</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="theme-color" content="#3B82F6" />
+        <meta name="theme-color" content="#f97316" />
         <meta
           name="description"
           content="Hyper-local marketplace connecting buyers and sellers in your neighborhood."
