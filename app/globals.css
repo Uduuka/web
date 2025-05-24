@@ -1,0 +1,67 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f3f4f6;
+  --foreground: #171717;
+  --accent: #4b5563;
+  --primary: #f97316;
+  --secondary: #e2e8f0;
+  --success: #10b981;
+  --warning: #eab308;
+  --error: #ef4444;
+  --error-background: #fee2e2;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-accent: var(--accent);
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-warning: var(--warning);
+  --color-error: var(--error);
+  --color-error-background: var(--error-background);
+  --color-success: var(--success);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* @media (prefers-color-scheme: dark) {
+  :root {
+    --background: #171717;
+    --foreground: #f3f4f6;
+  }
+} */
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Inter, Arial, Helvetica, sans-serif;
+}
+
+.on-set {
+  animation: set-set 1s infinite;
+}
+
+@keyframes set-set {
+  0%,
+  100% {
+    transform: translatex(-25%);
+    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  }
+  50% {
+    transform: translatex(0);
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+}
+
+.scrollbar-thumb {
+  scrollbar-color: var(--primary);
+  scrollbar-width: thin;
+  scrollbar-track-color: var(--primary);
+}
+
+.scrollbar-thumb:hover {
+  scrollbar-color: var(--primary);
+  scrollbar-width: thin;
+}
