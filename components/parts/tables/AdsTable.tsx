@@ -2,16 +2,16 @@
 
 import React from "react";
 import Table, { Column } from "./Table";
-import { ads } from "@/lib/dev_db/db";
 import { Listing } from "@/lib/types";
 import FormInput from "@/components/ui/Input";
 import PriceTag from "../cards/PriceTag";
 import Popup from "@/components/ui/Popup";
 import Button from "@/components/ui/Button";
-import { Check, Dot, Eye, Pencil, Trash } from "lucide-react";
+import { Check, Eye, Pencil, Trash } from "lucide-react";
 import { PiDotsThreeOutlineVerticalFill } from "react-icons/pi";
 import { IoMdFlash } from "react-icons/io";
 import Dialog from "@/components/ui/Dialog";
+import { useFilteredAds } from "@/lib/hooks/use_filtered_ads";
 
 const adsColumns: Column<Listing>[] = [
   {
@@ -36,28 +36,8 @@ const adsColumns: Column<Listing>[] = [
     key: "price",
     label: "Price",
     render: (value, ad) => {
-      const {
-        price,
-        minPrice,
-        units,
-        maxPrice,
-        priceMenu,
-        currency,
-        pricingScheme,
-        period,
-      } = ad;
-      return (
-        <PriceTag
-          price={price?.toString()}
-          minPrice={minPrice?.toString()}
-          maxPrice={maxPrice?.toString()}
-          originalCurrency={currency}
-          scheme={pricingScheme!}
-          menuItems={priceMenu}
-          period={period}
-          units={units}
-        />
-      );
+      const { pricing } = ad;
+      return <PriceTag pricing={pricing} />;
     },
   },
   {
@@ -127,5 +107,13 @@ const adsColumns: Column<Listing>[] = [
 ];
 
 export default function AdsTable() {
-  return <Table data={ads} columns={adsColumns} />;
+  const { ads, error, fetching } = useFilteredAds();
+  return (
+    <Table
+      data={ads}
+      columns={adsColumns}
+      loading={fetching}
+      error={error as string | undefined}
+    />
+  );
 }

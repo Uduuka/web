@@ -1,46 +1,83 @@
 "use client";
 
-import type { Metadata } from "next";
 import Navbar from "@/components/parts/layout/Navbar";
 import Footer from "@/components/parts/layout/Footer";
 import "./globals.css";
 import { useAppStore } from "@/lib/store";
-import { useEffect } from "react";
+import { useEffect, useTransition } from "react";
 import Sidebar from "@/components/parts/layout/SideBar";
 import Popup from "@/components/ui/Popup";
 import Button from "@/components/ui/Button";
+import { getProfile, getUser } from "@/lib/actions";
+import { Currency } from "@/lib/types";
+import { geoCode } from "@/lib/utils";
+import ChatPanel from "@/components/parts/sidePanels/ChatPanel";
+import ActiveChats from "@/components/parts/buttons/ActiveChats";
 
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { setLocation, setCurrency, filters } = useAppStore();
+  const [fetching, startFetching] = useTransition();
+  const { setLocation, setCurrency, setUser, setProfile } = useAppStore();
 
   useEffect(() => {
-    console.log(filters);
-  }, [filters]);
+    startFetching(async () => {
+      const { error, data } = await getUser();
+      if (data.user) {
+        setUser(data.user);
+        const prof = await getProfile(data.user?.id);
+
+        setProfile(prof.data);
+      }
+    });
+  }, []);
 
   useEffect(() => {
-    setCurrency(localStorage.getItem("currency") ?? "UGX");
+    setCurrency((localStorage.getItem("currency") as Currency) ?? "UGX");
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           setLocation({
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,
+            coordinates: [position.coords.longitude, position.coords.longitude],
           });
         },
-        (error) => {
+        async (error) => {
           console.log("Geolocation error:", error);
-          setLocation(null);
+          try {
+            const { lat, lon, currency } = await geoCode();
+            setLocation({
+              latitude: lat,
+              longitude: lon,
+              coordinates: [lon, lat],
+            });
+            setCurrency(currency);
+          } catch (error) {
+            console.log(error);
+          }
         }
       );
     } else {
       console.log("Geolocation not supported");
-      setLocation(null);
+      (async () => {
+        try {
+          const { lat, lon, currency } = await geoCode();
+          setLocation({
+            latitude: lat,
+            longitude: lon,
+            coordinates: [lon, lat],
+          });
+          setCurrency(currency);
+        } catch (error) {
+          console.log(error);
+        }
+      })();
     }
   }, [setLocation, setCurrency]);
+
   return (
     <html lang="en">
       <head>
@@ -56,7 +93,7 @@ export default function RootLayout({
         <link rel="icon" href="/android-chrome-192x192.png" />
       </head>
       <body className="min-h-screen flex flex-col bg-background font-inter font-light text-sm">
-        <Navbar />
+        <Navbar fetchingUser={fetching} />
         <div className="flex flex-1">
           <Sidebar />
           <main className="flex-1 md:ml-64 overflow-auto">
@@ -64,19 +101,7 @@ export default function RootLayout({
             <Footer />
           </main>
         </div>
-        <div className="fixed bottom-5 right-5">
-          <Popup
-            trigger={
-              <Button className="bg-accent text-background w-14 h-14 shadow-lg rounded-full">
-                5 chats
-              </Button>
-            }
-            align="diagonal-left"
-            contentStyle="w-80 bg-secondary h-96"
-          >
-            <div className="h-20"></div>
-          </Popup>
-        </div>
+        <ActiveChats />
       </body>
     </html>
   );

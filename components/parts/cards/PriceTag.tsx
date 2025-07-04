@@ -3,195 +3,165 @@
 import Button from "@/components/ui/Button";
 import Popup from "@/components/ui/Popup";
 import { useAppStore } from "@/lib/store";
-import { MenuItem } from "@/lib/types";
-import { displayCurrencyAndPrice } from "@/lib/utils";
-import Link from "next/link";
+import {
+  FixedPrice,
+  PriceMenu,
+  PriceRange,
+  Pricing,
+  RecurringPrice,
+  UnitPrice,
+} from "@/lib/types";
+import { cn, displayCurrencyAndPrice } from "@/lib/utils";
 import React, { ComponentProps } from "react";
+import PriceMenuItem from "./PriceMenuItem";
 
-type PriceTagProps = ComponentProps<"div"> & {
-  price?: string;
-  minPrice?: string;
-  maxPrice?: string;
-  scheme: string;
-  originalPrice?: string;
-  originalCurrency: string;
-  units?: string;
-  period?: string;
-  menuItems?: MenuItem[];
+type PriceTagProps<T> = ComponentProps<"div"> & {
+  pricing: Pricing<T>;
 };
 
-export default function PriceTag({
-  price,
-  minPrice,
-  maxPrice,
-  units,
-  scheme,
-  originalCurrency,
-  originalPrice,
-  period,
-  menuItems,
-}: PriceTagProps) {
-  const { currency } = useAppStore();
+export default function PriceTag({ pricing, className }: PriceTagProps<any>) {
+  if (!pricing) {
+    return null;
+  }
+  const { scheme } = pricing;
   const Tag = () => {
     switch (scheme) {
       case "fixed":
-        if (!price) return null;
-        return (
-          <FixedPrice
-            originalPrice={
-              originalPrice
-                ? displayCurrencyAndPrice(
-                    originalCurrency,
-                    currency,
-                    originalPrice
-                  )
-                : undefined
-            }
-            price={displayCurrencyAndPrice(originalCurrency, currency, price)}
-          />
-        );
+        return <FixedPriceTag pricing={pricing} />;
+
       case "range":
-        if (!minPrice) return null;
-        return (
-          <PriceRange
-            min={displayCurrencyAndPrice(originalCurrency, currency, minPrice)}
-            max={
-              maxPrice
-                ? displayCurrencyAndPrice(originalCurrency, currency, maxPrice)
-                : undefined
-            }
-            original={
-              originalPrice
-                ? displayCurrencyAndPrice(
-                    originalCurrency,
-                    currency,
-                    originalPrice
-                  )
-                : undefined
-            }
-          />
-        );
+        return <PriceRangeTag pricing={pricing} />;
 
       case "unit":
-        if (!price || !units) return null;
-        return (
-          <UnitPrice
-            price={displayCurrencyAndPrice(originalCurrency, currency, price)}
-            units={units}
-            originalPrice={
-              originalPrice
-                ? displayCurrencyAndPrice(
-                    originalCurrency,
-                    currency,
-                    originalPrice
-                  )
-                : undefined
-            }
-          />
-        );
-      case "periodic":
-        if (!price || !period) return null;
-        return (
-          <UnitPrice
-            price={displayCurrencyAndPrice(originalCurrency, currency, price)}
-            units={period}
-            originalPrice={
-              originalPrice
-                ? displayCurrencyAndPrice(
-                    originalCurrency,
-                    currency,
-                    originalPrice
-                  )
-                : undefined
-            }
-          />
-        );
+        return <UnitPriceTag pricing={pricing} />;
+
+      case "recurring":
+        return <RecurringTag pricing={pricing} />;
+
       case "menu":
-        if (!menuItems) return null;
-        return <PriceMenu items={menuItems} ad_currency={originalCurrency} />;
+        return <PriceMenuTag pricing={pricing} />;
+
       default:
         return null;
     }
   };
 
   return (
-    <div className="text-primary">
+    <div className={cn("text-primary", className)}>
       <Tag />
     </div>
   );
 }
 
-export const FixedPrice = ({
-  price,
-  originalPrice,
+export const FixedPriceTag = ({
+  pricing,
 }: {
-  price: string;
-  originalPrice?: string;
-}) => (
-  <div className="flex font-bold gap-1">
-    <h1>
-      <span className="pr-5">{price}</span>
-      {originalPrice && (
-        <span className="text-error line-through font-light text-xs">
-          {originalPrice}
-        </span>
-      )}
-    </h1>
-  </div>
-);
-
-const PriceRange = ({
-  min,
-  max,
-  original,
-}: {
-  min: string;
-  max?: string;
-  original?: string;
-}) => (
-  <div className="flex font-bold gap-1 py-1">
-    <h1>
-      {!max && <span className="">From: </span>}
-      {min} {max && ` - ${max}`}
-      {original && (
-        <span className="text-error line-clamp-1 line-through font-light text-xs">
-          {original}
-        </span>
-      )}{" "}
-    </h1>
-  </div>
-);
-
-const UnitPrice = ({
-  price,
-  originalPrice,
-  units,
-}: {
-  price: string;
-  units: string;
-  originalPrice?: string;
-}) => (
-  <div className="flex font-bold gap-1 py-1">
-    <h1>
-      {originalPrice && (
-        <span className="text-error line-clamp-1 line-through font-light text-xs">
-          {`${originalPrice} / ${units}`}
-        </span>
-      )}{" "}
-      {price} {" / "}
-      <span className="text-xs capitalize">{units}</span>
-    </h1>
-  </div>
-);
-
-const PriceMenu = ({
-  items,
-  ad_currency,
-}: {
-  items: MenuItem[];
-  ad_currency: string;
+  pricing: Pricing<FixedPrice>;
 }) => {
-  const { currency } = useAppStore();
+  const { currency, details } = pricing;
+  return (
+    <div className="flex font-bold gap-1">
+      <h1 className="flex gap-2 items-center">
+        <span className="pr-5">
+          <Money price={details.price} defaultCurrency={currency} />
+        </span>
+        {details.initialPrice && (
+          <span className="text-error font-light text-xs">
+            <Money
+              price={details.initialPrice}
+              defaultCurrency={currency}
+              crossed
+            />
+          </span>
+        )}
+      </h1>
+    </div>
+  );
+};
+
+const PriceRangeTag = ({ pricing }: { pricing: Pricing<PriceRange> }) => {
+  const {
+    maxPrice: max,
+    minPrice: min,
+    initialMaxPrice,
+    initialMinPrice,
+  } = pricing.details;
+  return (
+    <div className="flex font-bold gap-1 py-1">
+      <h1 className="flex gap-2 items-center flex-wrap">
+        {!max && <span className="w-fit">From: </span>}
+        <Money price={min} defaultCurrency={pricing.currency} />{" "}
+        {max && (
+          <>
+            {" "}
+            - <Money price={max} defaultCurrency={pricing.currency} />
+          </>
+        )}
+        {initialMinPrice && (
+          <span className="text-error line-clamp-1 font-light text-xs">
+            <Money
+              price={initialMinPrice}
+              crossed
+              defaultCurrency={pricing.currency}
+            />
+          </span>
+        )}{" "}
+      </h1>
+    </div>
+  );
+};
+
+const UnitPriceTag = ({ pricing }: { pricing: Pricing<UnitPrice> }) => {
+  const { price, initialPrice, units } = pricing.details;
+  return (
+    <div className="flex font-bold gap-1 py-1">
+      <h1 className="flex items-center flex-wrap">
+        {initialPrice && (
+          <span className="text-error line-clamp-1 flex font-light text-xs pr-2">
+            <Money
+              price={initialPrice}
+              defaultCurrency={pricing.currency}
+              crossed
+            />
+            <span className="line-through"> / {units}</span>
+          </span>
+        )}{" "}
+        <Money price={price} defaultCurrency={pricing.currency} />
+        <span className="text-xs capitalize flex items-center gap-2">
+          {" "}
+          / {units}
+        </span>
+      </h1>
+    </div>
+  );
+};
+
+const RecurringTag = ({ pricing }: { pricing: Pricing<RecurringPrice> }) => {
+  const { price, initialPrice, period } = pricing.details;
+  return (
+    <div className="flex font-bold gap-1 py-1">
+      <h1 className="flex items-center flex-wrap">
+        {initialPrice && (
+          <span className="text-error line-clamp-1 flex font-light text-xs pr-2">
+            <Money
+              price={initialPrice}
+              defaultCurrency={pricing.currency}
+              crossed
+            />
+            <span className="line-through"> / {period}</span>
+          </span>
+        )}{" "}
+        <Money price={price} defaultCurrency={pricing.currency} />
+        <span className="text-xs capitalize flex flex-wrap items-center gap-2">
+          {" "}
+          / {period}
+        </span>
+      </h1>
+    </div>
+  );
+};
+
+const PriceMenuTag = ({ pricing }: { pricing: Pricing<PriceMenu> }) => {
   return (
     <div className="py-2">
       <Popup
@@ -199,37 +169,42 @@ const PriceMenu = ({
         className="w-full"
         contentStyle="bg-gray-100"
         trigger={
-          <Button className="bg-orange-500 text-background w-full">
+          <Button className="bg-primary hover:bg-primary/95 text-background w-full">
             View price menu
           </Button>
         }
       >
         <div className="w-full min-w-64 flex flex-col gap-1">
-          {items.map((item, index) => (
-            <div
+          {pricing.details.items.map((item, index) => (
+            <PriceMenuItem
+              item={item}
+              currency={pricing.currency}
               key={index}
-              className="flex gap-2 bg-gray-200 rounded-lg overflow-hidden"
-            >
-              <div className="w-20 bg-secondary"></div>
-              <div className="w-full">
-                <span className="text-xs font-semibold text-accent">
-                  {item.title}
-                </span>
-                <FixedPrice
-                  price={displayCurrencyAndPrice(
-                    ad_currency,
-                    currency,
-                    item.price
-                  )}
-                />
-                <span className="text-xs text-gray-500 font-light">
-                  {item.description}
-                </span>
-              </div>
-            </div>
+            />
           ))}
         </div>
       </Popup>
     </div>
+  );
+};
+
+export const Money = ({
+  price,
+  defaultCurrency,
+  crossed,
+  className,
+}: {
+  price: string;
+  defaultCurrency: string;
+  crossed?: boolean;
+  className?: string;
+}) => {
+  const { currency } = useAppStore();
+  return (
+    <span
+      className={cn(`flex gap-2 w-fit ${crossed && "line-through"}`, className)}
+    >
+      {displayCurrencyAndPrice(defaultCurrency, currency, price)}
+    </span>
   );
 };

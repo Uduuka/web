@@ -2,14 +2,36 @@
 
 import Button from "@/components/ui/Button";
 import FormInput from "@/components/ui/Input";
-import { useAppStore } from "@/lib/store";
-import React, { useState } from "react";
+import {
+  redirect,
+  useParams,
+  usePathname,
+  useSearchParams,
+} from "next/navigation";
+import React, { KeyboardEvent, KeyboardEventHandler, useState } from "react";
 
 export default function SearchBar() {
-  const [searchText, setSearchText] = useState("");
-  const { filters, setfilters } = useAppStore();
+  const search = useSearchParams().get("search");
+  const adID = useParams()["adID"] as string | undefined;
+  const pathname = usePathname();
+
+  const [searchText, setSearchText] = useState(search ?? "");
+
   const handleSearch = () => {
-    setfilters({ ...filters, search: searchText });
+    if (!searchText) {
+      redirect(pathname);
+    }
+    if (pathname === "/" || adID) {
+      redirect(`/ads?search=${searchText}`);
+    } else {
+      redirect(`${pathname}?search=${searchText}`);
+    }
+  };
+
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
   };
   return (
     <div className="flex gap-2 justify-center items-center">
@@ -18,6 +40,7 @@ export default function SearchBar() {
         className="bg-background text-foreground w-full py-2 px-3 min-w-96"
         wrapperStyle="border-0 w-full max-w-lg"
         value={searchText}
+        onKeyDown={handleKeyDown}
         onChange={(e) => setSearchText(e.target.value)}
       />
       <Button

@@ -1,237 +1,9 @@
-import { Category, Listing, Message, Store } from "../types";
 
-export const ads: Listing[] = [
-  {
-    id: "1",
-    title:
-      "Hisense 32 Inch Flat TV With Free To Air Decoder Full HD LED TV - Black",
-    price: 50,
-    originalPrice: 100,
-    currency: "USD",
-    pricingScheme: "fixed",
-    image: "https://placehold.co/400x400",
-    store_id: "1",
-    store: {
-      id: "1",
-      name: "Store 1",
-    },
-    rating: 4.89,
-    ratings: 48,
-  },
-  {
-    id: "2",
-    title: `Samsung Galaxy A16 4G 6.7" 4GB RAM 128GB ROM 50MP 5000mAh - Blue Black`,
-    price: 500,
-    pricingScheme: "fixed",
-    currency: "USD",
-    image: "https://placehold.co/600x400",
-    store_id: "1",
-    store: {
-      id: "1",
-      name: "Store 1",
-    },
-    rating: 2.3,
-    ratings: 89,
-  },
-  {
-    id: "3",
-    title: `Nokia 3210 - 2.4" 64MB RAM 128MB ROM 2MP 1450mAh - Black`,
-    price: 20,
-    originalPrice: 50,
-    pricingScheme: "fixed",
-    currency: "USD",
-    image: "https://placehold.co/600x400",
-    store_id: "1",
-    store: {
-      id: "1",
-      name: "Store 1",
-    },
-    rating: 2.3,
-    ratings: 89,
-  },
-  {
-    id: "4",
-    title: "NIVEA Essentials Rich Caring Body Cream 400ml",
-    minPrice: 200,
-    maxPrice: 500,
-    pricingScheme: "range",
-    currency: "USD",
-    image: "https://placehold.co/600x400",
-    rating: 2.3,
-    ratings: 89,
-  },
-  {
-    id: "5",
-    title: "Apple Iphone 12 Pro 128GB - Pacific Blue",
-    price: 100,
-    period: "month",
-    pricingScheme: "recurring",
-    currency: "USD",
-    image: "https://placehold.co/600x400",
-    store_id: "1",
-    store: {
-      id: "1",
-      name: "Store 1",
-    },
-    rating: 2.3,
-    ratings: 89,
-  },
-  {
-    id: "6",
-    title: `Apple IPhone 11 6.1" Single SIM 4GB RAM 64GB ROM 12MP - Black`,
-    price: 20,
-    originalPrice: 50,
-    pricingScheme: "recurring",
-    period: "week",
-    currency: "USD",
-    image: "https://placehold.co/600x400",
-    rating: 2.3,
-    ratings: 89,
-    store_id: "1",
-    store: {
-      id: "1",
-      name: "Store 1",
-    },
-  },
-  {
-    id: "7",
-    title: "Laptop",
-    minPrice: 500,
-    originalPrice: 600,
-    pricingScheme: "range",
-    currency: "USD",
-    image: "https://placehold.co/600x400",
-    rating: 2.3,
-    ratings: 89,
-  },
-  {
-    id: "8",
-    title: "Chair",
-    pricingScheme: "range",
-    minPrice: 20,
-    currency: "USD",
-    image: "https://placehold.co/600x400",
-    rating: 2.3,
-    ratings: 89,
-  },
-  {
-    id: "9",
-    title: "Phone",
-    price: 200,
-    pricingScheme: "fixed",
-    currency: "USD",
-    image: "https://placehold.co/600x400",
-    rating: 2.3,
-    ratings: 89,
-  },
-  {
-    id: "10",
-    title: "Table",
-    price: 2,
-    units: "Kg",
-    pricingScheme: "unit",
-    currency: "USD",
-    image: "https://placehold.co/600x400",
-    rating: 2.3,
-    ratings: 89,
-    store_id: "1",
-    store: {
-      id: "1",
-      name: "Store 1",
-    },
-  },
-  {
-    id: "11",
-    title: "Bicycle",
-    price: 2,
-    units: "Kg",
-    originalPrice: 3,
-    pricingScheme: "unit",
-    currency: "USD",
-    image: "https://placehold.co/400x400",
-    store_id: "1",
-    store: {
-      id: "1",
-      name: "Store 1",
-    },
-    rating: 2.3,
-    ratings: 89,
-  },
-  {
-    id: "12",
-    title: "Laptop",
-    price: 500,
-    period: "month",
-    pricingScheme: "recurring",
-    currency: "USD",
-    image: "https://placehold.co/600x400",
-    rating: 2.3,
-    ratings: 89,
-  },
-  {
-    id: "13",
-    title: "Chair",
-    price: 20,
-    originalPrice: 25,
-    period: "week",
-    pricingScheme: "recurring",
-    currency: "USD",
-    image: "https://placehold.co/600x400",
-    store_id: "1",
-    store: {
-      id: "1",
-      name: "Store 1",
-    },
-    rating: 2.3,
-    ratings: 89,
-  },
-  {
-    id: "14",
-    title: "Phone",
-    pricingScheme: "fixed",
-    price: 200,
-    currency: "USD",
-    image: "https://placehold.co/600x400",
-    rating: 2.3,
-    ratings: 89,
-  },
-  {
-    id: "15",
-    title: "Table",
+import { createClient as old } from "@supabase/supabase-js";
+import { AdImage, Category, Message, Store, SubCategory } from "../types";
+import { fetchCategories } from "../actions";
+import { createClient } from "../supabase/client";
 
-    priceMenu: [
-      {
-        price: "20",
-        image: "https://placehold.co/400x400",
-        title: "Menu item 1",
-        description: "Menu item description",
-      },
-      {
-        price: "20",
-        image: "https://placehold.co/400x400",
-        title: "Menu item 2",
-        description: "Menu item description",
-      },
-      {
-        price: "20",
-        image: "https://placehold.co/400x400",
-        title: "Menu item 3",
-        description: "Menu item description",
-      },
-      {
-        price: "20",
-        image: "https://placehold.co/400x400",
-        title: "Menu item 4",
-        description: "Menu item description",
-      },
-    ],
-    pricingScheme: "menu",
-    currency: "USD",
-    image: "https://placehold.co/600x400",
-    rating: 2.3,
-    ratings: 89,
-  },
-];
 
 export const stores: Store[] = [
   {
@@ -273,119 +45,6 @@ export const stores: Store[] = [
   },
 ];
 
-export const categories: Category[] = [
-  {
-    name: "Electronics",
-    slug: "electronics",
-    adsCount: 1245,
-    subCategories: [
-      {
-        id: "1",
-        name: "Tvs",
-        slug: "tvs",
-        category_id: "1",
-        adsCount: 123,
-      },
-      {
-        id: "2",
-        name: "Home Appliances",
-        slug: "home_appliances",
-        category_id: "1",
-        adsCount: 382,
-      },
-      {
-        id: "3",
-        name: "Fridges",
-        slug: "fridges",
-        category_id: "1",
-        adsCount: 403,
-      },
-      {
-        id: "4",
-        name: "Wiring & Installation",
-        slug: "wiring_and_installation",
-        category_id: "1",
-        adsCount: 337,
-      },
-    ],
-    id: "1",
-  },
-  {
-    name: "Clothing",
-    slug: "clothing",
-    adsCount: 876,
-    subCategories: [
-      {
-        id: "5",
-        name: "Men's clothing",
-        slug: "mens_clothing",
-        category_id: "2",
-      },
-      {
-        id: "6",
-        name: "Children's clothing",
-        slug: "childrens_clothing",
-        category_id: "2",
-      },
-      {
-        id: "7",
-        name: "Women's clothing",
-        slug: "womens_clothing",
-        category_id: "2",
-      },
-      {
-        id: "8",
-        name: "Casual & Sports clothing",
-        slug: "casual_and_sports_clothing",
-        category_id: "2",
-      },
-    ],
-    id: "2",
-  },
-  {
-    name: "Home & Garden",
-    adsCount: 543,
-    slug: "home_and_garden",
-    subCategories: [],
-    id: "3",
-  },
-  {
-    name: "Sports & Outdoors",
-    slug: "sports_and_outdoor",
-    adsCount: 321,
-    subCategories: [],
-    id: "4",
-  },
-  {
-    name: "Beauty & Health",
-    slug: "beauty_and_health",
-    adsCount: 654,
-    subCategories: [],
-    id: "5",
-  },
-  {
-    name: "Toys & Games",
-    slug: "toys_and_games",
-    adsCount: 432,
-    subCategories: [],
-    id: "6",
-  },
-  {
-    name: "Automotive",
-    slug: "automotive",
-    adsCount: 234,
-    subCategories: [],
-    id: "7",
-  },
-  {
-    name: "Books & Media",
-    slug: "books_and_media",
-    adsCount: 543,
-    subCategories: [],
-    id: "8",
-  },
-];
-
 export const messages: Message[] = [
   {
     id: "1",
@@ -424,3 +83,142 @@ export const messages: Message[] = [
     text: "Oh sure, it's still available. Can I send you an invoice?",
   },
 ];
+
+export const fetchAds = async() => {
+  const supabase  = old(
+    "https://sqcidocbglgivrlysuhq.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNxY2lkb2NiZ2xnaXZybHlzdWhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDY5ODMwODMsImV4cCI6MjAyMjU1OTA4M30.XeNd2mZiexnISYKXKh8vzq3QRIsdL6QbV1dTHACfXpQ"
+  )
+
+  const {error, data} = await supabase.from('ads').select("*, ad_images(url), category:categories(name, slug), sub_category:sub_categories(name, slug)")
+
+  if(!data){
+    console.log(error)
+    return
+  }
+
+  data.forEach(async(ad) => {
+    
+    const {id, name, description, price, pricing_scheme, min_price, max_price, status, ad_details, category, sub_category, location, address, default_currency, ad_images} = ad
+    const {error, data} = await fetchCategories()
+    if(!data){
+      console.log("failed to fetch categories")
+      return
+    }
+    let cate: Category | null, sub_cate: SubCategory | null
+    if(category){
+      cate = data.find(cat => cat.slug === category.slug) ?? null
+      sub_cate = cate?.sub_categories!.find(sb => sb.slug === sub_category?.slug) ?? cate?.sub_categories!.find(sb => sb.slug) ?? null
+    }else if(sub_category){
+      cate = data.find(cat => {
+        const slugs = (cat.sub_categories as SubCategory[]).map((sb) => sb.slug)
+        return slugs.includes(sub_category.slug)
+      })
+      sub_cate = cate?.sub_categories?.find(sb => sb.slug === sub_category.slug) ?? null
+    }else{
+      cate = null
+      sub_cate = null
+    }
+
+    if(!cate || !sub_cate){
+      console.log("Missing category or sub_category", {cate, sub_cate})
+      return
+    }
+
+    let pricing: any = {
+      
+    }
+
+    switch(pricing_scheme){
+      case 'fixed price':
+        pricing= {
+          scheme: "fixed",
+          currency: default_currency,
+          details: {
+            price
+          }
+
+        } 
+        break;
+
+      case 'price range':
+        pricing= {
+          scheme: "range",
+          currency: default_currency,
+          details: {
+            min_price,
+            max_price
+          }
+
+        }
+        
+        break;
+
+      case "price menu":
+        pricing = {
+          scheme: "menu",
+          currency: default_currency,
+          details: {
+            items: (await supabase.from("menu_items").select().eq('ad_id', id)).data
+          }
+
+        }
+
+        break;
+
+      case "periodic price":
+        pricing = {
+          scheme: "recurring",
+          currency: default_currency,
+          details: {
+            price,
+            period: "Month"
+          }
+
+        }
+
+        break;
+
+      default: break;
+    }
+  
+    const newAd = {
+      title: name,
+      description,
+      category_id: cate?.slug,
+      sub_category_id: sub_cate?.slug,
+      location: location ? `POINT(${location.coordinates[0]} ${location.coordinates[1]})`: null,
+      // address,
+      // status,
+      specs: ad_details ? JSON.parse((ad_details as string).replaceAll(" ", "")) : {}
+    }
+
+    const insert = await createClient().from("ads").insert(newAd).select("id")
+    console.log({insert})
+    if(!insert.data){
+      return
+    }
+
+    const newAdId = insert.data[0].id
+
+    const pricingInsert = await createClient().from("pricings").insert({...pricing, ad_id: newAdId})
+    console.log({pricingInsert})
+
+    const imagesIsert = await createClient().from("ad_images").insert(((ad_images as AdImage[]).map(img => ({url: img.url.startsWith("/images/ads") ?`https://uduuka.com${img.url}`: img.url, ad_id: newAdId}))))
+    console.log({imagesIsert})
+  })
+}
+
+export const testView = async() => {
+  navigator.geolocation.getCurrentPosition(async(pos)=>{
+    console.log(pos)
+    if(!pos.coords){
+      return
+    }
+    const res = await createClient().rpc('test_view', {lat: pos.coords.latitude, lon: pos.coords.longitude})
+    console.log(res)
+  }, (err)=>{
+    console.log(err)
+  })
+}
+

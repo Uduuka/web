@@ -1,18 +1,21 @@
 import AdsList from "@/components/parts/lists/AdsList";
-import { categories } from "@/lib/dev_db/db";
+import { fetchCategories } from "@/lib/actions";
+import { SubCategory } from "@/lib/types";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import React from "react";
 
 export default async function SubCategoryPage({ params }: { params: any }) {
-  const catSlug = (await params)["catSlug"];
   const subCatSlug = (await params)["subCatSlug"];
 
-  const category = categories.find((cat) => cat.slug === catSlug);
-  const subCategory = category?.subCategories?.find(
-    (sc) => sc.slug === subCatSlug
-  );
+  const subCategory = (
+    (await fetchCategories({ subCateSlug: subCatSlug })).data as SubCategory[]
+  )[0];
 
+  if (!subCategory) {
+    return notFound();
+  }
+  const category = subCategory.category;
   if (!category) {
     return notFound();
   }

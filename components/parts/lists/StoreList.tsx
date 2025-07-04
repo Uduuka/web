@@ -1,24 +1,29 @@
 "use client";
 
 import ScrollArea from "@/components/parts/layout/ScrollArea";
-import { useState, useTransition } from "react";
+import { ComponentProps, useState, useTransition } from "react";
 import { Error, Listing, Store } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import Button from "@/components/ui/Button";
 import { ArrowLeft, ArrowRight, ArrowUp } from "lucide-react";
 import StoreCard from "../cards/StoreCard";
-import { stores } from "@/lib/dev_db/db";
+
+interface ListProps extends ComponentProps<"div"> {
+  title?: string;
+  className?: string;
+  stores: Store[];
+  nextUrl: string;
+  orientation?: "vertical" | "horizontal";
+}
 
 export default function StoreList({
   title,
   orientation = "vertical",
+  nextUrl,
+  stores,
   className,
-}: {
-  title?: string;
-  className?: string;
-  orientation?: "vertical" | "horizontal";
-}) {
+}: ListProps) {
   const [isLoading, startLoading] = useTransition();
   const [error, setError] = useState<Error | null>(null);
 
@@ -48,6 +53,7 @@ export default function StoreList({
         >
           {stores.map((item) => (
             <StoreCard
+              nextUrl={nextUrl}
               key={item.id}
               store={item}
               className={`${orientation === "vertical" ? "w-full" : "w-80"}`}

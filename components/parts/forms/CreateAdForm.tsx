@@ -2,6 +2,7 @@
 
 import Button from "@/components/ui/Button";
 import {
+  Category,
   FixedPrice,
   Listing,
   MenuItem,
@@ -11,101 +12,157 @@ import {
   RecurringPrice,
   UnitPrice,
 } from "@/lib/types";
-import React, { ChangeEvent, ComponentProps, useState } from "react";
+import React, {
+  ChangeEvent,
+  ComponentProps,
+  useEffect,
+  useState,
+  useTransition,
+} from "react";
 import ScrollArea from "../layout/ScrollArea";
 import Select from "@/components/ui/Select";
-import { categories } from "@/lib/dev_db/db";
 import FormGroup from "@/components/ui/FormGroup";
 import FormInput from "@/components/ui/Input";
 import env from "@/lib/env";
 import { useAppStore } from "@/lib/store";
-import { displayCurrencyAndPrice, toMoney } from "@/lib/utils";
-import { FixedPrice as FixedPriceTag } from "../cards/PriceTag";
-import MapboxMap from "../maps/mapbox/MapboxMap";
+import { FixedPriceTag } from "../cards/PriceTag";
+import { Dropzone, DropzoneContent, DropzoneEmptyState } from "./dropzone";
+import { useSupabaseUpload } from "@/lib/hooks/use_supabase_upload";
+import { fetchCategories } from "@/lib/actions";
 
 interface AdFormProps extends ComponentProps<"form"> {
   defaultAd?: Listing;
 }
 
 export default function CreateAdForm({ defaultAd }: AdFormProps) {
+  const { currency, location, user } = useAppStore();
+  const [categories, setCategories] = useState<Category[]>([]);
   const [ad, setAd] = useState<Listing>(defaultAd ?? ({} as Listing));
-  const [pricing, setPricing] = useState({} as any);
-  const [currentStage, setCurrentStage] = useState(0);
-
-  const { currency, location } = useAppStore();
+  const [pricing, setPricing] = useState<Pricing<any>>({ currency } as any);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [error, setError] = useState<string | null>(null);
+  const [spects, setSpects] = useState<string[]>([]);
+  const [adSpects, setAdSpects] = useState<any>({});
 
   const setCurrent = (index: number) => {
-    setCurrentStage(index);
+    setCurrentStep(index);
   };
 
   const next = () => {
-    currentStage < 4 ? setCurrent(currentStage + 1) : setCurrent(0);
+    currentStep < 4 ? setCurrent(currentStep + 1) : setCurrent(0);
   };
 
   const prev = () => {
-    currentStage > 0 ? setCurrent(currentStage - 1) : setCurrent(0);
+    currentStep > 0 ? setCurrent(currentStep - 1) : setCurrent(0);
+  };
+
+  const [fetchingCategories, startFetchingCategories] = useTransition();
+
+  useEffect(() => {
+    startFetchingCategories(async () => {
+      const { data } = await fetchCategories();
+
+      if (!data) {
+        return;
+      }
+
+      setCategories(data);
+    });
+  }, []);
+
+  useEffect(() => {
+    const category = categories.find((cat) => cat.id === ad.category_id);
+    const subCategory = category?.sub_categories?.find(
+      (sb) => sb.id === ad.sub_category_id
+    );
+
+    if (!category || !subCategory) {
+      setSpects([]);
+      return;
+    }
+
+    const specs =
+      category.default_specs ?? "".concat(subCategory.default_specs ?? "");
+
+    setSpects(specs.split(",").map((s) => s.trim()));
+    setAdSpects({});
+  }, [categories, ad.category_id, ad.sub_category_id]);
+
+  const handleSubmit = async () => {
+    if (!user) {
+      setError("The user is undefined");
+      return;
+    }
+    ad.seller_id = user.id;
+    ad.specs = adSpects;
+    ad.pricing = pricing;
+
+    console.log(ad);
   };
 
   return (
-    <form className="flex overflow-hidden flex-col gap-5 p-5">
-      <h1 className="text-center">Progress: stage {currentStage}</h1>
+    <form
+      action={handleSubmit}
+      className="flex overflow-hidden flex-col gap-5 p-5"
+    >
+      <h1 className="text-center">Progress: stage {currentStep + 1}</h1>
       <div className="flex items-center w-full max-w-60 mx-auto gap-1">
         <Button
           type="button"
-          onClick={() => setCurrentStage(0)}
+          onClick={() => setCurrentStep(0)}
           className={`h-3 p-0 bg-transparent aspect-square border rounded-full flex justify-center items-center text-xs ${
-            currentStage > 0
+            currentStep > 0
               ? "bg-primary border-primary"
-              : currentStage === 0
+              : currentStep === 0
               ? "border-primary"
               : ""
           }`}
         ></Button>
         <div
           className={`w-full border-b ${
-            currentStage > 0 ? "border-primary" : "border-secondary"
+            currentStep > 0 ? "border-primary" : "border-secondary"
           }`}
         ></div>
         <Button
           type="button"
-          onClick={() => setCurrentStage(1)}
+          onClick={() => setCurrentStep(1)}
           className={`h-3 p-0 bg-transparent aspect-square border rounded-full flex justify-center items-center text-xs
             ${
-              currentStage > 1
+              currentStep > 1
                 ? "bg-primary border-primary"
-                : currentStage === 1
+                : currentStep === 1
                 ? "border-primary"
                 : ""
             }`}
         ></Button>
         <div
           className={`w-full border-b ${
-            currentStage > 1 ? "border-primary" : "border-secondary"
+            currentStep > 1 ? "border-primary" : "border-secondary"
           }`}
         ></div>
         <Button
           type="button"
-          onClick={() => setCurrentStage(2)}
+          onClick={() => setCurrentStep(2)}
           className={`h-3 p-0 bg-transparent aspect-square border rounded-full flex justify-center items-center text-xs ${
-            currentStage > 2
+            currentStep > 2
               ? "bg-primary border-primary"
-              : currentStage === 2
+              : currentStep === 2
               ? "border-primary"
               : ""
           }`}
         ></Button>
         <div
           className={`w-full border-b ${
-            currentStage > 2 ? "border-primary" : "border-secondary"
+            currentStep > 2 ? "border-primary" : "border-secondary"
           }`}
         ></div>
         <Button
           type="button"
-          onClick={() => setCurrentStage(3)}
+          onClick={() => setCurrentStep(3)}
           className={`h-3 p-0 bg-transparent aspect-square border rounded-full flex justify-center items-center text-xs ${
-            currentStage > 3
+            currentStep > 3
               ? "border-primary bg-primary"
-              : currentStage === 3
+              : currentStep === 3
               ? "border-primary"
               : ""
           }`}
@@ -117,9 +174,10 @@ export default function CreateAdForm({ defaultAd }: AdFormProps) {
       >
         <div
           className="flex w-full h-[70vh] transition-transform duration-300"
-          style={{ transform: `translateX(-${currentStage * 100}%)` }}
+          style={{ transform: `translateX(-${currentStep * 100}%)` }}
         >
-          <div className="w-full text-center text-background/80 h-96 flex-shrink-0 pt-10">
+          {/* Step one */}
+          <div className="w-full text-center text-background/80 flex-shrink-0 pt-10">
             <h1 className="">Step one:</h1>
             <p className="text-xs font-thin py-2">
               Select the category and sub-category of your advert.
@@ -155,7 +213,7 @@ export default function CreateAdForm({ defaultAd }: AdFormProps) {
                   options={
                     categories
                       .find((cate) => cate.id === ad.category_id)
-                      ?.subCategories?.map((subCate) => ({
+                      ?.sub_categories?.map((subCate) => ({
                         value: subCate.id,
                         label: subCate.name,
                       })) ?? []
@@ -170,6 +228,8 @@ export default function CreateAdForm({ defaultAd }: AdFormProps) {
               </FormGroup>
             </div>
           </div>
+
+          {/* Step two */}
           <div className="w-full text-center text-background/80 h-full flex-shrink-0">
             <ScrollArea
               maxHeight="100%"
@@ -187,6 +247,8 @@ export default function CreateAdForm({ defaultAd }: AdFormProps) {
                 >
                   <FormInput
                     className="px-3 py-1.5 w-full"
+                    value={ad.title ?? ""}
+                    onChange={(e) => setAd({ ...ad, title: e.target.value })}
                     placeholder="Title or name of the advert"
                   />
                 </FormGroup>
@@ -197,6 +259,10 @@ export default function CreateAdForm({ defaultAd }: AdFormProps) {
                 >
                   <textarea
                     cols={5}
+                    value={ad.description ?? ""}
+                    onChange={(e) =>
+                      setAd({ ...ad, description: e.target.value })
+                    }
                     className="px-3 py-1.5 w-full h-40 rounded-lg border border-background hover:border-primary active:border-primary focus:border-primary transition-colors outline-0 focus:outline-0 ring-0 resize-none"
                     placeholder="Describe your product or service"
                   />
@@ -205,17 +271,47 @@ export default function CreateAdForm({ defaultAd }: AdFormProps) {
                   label="Specifications"
                   className="text-left   w-full"
                 >
-                  <div className="rounded-lg p-5 min-h-40 border hover:border-primary focus-within:border-primary flex flex-wrap gap-5"></div>
+                  <div className="rounded-lg p-5 min-h-40 border hover:border-primary focus-within:border-primary flex flex-wrap gap-5">
+                    {spects.map((s, i) => (
+                      <div
+                        key={i}
+                        className="w-fit flex flex-col justify-center items-center"
+                      >
+                        <input
+                          id={s}
+                          value={adSpects[s] ?? ""}
+                          onChange={(e) =>
+                            setAdSpects({ ...adSpects, [s]: e.target.value })
+                          }
+                          className="px-3 py-1 outline-0 focus:outline-0 border-b border-accent/60 w-fit text-center"
+                        />
+                        <label htmlFor={s} className="text-secondary/60">
+                          {s}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
                 </FormGroup>
               </div>
             </ScrollArea>
           </div>
+
+          {/* Step three */}
+          <div className="w-full text-center text-background/80 h-96 flex-shrink-0 pt-10">
+            <h1 className="">Step three:</h1>
+            <p className="text-xs font-thin py-2">
+              Upload clean and clear images of what your selling.
+            </p>
+            <FileUploadForm />
+          </div>
+
+          {/* Step four */}
           <div className="w-full text-center text-background/80 h-full flex-shrink-0">
             <ScrollArea
               maxHeight="100%"
               className="bg-foreground-50/20 focus:ring-0 active:ring-0 h-full px-5"
             >
-              <h1 className="">Step three:</h1>
+              <h1 className="">Step four:</h1>
               <p className="text-xs font-thin py-2">
                 Set the pricing for your advert
               </p>
@@ -230,9 +326,9 @@ export default function CreateAdForm({ defaultAd }: AdFormProps) {
                       options={env.currencyOptions}
                       className="text-foreground "
                       triggerStyle="w-full bg-background py-2"
-                      value={ad.currency ?? currency}
+                      value={pricing.currency ?? currency}
                       onChange={(v) => {
-                        setAd({ ...ad, currency: v });
+                        setPricing({ ...pricing, currency: v });
                       }}
                     />
                   </FormGroup>
@@ -246,58 +342,60 @@ export default function CreateAdForm({ defaultAd }: AdFormProps) {
                       options={env.pricingSchemes}
                       className="text-foreground "
                       triggerStyle="w-full bg-background py-2"
-                      value={ad.pricingScheme}
+                      value={pricing.scheme}
                       onChange={(v) => {
-                        setAd({ ...ad, pricingScheme: v });
+                        setPricing({ ...pricing, scheme: v });
                       }}
                     />
                   </FormGroup>
                 </div>
 
-                {ad.pricingScheme === "fixed" && (
+                {pricing.scheme === "fixed" && (
                   <FixedPriceForm
-                    curr={ad.currency ?? currency}
+                    curr={pricing.currency ?? currency}
                     value={pricing.details}
-                    onChange={setPricing}
+                    onChange={(d) => setPricing({ ...pricing, details: d })}
                   />
                 )}
-                {ad.pricingScheme === "range" && (
+                {pricing.scheme === "range" && (
                   <PriceRangeForm
-                    curr={ad.currency ?? currency}
-                    value={pricing}
-                    onChange={setPricing}
+                    curr={pricing.currency ?? currency}
+                    value={pricing.details}
+                    onChange={(pr) => setPricing({ ...pricing, details: pr })}
                   />
                 )}
-                {ad.pricingScheme === "unit" && (
+                {pricing.scheme === "unit" && (
                   <UnitPriceForm
-                    curr={ad.currency ?? currency}
-                    value={pricing}
-                    onChange={setPricing}
+                    curr={pricing.currency ?? currency}
+                    value={pricing.details}
+                    onChange={(up) => setPricing({ ...pricing, details: up })}
                   />
                 )}
-                {ad.pricingScheme === "recurring" && (
+                {pricing.scheme === "recurring" && (
                   <RecurringPriceForm
-                    curr={ad.currency ?? currency}
-                    value={pricing}
-                    onChange={setPricing}
+                    curr={pricing.currency ?? currency}
+                    value={pricing.details}
+                    onChange={(rp) => setPricing({ ...pricing, details: rp })}
                   />
                 )}
-                {ad.pricingScheme === "menu" && (
+                {pricing.scheme === "menu" && (
                   <PriceMenuForm
-                    curr={ad.currency ?? currency}
-                    value={pricing}
-                    onChange={setPricing}
+                    curr={pricing.currency ?? currency}
+                    value={pricing.details}
+                    onChange={(pm) => setPricing({ ...pricing, details: pm })}
                   />
                 )}
               </div>
             </ScrollArea>
           </div>
+
+          {/* Step five */}
           <div className="w-full text-center text-background/80 h-full flex-shrink-0">
             <ScrollArea
               maxHeight="100%"
               className="outline-0 focus-within:outline-0 active:outline-0 focus:ring-0 active:ring-0 h-full px-5"
             >
-              <h1 className="">Step four:</h1>
+              <h1 className="">Step five:</h1>
               <p className="text-xs font-thin py-2">
                 Provide address and location info of your product or service.
               </p>
@@ -319,48 +417,58 @@ export default function CreateAdForm({ defaultAd }: AdFormProps) {
           </div>
         </div>
         <div className="flex justify-between px-5">
-          <Button
-            onClick={prev}
-            type="button"
-            className="transform bg-primary/80 text-white p-2 px-5 w-40 gap-5 rounded-full hover:bg-primary transition"
-            aria-label="Previous image"
-          >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+          {currentStep > 0 ? (
+            <Button
+              onClick={prev}
+              type="button"
+              className="transform bg-primary/80 text-white p-2 px-5 w-40 gap-5 rounded-full hover:bg-primary transition"
+              aria-label="Previous step"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-            Previous
-          </Button>
-          <Button
-            onClick={next}
-            type="button"
-            className=" transform bg-primary/80 text-white p-2 px-5 w-40 gap-5 rounded-full hover:bg-primary transition"
-            aria-label="Next image"
-          >
-            Next
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+              Previous
+            </Button>
+          ) : (
+            <div className=""></div>
+          )}
+          {currentStep === 4 ? (
+            <Button className="transform bg-primary/80 text-white p-2 px-5 w-40 gap-5 rounded-full hover:bg-primary transition">
+              Submit
+            </Button>
+          ) : (
+            <Button
+              onClick={next}
+              type="button"
+              className=" transform bg-primary/80 text-white p-2 px-5 w-40 gap-5 rounded-full hover:bg-primary transition"
+              aria-label="Next step"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5l7 7-7 7"
-              />
-            </svg>
-          </Button>
+              Next
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            </Button>
+          )}
         </div>
       </div>
     </form>
@@ -925,11 +1033,14 @@ const PriceMenuForm = ({
                   </span>
                   <div className="text-primary">
                     <FixedPriceTag
-                      price={displayCurrencyAndPrice(
-                        curr,
+                      pricing={{
+                        scheme: "fixed",
                         currency,
-                        item.price
-                      )}
+                        details: {
+                          price: item.price,
+                          initialPrice: item.initialPrice,
+                        },
+                      }}
                     />
                   </div>
                   <span className="text-xs text-background/70 font-light">
@@ -1040,5 +1151,24 @@ const PriceMenuForm = ({
         </div>
       </FormGroup>
     </div>
+  );
+};
+
+const FileUploadForm = () => {
+  const props = useSupabaseUpload({
+    bucketName: "test",
+    path: "test",
+    allowedMimeTypes: ["image/*"],
+    maxFiles: 2,
+    maxFileSize: 1000 * 1000 * 10, // 10MB,
+  });
+
+  return (
+    <FormGroup className="w-full max-w-sm mx-auto text-background py-10 ">
+      <Dropzone {...props}>
+        <DropzoneEmptyState />
+        <DropzoneContent />
+      </Dropzone>
+    </FormGroup>
   );
 };

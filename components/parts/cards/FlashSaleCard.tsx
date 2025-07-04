@@ -1,16 +1,12 @@
 import { FlashSale, Time } from "@/lib/types";
-import React, { useEffect, useState } from "react";
-import PriceTag from "./PriceTag";
-import { displayCurrencyAndPrice } from "@/lib/utils";
-import { useAppStore } from "@/lib/store";
-import { IoMdFlash } from "react-icons/io";
+import React, { useEffect, useMemo, useState } from "react";
+import PriceTag, { Money } from "./PriceTag";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function FlashSaleCard({ item }: { item: FlashSale }) {
-  const { currency } = useAppStore();
-
   const calculateTimeLeft = () => {
-    const end = item.start.getTime() + item.duration * 60 * 1000;
+    const end = new Date(item.start).getTime() + item.duration * 60 * 1000;
     const now = Date.now();
     const diff = Math.max(0, end - now);
 
@@ -43,23 +39,37 @@ export default function FlashSaleCard({ item }: { item: FlashSale }) {
 
     return () => clearInterval(timer);
   }, []);
-  const calcSavings = () => {
-    const scheme = item.ad.pricingScheme;
+
+  const savings = useMemo(() => {
+    console.log({ item });
+    const scheme = item.ad.pricing.scheme;
     if (scheme === "fixed") {
-      if (!item.ad.price) {
+      const { price, initialPrice } = item.pricing.details;
+      if (!price) {
         return;
       }
+      const money = Number(initialPrice) - Number(price);
       return {
-        pacentage: ((item.ad.price - item.flashPrice) / item.ad.price) * 100,
-        money: item.ad.price - item.flashPrice,
+        pacentage: ((money / Number(initialPrice)) * 100).toFixed(0),
+        money,
       };
     }
-  };
-  const savings = calcSavings();
+  }, []);
+
   return (
     <Link href={`/flash-sales/${item.id}`}>
       <div className="w-full max-w-96 h-40 flex rounded-lg bg-white overflow-hidden border border-orange-500 hover:shadow-lg transition-all">
-        <div className="w-32 h-full bg-secondary relative"></div>
+        <div className="h-full bg-secondary flex items-center justify-center relative">
+          {item.ad.images && (
+            <Image
+              src={item.ad.images[0].url || "/placeholder.svg"}
+              alt={item.ad.title}
+              height={100}
+              width={100}
+              className="w-full bg-cover object-cover transition-transform hover:scale-105"
+            />
+          )}
+        </div>
         <div className="flex-1 flex flex-col">
           <div className="h-8 flex items-center justify-center bg-orange-500">
             <p className="text-background font-bold">
@@ -73,21 +83,15 @@ export default function FlashSaleCard({ item }: { item: FlashSale }) {
           <div className="flex-1 pl-3">
             <h1 className="py-2 text-xs text-accent">{item.ad.title}</h1>
             <div className="">
-              <PriceTag
-                price={item.flashPrice.toString()}
-                originalPrice={item.ad.price?.toString()}
-                originalCurrency={item.ad.currency}
-                scheme={item.ad.pricingScheme ?? ""}
-              />
+              <PriceTag pricing={item.pricing} />
               {savings && (
-                <p className="text-green-500 text-xs font-light">
+                <p className="text-green-500 text-xs flex gap-2 font-thin">
                   Save up to{" "}
                   <span className="font-bold">
-                    {displayCurrencyAndPrice(
-                      item.ad.currency,
-                      currency,
-                      savings.money.toString()
-                    )}
+                    <Money
+                      price={savings.money.toString()}
+                      defaultCurrency={item.ad.pricing.currency}
+                    />
                   </span>{" "}
                   ({savings.pacentage}% off)
                 </p>

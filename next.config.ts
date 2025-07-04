@@ -5,19 +5,34 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
-        hostname: "placehold.co",
+        hostname: "sqcidocbglgivrlysuhq.supabase.co",
         protocol: "https",
         port: "",
-        pathname: "/600x400/**",
+        pathname: "/**",
         search: "",
       },
       {
-        hostname: "placehold.co",
+        hostname: "api.escuelajs.co",
         protocol: "https",
         port: "",
-        pathname: "/400x400/**",
+        pathname: "/**",
         search: "",
       },
+      {
+        hostname: "i.imgur.com",
+        protocol: "https",
+        port: "",
+        pathname: "/**",
+        search: "",
+      },
+      {
+        hostname: "uduuka.com",
+        protocol: "https",
+        port: "",
+        pathname: "/**",
+        search: "",
+      },
+      
     ],
     dangerouslyAllowSVG: true,
   },

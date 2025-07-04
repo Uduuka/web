@@ -6,15 +6,17 @@ import React, { ComponentProps } from "react";
 
 type StoreCardProps = ComponentProps<"div"> & {
   store: Store;
+  nextUrl: string;
 };
 
 export default function StoreCard({
   store,
   className,
+  nextUrl,
   ...props
 }: StoreCardProps) {
   return (
-    <Link href={`/stores/${store.id}`}>
+    <Link href={`${nextUrl}/${store.id}`}>
       <div
         className={cn(
           "w-full border bg-white border-secondary flex flex-col rounded-lg h-40 overflow-hidden hover:shadow-lg transition-all  ",

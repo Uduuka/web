@@ -8,7 +8,7 @@ export default function page() {
     () =>
       dynamic(() => import("@/components/parts/maps/mapbox/MapboxMap"), {
         loading: () => (
-          <div className="w-full rounded-sm border-2 h-[75vh] flex justify-center items-center">
+          <div className="w-full rounded-sm  h-full flex justify-center items-center">
             Loading ...
           </div>
         ),

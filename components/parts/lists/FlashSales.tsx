@@ -1,14 +1,13 @@
 "use client";
 
 import ScrollArea from "@/components/parts/layout/ScrollArea";
-import { useState, useTransition } from "react";
-import { Error, FlashSale } from "@/lib/types";
+import { FlashSale } from "@/lib/types";
 import Link from "next/link";
 import Button from "@/components/ui/Button";
-import { ArrowRight, FlaskConical } from "lucide-react";
-import { ads } from "@/lib/dev_db/db";
+import { ArrowRight } from "lucide-react";
 import FlashSaleCard from "../cards/FlashSaleCard";
 import { IoMdFlash } from "react-icons/io";
+import { useFilteredFlashSales } from "@/lib/hooks/use_filtered_flash_sales";
 
 export default function FlashSales({
   title,
@@ -19,36 +18,7 @@ export default function FlashSales({
   className?: string;
   orientation?: "vertical" | "horizontal";
 }) {
-  const [isLoading, startLoading] = useTransition();
-  const [error, setError] = useState<Error | null>(null);
-
-  const stores: FlashSale[] = [
-    {
-      id: "1",
-      ad: ads.find((ad) => ad.id === "1")!,
-      start: new Date(),
-      duration: 30,
-      flashPrice: 20,
-      info: "Buy quick",
-    },
-    {
-      id: "2",
-      ad: ads.find((ad) => ad.id === "2")!,
-      start: new Date(),
-      duration: 120,
-      flashPrice: 420,
-      info: "Buy quick",
-    },
-    {
-      id: "3",
-      ad: ads.find((ad) => ad.id === "3")!,
-      start: new Date(),
-      duration: 120,
-      flashPrice: 14,
-      info: "Buy quick",
-    },
-  ];
-
+  const { flashSales, error, fetching } = useFilteredFlashSales();
   return (
     <div className="px-5 pt-3">
       <div className="pb-2 text-base font-bold w-full flex justify-between">
@@ -65,8 +35,8 @@ export default function FlashSales({
           </Button>
         </Link>
       </div>
-      {isLoading && <p className="text-uduuka-gray">Loading...</p>}
-      {error && <p className="text-uduuka-red">Error: {error.message}</p>}
+      {fetching && <p className="text-uduuka-gray">Loading...</p>}
+      {error && <p className="text-uduuka-red">Error: {error}</p>}
       <ScrollArea
         maxHeight={orientation === "vertical" ? "100%" : "fit-content"}
         ariaLabel="Listings scroll area"
@@ -76,7 +46,7 @@ export default function FlashSales({
             orientation === "horizontal" ? "flex w-max gap-5" : className
           }
         >
-          {stores.map((item) => (
+          {flashSales.map((item: FlashSale) => (
             <FlashSaleCard key={item.id} item={item} />
           ))}
         </div>
