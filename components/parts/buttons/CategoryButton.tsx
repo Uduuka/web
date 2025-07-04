@@ -20,9 +20,9 @@ export default function CategoryButton({ category }: { category: Category }) {
       contentStyle="w-full bg-secondary"
     >
       <div className="text-xs">
-        {category.subCategories?.map((subCategory) => (
+        {category.sub_categories?.map((subCategory) => (
           <Link
-            key={subCategory.id}
+            key={subCategory.slug}
             href={`/${category.slug}/${subCategory.slug}`}
           >
             <Button className="bg-transparent hover:bg-white w-full py-1 rounded justify-between">

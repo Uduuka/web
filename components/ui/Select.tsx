@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { Check } from "lucide-react";
 import { useState, useRef, useEffect, ComponentProps } from "react";
 import Button from "./Button";
+import ScrollArea from "../parts/layout/ScrollArea";
 
 interface SelectOptions<T> {
   value: T;
@@ -33,7 +34,7 @@ export default function Select<T>({
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const selectRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
-  const menuRef = useRef<HTMLUListElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   // Close on outside click
   useEffect(() => {
@@ -132,7 +133,7 @@ export default function Select<T>({
         </svg>
       </Button>
       {isOpen && (
-        <ul
+        <div
           ref={menuRef}
           className="absolute z-10 mt-1 w-full bg-background shadow-md rounded-md text-uduuka-gray text-sm"
           role="listbox"
@@ -140,28 +141,32 @@ export default function Select<T>({
             focusedIndex >= 0 ? `option-${focusedIndex}` : undefined
           }
         >
-          {options.map((option, index) => (
-            <li
-              key={`${option.value}`}
-              id={`option-${index}`}
-              className={`px-3 cursor-pointer hover:bg-secondary/10 text-xs py-2 items-center flex justify-between gap-1 ${
-                index === focusedIndex ? "bg-secondary" : ""
-              }`}
-              onClick={() => {
-                onChange(option.value);
-                setIsOpen(false);
-                setFocusedIndex(-1);
-                buttonRef.current?.focus();
-              }}
-              role="option"
-              aria-selected={option.value === value}
-              tabIndex={-1}
-            >
-              {option.label}
-              {value === option.value && <Check size={16} />}
-            </li>
-          ))}
-        </ul>
+          <ScrollArea maxHeight="20rem" className="max-h-96">
+            <ul>
+              {options.map((option, index) => (
+                <li
+                  key={`${option.value}`}
+                  id={`option-${index}`}
+                  className={`px-3 cursor-pointer hover:bg-secondary/10 text-xs py-2 items-center flex justify-between gap-1 ${
+                    index === focusedIndex ? "bg-secondary" : ""
+                  }`}
+                  onClick={() => {
+                    onChange(option.value);
+                    setIsOpen(false);
+                    setFocusedIndex(-1);
+                    buttonRef.current?.focus();
+                  }}
+                  role="option"
+                  aria-selected={option.value === value}
+                  tabIndex={-1}
+                >
+                  {option.label}
+                  {value === option.value && <Check size={16} />}
+                </li>
+              ))}
+            </ul>
+          </ScrollArea>
+        </div>
       )}
     </div>
   );

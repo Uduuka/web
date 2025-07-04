@@ -23,8 +23,8 @@ export default function LeafletMap({ ads, ad, loading }: Props) {
 
   if (!center || loading) {
     return (
-      <div className="w-full rounded-sm h-[75vh] border-2 flex justify-center items-center">
-        loading ...
+      <div className="w-full rounded-sm h-full flex justify-center items-center">
+        Map loading ...
       </div>
     );
   }

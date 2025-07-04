@@ -5,7 +5,10 @@ import Link from "next/link";
 import { MapPin, Star } from "lucide-react";
 import Badge from "@/components/ui/Badge";
 import PriceTag from "./PriceTag";
-import { Listing } from "@/lib/types";
+import { Listing, Pricing } from "@/lib/types";
+import { prettyDistance, toNumber } from "@/lib/utils";
+import { usePathname } from "next/navigation";
+import Button from "@/components/ui/Button";
 
 interface ListingCardProps {
   ad: Listing;
@@ -16,47 +19,40 @@ export default function AdCard({ ad }: ListingCardProps) {
     id,
     title,
     image,
-    price,
-    minPrice,
-    maxPrice,
-    originalPrice,
-    pricingScheme,
-    currency,
     rating,
     ratings,
+    distance,
+    pricing,
     store,
-    isNew = false,
-    units,
-    period,
-    isFeatured = false,
-    priceMenu,
+    views,
+    isNew,
+    isFeatured,
   } = ad;
-
-  // Calculate distance if user location is available and coordinates are provided
-  const distance = "5KM form you!";
 
   const handleClick = () => {
     // Record this item as viewed
   };
 
+  const pathname = usePathname();
+
+  const url = image?.url ?? "/placeholder.svg";
   return (
-    <div className="bg-white border border-gray-300 rounded-md transition-all hover:shadow-lg">
+    <div className="bg-white border border-gray-300 rounded-md overflow-hidden transition-all hover:shadow-lg">
       <div className="p-0">
-        <Link href={`/ads/${id}`} className="block" onClick={handleClick}>
+        <Link
+          href={pathname === "/map" ? `/map/${id}` : `/ads/${id}`}
+          className="block"
+          onClick={handleClick}
+        >
           <div className="relative bg-secondary h-fit w-full overflow-hidden">
-            {image ? (
-              <Image
-                src={image || "/placeholder.svg"}
-                alt={title}
-                height={100}
-                width={100}
-                className="w-full h-auto transition-transform hover:scale-105"
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center bg-muted">
-                No image
-              </div>
-            )}
+            <Image
+              src={url}
+              alt={title}
+              height={100}
+              width={100}
+              className="w-full h-auto transition-transform hover:scale-105"
+            />
+
             {isNew && <Badge className="absolute left-2 top-2">New</Badge>}
             {isFeatured && (
               <Badge variant="secondary" className="absolute right-2 top-2">
@@ -70,38 +66,36 @@ export default function AdCard({ ad }: ListingCardProps) {
         </Link>
         <div className="px-3">
           <div className="pt-2">
-            <PriceTag
-              className=""
-              price={price?.toString()}
-              minPrice={minPrice?.toString()}
-              maxPrice={maxPrice?.toString()}
-              originalCurrency={currency}
-              originalPrice={originalPrice?.toString()}
-              scheme={pricingScheme ?? ""}
-              units={units}
-              period={period}
-              menuItems={priceMenu}
-            />
+            <PriceTag pricing={pricing} />
           </div>
-          <div className="flex flex-wrap gap-2 pt-2 items-center text-gray-500 justify-between text-xs text-muted-foreground">
-            <Link
-              href={`/stores/${store?.id}`}
-              className="hover:underline"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {store?.name}
-            </Link>
-            <div className="flex gap-1 items-center">
-              <MapPin size={15} />
-              <span className="text-xs">{distance}</span>
+          <div className="py-3 text-xs text-accent/90 space-y-1">
+            {distance && (
+              <Link href={`/map/${ad.id}`}>
+                <Button className="gap-1 mb-1 w-full hover:bg-accent/20">
+                  <MapPin size={15} />
+                  <span className="text-xs line-clamp-1">
+                    {prettyDistance(toNumber(distance))}
+                  </span>
+                </Button>
+              </Link>
+            )}
+            <div className="flex gap-2 pt-2 items-center">
+              <span className="flex gap-1 line-clamp-1">
+                <Star className="mr-1 h-3 w-3 fill-yellow-500 text-yellow-500" />
+                <span>{(rating ?? 0).toFixed(1)}</span>
+              </span>
+              <span className="line-clamp-1">{ratings} ratings</span>
+              <span className="line-clamp-1">{views} views</span>
             </div>
-          </div>
-          <div className="flex justify-between items-center py-3">
-            <div className="flex items-center text-xs text-muted-foreground">
-              <Star className="mr-1 h-3 w-3 fill-yellow-500 text-yellow-500" />
-              <span>{rating?.toFixed(1)}</span>
-              <span className="ml-1">({ratings} ratings)</span>
-            </div>
+            {store && (
+              <Link
+                href={`/stores/${store?.id}`}
+                className="hover:underline text-xs text-accent/90 line-clamp-1"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {store?.name}
+              </Link>
+            )}
           </div>
         </div>
       </div>

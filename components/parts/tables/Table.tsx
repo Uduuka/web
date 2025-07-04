@@ -10,10 +10,17 @@ export interface Column<T> {
 
 interface TableProps<T> {
   columns: Column<T>[];
+  loading?: boolean;
+  error?: string;
   data: T[];
 }
 
-export default function Table<T>({ columns, data }: TableProps<T>) {
+export default function Table<T>({
+  columns,
+  data,
+  loading,
+  error,
+}: TableProps<T>) {
   return (
     <div className="overflow-x-auto">
       <table
@@ -35,13 +42,13 @@ export default function Table<T>({ columns, data }: TableProps<T>) {
           </tr>
         </thead>
         <tbody>
-          {data.length === 0 ? (
+          {loading ? (
             <tr>
               <td
                 colSpan={columns.length}
                 className="p-3 text-center bg-uduuka-bg"
               >
-                No data available
+                loading ...
               </td>
             </tr>
           ) : (

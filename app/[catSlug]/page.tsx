@@ -1,26 +1,34 @@
 import ScrollArea from "@/components/parts/layout/ScrollArea";
 import AdsList from "@/components/parts/lists/AdsList";
-import { categories } from "@/lib/dev_db/db";
+import { fetchCategories } from "@/lib/actions";
+import { Category } from "@/lib/types";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import React from "react";
 
-export default async function CategoryPage({ params }: { params: any }) {
-  const catSlug = (await params)["catSlug"];
-  const category = categories.find((cat) => cat.slug === catSlug);
+export default async function CategoryPage({
+  params,
+}: {
+  params: { catSlug: string };
+}) {
+  const { catSlug } = await params;
+  const { data } = await fetchCategories({ catSlug });
+  const category = (data as Category[])[0];
+
   if (!category) {
     return notFound();
   }
+
   return (
     <div className="flex flex-col">
-      {category.subCategories && category.subCategories.length > 0 && (
+      {category.sub_categories && category.sub_categories.length > 0 && (
         <div className="p-5 pb-0">
           <h1 className="pb-2 text-base font-bold w-full flex justify-between">
             Sub-categories in {category.name}
           </h1>
           <ScrollArea>
             <div className="w-max h-fit flex gap-5">
-              {category.subCategories?.map((subCategory, index) => (
+              {category.sub_categories?.map((subCategory, index) => (
                 <Link
                   key={index}
                   href={`/${category.slug}/${subCategory.slug}`}

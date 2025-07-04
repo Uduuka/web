@@ -1,13 +1,8 @@
-export interface User {
-  id: string;
-  email: string;
-  phone?: string;
-  avarta?: string;
-  username?: string;
-  token?: string;
-}
+import { User } from "@supabase/supabase-js";
+
 
 export interface Location {
+  coordinates: [number, number];
   latitude: number;
   longitude: number;
 }
@@ -18,17 +13,17 @@ export interface Listing {
   sub_category_id?: string;
   title: string;
   description?: string;
-  price?: number;
-  currency: string;
-  image: string;
-  images?: string[];
-  originalPrice?: number;
-  pricingScheme?: "fixed" | "recurring" | "range" | "menu" | "unit";
+  image: AdImage;
+  images?: AdImage[];
+  location: Location
+  pricing: Pricing<any>
+  latitude?: number
+  longitude?: number
+  seller_id: string
+  seller?: Profile
+  views?: number;
   coordinates?: Location;
   distance?: string;
-  period?: "hour" | "day" | "week" | "month" | "year";
-  units?: string;
-  views?: number;
   reviews?: Review[];
   likes?: number;
   dislikes?: number;
@@ -38,17 +33,23 @@ export interface Listing {
   storeId?: string;
   isNew?: boolean;
   isFeatured?: boolean;
-  minPrice?: number;
-  maxPrice?: number;
-  priceMenu?: MenuItem[];
   store_id?: string;
   store?: Store;
   category?: Category;
   subCategory?: SubCategory;
+  specs?: object
 }
+
+export interface AdImage {
+  url: string,
+  ad_id: string
+}
+
+export type Currency =  "USD" | "UGX" | "KSH" | "TSH"
 
 export interface Pricing<T> {
   scheme: "fixed" | "recurring" | "range" | "menu" | "unit";
+  currency: Currency
   details: T;
 }
 
@@ -84,6 +85,8 @@ export type Store = {
   id: string;
   name: string;
   logo?: string;
+  address?: string
+  location?: Location
   rating?: number;
   ratings?: number;
   description?: string;
@@ -105,8 +108,9 @@ export type FlashSale = {
   start: Date;
   duration: number; // in minutes
   ad: Listing;
-  flashPrice: number;
+  pricing: Pricing<FixedPrice>
   info?: string;
+  flash_price: string
 };
 
 export type Category = {
@@ -114,7 +118,8 @@ export type Category = {
   name: string;
   slug: string;
   adsCount?: number;
-  subCategories?: SubCategory[];
+  sub_categories?: SubCategory[];
+  default_specs?: string
 };
 
 export type SubCategory = {
@@ -124,6 +129,7 @@ export type SubCategory = {
   category_id: string;
   category?: Category;
   adsCount?: number;
+  default_specs?: string
 };
 
 export interface Error {
@@ -140,13 +146,10 @@ export interface MenuItem {
 }
 
 export interface Filters {
-  q?: string; // Search query
-  d?: string | number; // Distance
-  r?: string; // Price range
-  rt?: string | number; // Rating
-  c?: string; // Category
-  sc?: string; // SubCategory
   search?: string;
+  category?: string
+  subCategory?: string
+  location: Location | null
 }
 
 export type AdDetail = [item: string, value: string];
@@ -176,23 +179,44 @@ export interface ReviewReply {
 }
 
 export interface ChatHead {
+  id?: string
   ad_id: string;
+  title: string
   seller_id: string;
+  seller: Profile
+  buyer: Profile
   buyer_id: string;
   messages?: Message[];
   created_ad?: string;
+  updated_at?: string;
+  trashed_at?: string
+  deleted_at?: string;
+}
+
+export interface Message {
+  id?: string;
+  sender_id: string;
+  text: string;
+  thread_id?: string
+  created_at?: string;
   updated_at?: string;
   trashed_at?: string;
   deleted_at?: string;
 }
 
-export interface Message {
-  id: string;
-  sender: string;
-  receiver: string;
-  text: string;
-  created_ad?: string;
-  updated_at?: string;
-  trashed_at?: string;
-  deleted_at?: string;
+export interface BoundingBox {
+  min_lat: number;
+  min_lon: number;
+  max_lat: number;
+  max_lon: number;
+}
+
+export interface Profile {
+  user_id: string
+  email: string
+  phone: string | null
+  full_names?: string
+  username?: string
+  profile_pic?: string
+  about?: string
 }

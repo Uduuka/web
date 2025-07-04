@@ -1,3 +1,5 @@
+import { getUser } from "./actions";
+
 const env = {
   currencyOptions: [
     { value: "USD" as const, label: "USD" },

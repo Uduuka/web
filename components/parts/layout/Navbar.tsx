@@ -7,23 +7,27 @@ import Link from "next/link";
 import React from "react";
 import env from "@/lib/env";
 import Dropdown from "@/components/ui/Dropdown";
-import {
-  Check,
-  LocateIcon,
-  LucideMapPinned,
-  MapPin,
-  ShieldQuestion,
-  X,
-} from "lucide-react";
+import { Check, MapPin, ShieldQuestion } from "lucide-react";
 import SearchBar from "../forms/SearchBar";
 import { cn } from "@/lib/utils";
 import Button from "@/components/ui/Button";
 import Popup from "@/components/ui/Popup";
 import { BiBell, BiEnvelope, BiLock, BiPlus, BiUser } from "react-icons/bi";
 import { RxDashboard } from "react-icons/rx";
+import { signout } from "@/lib/actions";
+import { redirect } from "next/navigation";
 
-export default function Navbar() {
-  const { currency, setCurrency, location, user } = useAppStore();
+export default function Navbar({ fetchingUser }: { fetchingUser?: boolean }) {
+  const { currency, setCurrency, location, user, setUser } = useAppStore();
+  const handleSignout = async () => {
+    const { error } = await signout();
+    if (error) {
+      alert(error.message);
+      return;
+    }
+    setUser(null);
+    redirect("/");
+  };
   return (
     <header className="bg-primary text-background z-20 py-2 shadow-md sticky top-0 left-0">
       <div className="px-5 mx-auto flex justify-between gap-2 items-center">
@@ -55,7 +59,7 @@ export default function Navbar() {
           />
         </div>
         <div className="hidden md:flex items-center gap-4">
-          <Dropdown 
+          <Dropdown
             align="right"
             className=""
             trigger={
@@ -110,64 +114,75 @@ export default function Navbar() {
             <div className="bg-white shadow-lg rounded-lg h-40 w-60"></div>
           </Dropdown>
 
-          {user ? (
-            <Popup
-              trigger={
-                <Button className="bg-transparent border-2 rounded-full p-1">
-                  <BiUser size={25} />
-                </Button>
-              }
-              align="diagonal-left"
-            >
-              <div className="w-54 p-2">
-                <div className="h-20 w-20 bg-secondary rounded-full mx-auto"></div>
-                <div className="py-2 text-accent border-b border-accent/50">
-                  <h1 className="text-center py-2">{user.username}</h1>
-                  <p className="text-center w-full">({user.email})</p>
-                </div>
-                <div className="space-y-3 pt-5">
-                  <Link href="/dashboard/messages">
-                    <Button className="bg-transparent hover:bg-secondary/80 text-foreground gap-2 w-full justify-start">
-                      <BiEnvelope />
-                      Messages
-                    </Button>
-                  </Link>
-                  <Link href="/dashboard/notifications">
-                    <Button className="bg-transparent hover:bg-secondary/80 text-foreground w-full justify-start gap-2">
-                      <BiBell />
-                      Notifications
-                    </Button>
-                  </Link>
-                  <Link href="/dashboard">
-                    <Button className="bg-transparent hover:bg-secondary/80 text-foreground w-full justify-start gap-2">
-                      <RxDashboard />
-                      Dashboard
-                    </Button>
-                  </Link>
-                </div>
-                <div className="pt-5 space-y-3">
-                  <Link href="/dashboard/ads/create" className="block">
-                    <Button className="bg-primary gap-2 text-background w-full">
-                      <BiPlus />
-                      Post Advert
-                    </Button>
-                  </Link>
-                  <Button className="bg-error-background gap-2 text-error w-full">
-                    <BiLock />
-                    Logout
-                  </Button>
-                </div>
-              </div>
-            </Popup>
+          {fetchingUser ? (
+            <></>
           ) : (
             <>
-              <Link href="/signin" className="hover:underline text-xs">
-                Sign In
-              </Link>
-              <div className="w-0.5 h-4 bg-background"></div>
-              <Link href="/signup" className="hover:underline text-xs">
-                Sign Up
-              </Link>
+              {user ? (
+                <Popup
+                  trigger={
+                    <Button className="bg-transparent border-2 rounded-full p-1">
+                      <BiUser size={25} />
+                    </Button>
+                  }
+                  align="diagonal-left"
+                >
+                  <div className="w-54 p-2">
+                    <div className="h-20 w-20 bg-secondary rounded-full mx-auto"></div>
+                    <div className="py-2 text-accent border-b border-accent/50">
+                      <h1 className="text-center py-2">
+                        {user.user_metadata.username}
+                      </h1>
+                      <p className="text-center w-full">({user.email})</p>
+                    </div>
+                    <div className="space-y-3 pt-5">
+                      <Link href="/dashboard/messages">
+                        <Button className="bg-transparent hover:bg-secondary/80 text-foreground gap-2 w-full justify-start">
+                          <BiEnvelope />
+                          Messages
+                        </Button>
+                      </Link>
+                      <Link href="/dashboard/notifications">
+                        <Button className="bg-transparent hover:bg-secondary/80 text-foreground w-full justify-start gap-2">
+                          <BiBell />
+                          Notifications
+                        </Button>
+                      </Link>
+                      <Link href="/dashboard">
+                        <Button className="bg-transparent hover:bg-secondary/80 text-foreground w-full justify-start gap-2">
+                          <RxDashboard />
+                          Dashboard
+                        </Button>
+                      </Link>
+                    </div>
+                    <div className="pt-5 space-y-3">
+                      <Link href="/dashboard/ads/create" className="block">
+                        <Button className="bg-primary gap-2 text-background w-full">
+                          <BiPlus />
+                          Post Advert
+                        </Button>
+                      </Link>
+                      <Button
+                        onClick={handleSignout}
+                        className="bg-error-background gap-2 text-error w-full"
+                      >
+                        <BiLock />
+                        Logout
+                      </Button>
+                    </div>
+                  </div>
+                </Popup>
+              ) : (
+                <>
+                  <Link href="/signin" className="hover:underline text-xs">
+                    Sign In
+                  </Link>
+                  <div className="w-0.5 h-4 bg-background"></div>
+                  <Link href="/signup" className="hover:underline text-xs">
+                    Sign Up
+                  </Link>
+                </>
+              )}
             </>
           )}
         </div>
