@@ -240,7 +240,7 @@ export default function MapboxMap() {
         const ad = e.features![0].properties as Listing;
         ad.distance = await fetchDrivingDistance(
           location,
-          { latitude: coordinates[1], longitude: coordinates[0] },
+          { latitude: coordinates[1], longitude: coordinates[0], coordinates },
           mapboxgl.accessToken
         );
 

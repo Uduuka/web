@@ -32,10 +32,18 @@ const nextConfig: NextConfig = {
         pathname: "/**",
         search: "",
       },
+
+      {
+        hostname: "127.0.0.1",
+        protocol: "http",
+        port: "54321",
+        pathname: "/**",
+        search: "",
+      }
       
     ],
     dangerouslyAllowSVG: true,
-  },
+  }
 };
 
 export default nextConfig;

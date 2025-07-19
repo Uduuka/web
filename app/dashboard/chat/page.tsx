@@ -1,14 +1,16 @@
 "use client";
 
+import React, { useEffect, useState, useTransition } from "react";
 import ChatForm from "@/components/parts/forms/ChatForm";
 import ScrollArea from "@/components/parts/layout/ScrollArea";
 import Button from "@/components/ui/Button";
 import FormInput from "@/components/ui/Input";
 import { fetchThreads, getUser } from "@/lib/actions";
+import { useChatThread } from "@/lib/hooks/use_chat_threads";
 import { useAppStore } from "@/lib/store";
-import { ChatHead } from "@/lib/types";
+import { ChatHead, Message } from "@/lib/types";
+import { profile } from "console";
 import Image from "next/image";
-import React, { useEffect, useState, useTransition } from "react";
 
 export default function page() {
   const [threads, setThreads] = useState<ChatHead[]>();
@@ -19,6 +21,7 @@ export default function page() {
   useEffect(() => {
     startFetchingThreads(async () => {
       const { data } = await fetchThreads();
+
       if (data) {
         setThreads(data as ChatHead[]);
       }
@@ -37,40 +40,28 @@ export default function page() {
             wrapperStyle="border-accent"
             placeholder="Search for chat threads"
           />
+
           <ScrollArea maxHeight="100%" className="flex-1">
             <div className="h-max w-full space-y-2">
               {threads?.map((t, i) => {
                 const isSeller = t.seller_id === profile?.user_id;
                 return (
-                  <Button
-                    className="flex gap-2 w-full justify-start bg-transparent hover:bg-secondary/30"
+                  <ThreadButton
                     key={i}
-                    onClick={() => {
-                      setActiveThread(t);
-                    }}
-                  >
-                    <Image
-                      src={`/placeholder.svg`}
-                      alt="chat"
-                      height={100}
-                      width={100}
-                      className="h-10 w-10 rounded-full"
-                    />
-                    <div className="fex flex-col items-start text-left">
-                      <h2 className="text-xs">
-                        {isSeller ? t.seller.username : t.buyer.username}
-                      </h2>
-                      <p className="text-xs font-light text-accent/80 line-clamp-1">
-                        Last message will be here
-                      </p>
-                    </div>
-                  </Button>
+                    thread={t}
+                    isActive={activeThread === t}
+                    activate={setActiveThread}
+                    title={
+                      (isSeller ? t.buyer.username : t.seller.username) ??
+                      "New chat"
+                    }
+                  />
                 );
               })}
             </div>
           </ScrollArea>
         </div>
-        <div className="bg-white w-full rounded-lg h-[77vh]">
+        <div className="bg-white w-full rounded-lg h-[77vh] pt-5">
           {activeThread ? (
             <ChatForm thread={activeThread} />
           ) : (
@@ -81,3 +72,56 @@ export default function page() {
     </div>
   );
 }
+
+const ThreadButton = ({
+  thread,
+  isActive,
+  activate,
+  title,
+}: {
+  thread: ChatHead;
+  isActive: boolean;
+  title: string;
+  activate: (t: ChatHead) => void;
+}) => {
+  const { messages } = useChatThread(thread);
+  const { profile } = useAppStore();
+
+  const [unread, setUnread] = useState(0);
+  const [lastMessage, setLastMessage] = useState<Message>();
+
+  useEffect(() => {
+    const ur = messages.filter(
+      (m) => m.sender_id !== profile?.user_id && m.status !== "read"
+    );
+    setUnread(ur.length);
+    setLastMessage(messages[messages.length - 1]);
+  }, [messages]);
+  return (
+    <Button
+      className={`flex gap-2 w-full justify-start bg-transparent hover:bg-secondary/50  relative${
+        isActive && "bg-secondary/70"
+      }`}
+      onClick={() => {
+        activate(thread);
+      }}
+    >
+      <Image
+        src={`/placeholder.svg`}
+        alt="chat"
+        height={100}
+        width={100}
+        className="h-10 w-10 rounded-full"
+      />
+      <div className="fex flex-col items-start text-left">
+        <h2 className="text-xs flex gap-2 w-fit">
+          <span className="w-full">{title}</span>
+          {/* {unread > 0 && <span className="text-emerald-400">{unread}</span>} */}
+        </h2>
+        <p className="text-xs font-light text-accent/80 line-clamp-1">
+          {lastMessage?.text}
+        </p>
+      </div>
+    </Button>
+  );
+};

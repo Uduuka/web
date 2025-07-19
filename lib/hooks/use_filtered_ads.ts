@@ -5,22 +5,25 @@ import { useParams, useSearchParams } from "next/navigation";
 import { useAppStore } from "../store";
 
 export const useFilteredAds = () =>{
-    const search = useSearchParams().get("search") as string | undefined
-    const {catSlug, subCatSlug}: {catSlug?: string, subCatSlug?: string} = useParams()
-
+    
     const [ads, setAds] = useState<Listing[]>([])
     const [error, setError] = useState<string | null>(null)
     const [fetching, startFetching] = useTransition()
 
+    const search = useSearchParams().get('search') as string | undefined
+    const {catSlug, subCatSlug} = useParams() as {catSlug?: string, subCatSlug?: string}
     const {location} = useAppStore()
 
+    
+    
     useEffect(()=>{
         startFetching(async()=>{
-            const {error, data} = await fetchAds({search, category: catSlug, subCategory: subCatSlug, location})
+            const filters = {search, location, category: catSlug, subCategory: subCatSlug}
+            const {error, data} = await fetchAds(filters)
             setAds(( data ?? []) as Listing[])
             setError(error?.message ?? null)
         })
-    }, [search, catSlug, subCatSlug, location])
+    }, [search, location, catSlug, subCatSlug])
 
     return {ads, fetching, error}
 }

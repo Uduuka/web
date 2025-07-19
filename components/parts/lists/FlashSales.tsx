@@ -1,7 +1,7 @@
 "use client";
 
 import ScrollArea from "@/components/parts/layout/ScrollArea";
-import { FlashSale } from "@/lib/types";
+import { Filters, FlashSale } from "@/lib/types";
 import Link from "next/link";
 import Button from "@/components/ui/Button";
 import { ArrowRight } from "lucide-react";
@@ -19,6 +19,7 @@ export default function FlashSales({
   orientation?: "vertical" | "horizontal";
 }) {
   const { flashSales, error, fetching } = useFilteredFlashSales();
+
   return (
     <div className="px-5 pt-3">
       <div className="pb-2 text-base font-bold w-full flex justify-between">
