@@ -88,7 +88,7 @@ const SingleAdMap: React.FC<{ ad: Listing }> = ({ ad }) => {
 
       ad.distance = await fetchDrivingDistance(
         location,
-        { latitude, longitude },
+        { latitude, longitude, coordinates: [longitude, latitude] },
         mapboxgl.accessToken
       );
 

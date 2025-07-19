@@ -15,7 +15,10 @@ export interface Listing {
   description?: string;
   image: AdImage;
   images?: AdImage[];
+  imagesFiles?: File[]
   location: Location
+  locationString?: string
+  address?: string
   pricing: Pricing<any>
   latitude?: number
   longitude?: number
@@ -48,6 +51,7 @@ export interface AdImage {
 export type Currency =  "USD" | "UGX" | "KSH" | "TSH"
 
 export interface Pricing<T> {
+  ad_id?: string
   scheme: "fixed" | "recurring" | "range" | "menu" | "unit";
   currency: Currency
   details: T;
@@ -197,6 +201,7 @@ export interface Message {
   id?: string;
   sender_id: string;
   text: string;
+  status?: "sent" | "received" | "read" | "error"
   thread_id?: string
   created_at?: string;
   updated_at?: string;

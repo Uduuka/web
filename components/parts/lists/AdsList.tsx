@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Listing } from "@/lib/types";
+import { Filters, Listing } from "@/lib/types";
 import { cn, responsiveColumns } from "@/lib/utils";
 import AdCard from "../cards/AdCard";
 import { useFilteredAds } from "@/lib/hooks/use_filtered_ads";
+import { useAppStore } from "@/lib/store";
 
 export default function AdsList({
   title,
@@ -14,9 +15,13 @@ export default function AdsList({
   className?: string;
 }) {
   const [columns, setColumns] = useState<Listing[][] | null>(null);
+
+  const { location } = useAppStore();
+
   const { ads, fetching, error } = useFilteredAds();
 
   // Organise ads in columns based on the device width
+
   useEffect(() => {
     if (!ads) {
       return;

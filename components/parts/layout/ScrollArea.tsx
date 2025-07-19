@@ -16,6 +16,7 @@ export default function ScrollArea({
   maxHeight = "400px",
   maxWidth = "100%",
   ariaLabel = "Scrollable content",
+  ...props
 }: ScrollAreaProps) {
   return (
     <div
@@ -24,6 +25,7 @@ export default function ScrollArea({
       role="region"
       aria-label={ariaLabel}
       tabIndex={0}
+      {...props}
     >
       {children}
     </div>

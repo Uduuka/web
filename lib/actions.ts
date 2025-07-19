@@ -1,8 +1,9 @@
 "use server";
 
 
+import env from "./env";
 import { createClient } from "./supabase/server";
-import { ChatHead, Filters } from "./types";
+import { ChatHead, Filters, Listing, Pricing } from "./types";
 
 export const signup = async({email, password} : {email: string, password: string}) => {
    return (await createClient()).auth.signUp({email, password})
@@ -37,7 +38,6 @@ export const fetchCategories = async(filters?: {catSlug?: string, subCateSlug?: 
 export const fetchAds = async(filters: Filters) => {
    const supabase = createClient()
    
-   console.log(filters)
    const {location} = filters
 
    let query
@@ -93,7 +93,6 @@ export const fetchFlashsales = async(filters: Filters) => {
    }
 
    const res = await query
-   console.log(res.data)
    return res
 }
 
@@ -148,3 +147,106 @@ export const createChatThread = async(thread: {buyer_id: string, seller_id: stri
 export const sendMessage = async(message: {text: string, sender_id: string, thread_id: string}) => {
    return (await createClient()).from("chat_messages").insert(message).select()
 }
+
+export const postAd = async(ad: any) => {
+   return (await createClient()).from("ads").insert(ad).select("id").single()
+}
+
+export const postPricing = async(pricing: Pricing<any>) => {
+   return (await createClient()).from("pricings").insert(pricing).select().single()
+}
+
+export const uploadFiles = async(files: File[], backetName: string, folderName: string) => {
+   const supabase = await createClient()
+
+   try {
+      const uploadPromises = Array.from(files).map(async(file) => {
+         const filePath = `${folderName}/${file.name}`
+         const {data, error} = await supabase.storage.from(backetName).upload(filePath, file,{
+            cacheControl: '3600',
+            upsert: true
+         })
+
+         if(error){
+            return {error: `${file.name} failed to upload, ${error.message}`}
+         }
+         // https://mqistandrulavcbncpwn.supabase.co/storage/v1/object/public/ads/30/online-is-beter.avif
+
+         return {url: `https://mqistandrulavcbncpwn.supabase.co/storage/v1/object/public/${data.fullPath}`}
+
+      })
+   } catch (error) {
+      
+   }
+}
+
+// Batch upload helper with progress tracking
+type UploadObject = {
+   bucketName: string,
+   folderPath: string,
+   files: File[],
+   batchSize: number
+}
+export const batchUploadFiles = async ({
+   bucketName,
+   folderPath,
+   files,
+   batchSize = 3, // Number of concurrent uploads
+ }: UploadObject) => {
+   // Total files to upload
+   const totalFiles = files.length
+   let uploadedFiles = 0
+   let failedFiles = 0
+   const results = []
+   const supabase = await createClient()
+   
+   // Process files in batches
+   for (let i = 0; i < totalFiles; i += batchSize) {
+     const batch = Array.from(files).slice(i, i + batchSize)
+     
+     // Create upload promises for this batch
+     const batchPromises = batch.map(async file => {
+       const filePath = `${folderPath}/${file.name}`
+       const result = await supabase
+           .storage
+           .from(bucketName)
+           .upload(filePath, file, {
+              cacheControl: '3600',
+              upsert: false
+           });
+        // Track progress
+        if (result.error) {
+           failedFiles += 1;
+         }else{
+            uploadedFiles += 1;
+        }
+        return {
+           fileName: file.name,
+           fileUrl: result.data?.fullPath ? env.storageUrl + result.data.fullPath : undefined,
+           ...result
+        };
+     })
+     
+     // Wait for this batch to complete before starting the next
+     const batchResults = await Promise.all(batchPromises)
+     results.push(...batchResults)
+   }
+   
+   return {
+     success: failedFiles === 0,
+     totalFiles,
+     uploadedFiles,
+     failedFiles,
+     results
+   }
+ }
+
+export const createAdImages = async(images: {url: string, ad_id: string, is_default: boolean}[]) => {
+return ((await createClient()).from("ad_images").insert(images).select())
+}
+
+export const updateAd = async(id: string, fields: object) => {
+ return (await createClient()).from("ads").update(fields).eq("id", id)
+}
+ 
+

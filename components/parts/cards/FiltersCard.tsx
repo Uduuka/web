@@ -17,18 +17,7 @@ export default function FilterCard({ className }: ComponentProps<"div">) {
   const [rating, setRating] = useState<number>();
   const [distance, setDistance] = useState<number>();
 
-  const applyFilters = () => {
-    setfilters({
-      ...filters,
-      r: range
-        ? `${range.min ? range.min : ""}-${
-            range.max ? range.max : ""
-          }_${currency}`
-        : undefined,
-      d: distance,
-      rt: rating,
-    });
-  };
+  const applyFilters = () => {};
 
   return (
     <div
@@ -46,22 +35,8 @@ export default function FilterCard({ className }: ComponentProps<"div">) {
           }}
         />
         <div className="text-xs text-accent">
-          <div className="flex gap-2">
-            Min:{" "}
-            <PriceTag
-              originalCurrency="USD"
-              scheme="fixed"
-              price={range.min?.toString()}
-            />
-          </div>
-          <div className="flex gap-2">
-            Max:{" "}
-            <PriceTag
-              originalCurrency="USD"
-              scheme="fixed"
-              price={range.max?.toString()}
-            />
-          </div>
+          <div className="flex gap-2"></div>
+          <div className="flex gap-2"></div>
         </div>
       </div>
       <div className="p-4 border rounded-lg border-accent/20">

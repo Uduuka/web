@@ -1,11 +1,12 @@
-
 import AdsList from "@/components/parts/lists/AdsList";
-import React from "react";
+import React, { Suspense } from "react";
 
-export default function ListingsPage() {
+export default async function ListingsPage() {
   return (
     <div className="">
-      <AdsList />
+      <Suspense>
+        <AdsList />
+      </Suspense>
     </div>
   );
 }

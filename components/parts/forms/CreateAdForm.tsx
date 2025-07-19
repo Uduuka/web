@@ -28,14 +28,21 @@ import { useAppStore } from "@/lib/store";
 import { FixedPriceTag } from "../cards/PriceTag";
 import { Dropzone, DropzoneContent, DropzoneEmptyState } from "./dropzone";
 import { useSupabaseUpload } from "@/lib/hooks/use_supabase_upload";
-import { fetchCategories } from "@/lib/actions";
+import {
+  batchUploadFiles,
+  createAdImages,
+  fetchCategories,
+  postAd,
+  postPricing,
+} from "@/lib/actions";
+import LocationMap from "../maps/mapbox/LocationMap";
 
 interface AdFormProps extends ComponentProps<"form"> {
   defaultAd?: Listing;
 }
 
 export default function CreateAdForm({ defaultAd }: AdFormProps) {
-  const { currency, location, user } = useAppStore();
+  const { currency, user } = useAppStore();
   const [categories, setCategories] = useState<Category[]>([]);
   const [ad, setAd] = useState<Listing>(defaultAd ?? ({} as Listing));
   const [pricing, setPricing] = useState<Pricing<any>>({ currency } as any);
@@ -43,6 +50,10 @@ export default function CreateAdForm({ defaultAd }: AdFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [spects, setSpects] = useState<string[]>([]);
   const [adSpects, setAdSpects] = useState<any>({});
+  const [location, setLocation] = useState<{
+    locationString: string;
+    address: string;
+  }>();
 
   const setCurrent = (index: number) => {
     setCurrentStep(index);
@@ -65,15 +76,14 @@ export default function CreateAdForm({ defaultAd }: AdFormProps) {
       if (!data) {
         return;
       }
-
       setCategories(data);
     });
   }, []);
 
   useEffect(() => {
-    const category = categories.find((cat) => cat.id === ad.category_id);
+    const category = categories.find((cat) => cat.slug === ad.category_id);
     const subCategory = category?.sub_categories?.find(
-      (sb) => sb.id === ad.sub_category_id
+      (sb) => sb.slug === ad.sub_category_id
     );
 
     if (!category || !subCategory) {
@@ -88,23 +98,86 @@ export default function CreateAdForm({ defaultAd }: AdFormProps) {
     setAdSpects({});
   }, [categories, ad.category_id, ad.sub_category_id]);
 
+  const handleLocationChange = (l: string, a: string) => {
+    setLocation({ locationString: l, address: a });
+  };
+
+  const handleFilesChange = (files: File[]) => {
+    setAd({ ...ad, imagesFiles: files });
+  };
+
   const handleSubmit = async () => {
     if (!user) {
       setError("The user is undefined");
       return;
     }
-    ad.seller_id = user.id;
-    ad.specs = adSpects;
-    ad.pricing = pricing;
 
-    console.log(ad);
+    ad.specs = adSpects;
+    ad.locationString = location?.locationString;
+    ad.address = location?.address;
+
+    const {
+      category_id,
+      sub_category_id,
+      title,
+      description,
+      store_id,
+      locationString,
+      specs,
+      address,
+      id,
+    } = ad;
+
+    if (id) {
+    } else {
+      const { error, data } = await postAd({
+        category_id,
+        sub_category_id,
+        title,
+        description,
+        store_id,
+        location: locationString,
+        specs,
+        address,
+      });
+
+      if (error) {
+        console.log(error.message);
+        setError(error.message);
+        return;
+      } else {
+        const { id } = data;
+        pricing.ad_id = id;
+
+        await postPricing(pricing);
+        if (ad.imagesFiles) {
+          const upload = await batchUploadFiles({
+            bucketName: "ads",
+            folderPath: `${id}`,
+            files: ad.imagesFiles,
+            batchSize: ad.imagesFiles.length,
+          });
+
+          console.log({ upload });
+
+          const ad_images = await createAdImages(
+            upload.results
+              .filter((res) => Boolean(res.fileUrl))
+              .map((res, index) => ({
+                url: res.fileUrl!,
+                ad_id: id,
+                is_default: index === 0,
+              }))
+          );
+
+          console.log(ad_images);
+        }
+      }
+    }
   };
 
   return (
-    <form
-      action={handleSubmit}
-      className="flex overflow-hidden flex-col gap-5 p-5"
-    >
+    <form className="flex overflow-hidden flex-col gap-5 p-5">
       <h1 className="text-center">Progress: stage {currentStep + 1}</h1>
       <div className="flex items-center w-full max-w-60 mx-auto gap-1">
         <Button
@@ -167,6 +240,22 @@ export default function CreateAdForm({ defaultAd }: AdFormProps) {
               : ""
           }`}
         ></Button>
+        <div
+          className={`w-full border-b ${
+            currentStep > 3 ? "border-primary" : "border-secondary"
+          }`}
+        ></div>
+        <Button
+          type="button"
+          onClick={() => setCurrentStep(3)}
+          className={`h-3 p-0 bg-transparent aspect-square border rounded-full flex justify-center items-center text-xs ${
+            currentStep > 4
+              ? "border-primary bg-primary"
+              : currentStep === 4
+              ? "border-primary"
+              : ""
+          }`}
+        ></Button>
       </div>
       <div
         className="relative flex flex-col justify-between h-[90vh] overflow-hidden"
@@ -191,7 +280,7 @@ export default function CreateAdForm({ defaultAd }: AdFormProps) {
                 <Select
                   placeholder="Select a category"
                   options={categories.map((cat) => ({
-                    value: cat.id,
+                    value: cat.slug,
                     label: cat.name,
                   }))}
                   className="w-full  text-foreground "
@@ -212,9 +301,9 @@ export default function CreateAdForm({ defaultAd }: AdFormProps) {
                   placeholder="Select a sub-category"
                   options={
                     categories
-                      .find((cate) => cate.id === ad.category_id)
+                      .find((cate) => cate.slug === ad.category_id)
                       ?.sub_categories?.map((subCate) => ({
-                        value: subCate.id,
+                        value: subCate.slug,
                         label: subCate.name,
                       })) ?? []
                   }
@@ -297,21 +386,12 @@ export default function CreateAdForm({ defaultAd }: AdFormProps) {
           </div>
 
           {/* Step three */}
-          <div className="w-full text-center text-background/80 h-96 flex-shrink-0 pt-10">
-            <h1 className="">Step three:</h1>
-            <p className="text-xs font-thin py-2">
-              Upload clean and clear images of what your selling.
-            </p>
-            <FileUploadForm />
-          </div>
-
-          {/* Step four */}
           <div className="w-full text-center text-background/80 h-full flex-shrink-0">
             <ScrollArea
               maxHeight="100%"
               className="bg-foreground-50/20 focus:ring-0 active:ring-0 h-full px-5"
             >
-              <h1 className="">Step four:</h1>
+              <h1 className="">Step three:</h1>
               <p className="text-xs font-thin py-2">
                 Set the pricing for your advert
               </p>
@@ -389,31 +469,25 @@ export default function CreateAdForm({ defaultAd }: AdFormProps) {
             </ScrollArea>
           </div>
 
-          {/* Step five */}
+          {/* Step four */}
           <div className="w-full text-center text-background/80 h-full flex-shrink-0">
-            <ScrollArea
-              maxHeight="100%"
-              className="outline-0 focus-within:outline-0 active:outline-0 focus:ring-0 active:ring-0 h-full px-5"
-            >
-              <h1 className="">Step five:</h1>
+            <div className="outline-0 flex flex-col focus-within:outline-0 active:outline-0 focus:ring-0 active:ring-0 h-full w-full px-5">
               <p className="text-xs font-thin py-2">
-                Provide address and location info of your product or service.
+                Physical location of the ad.
               </p>
-              <FormGroup
-                label="Geo-location coordinates"
-                className="w-full text-left flex pt-5 flex-col"
-              >
-                <p className="text-primary">
-                  [{location?.longitude}, {location?.latitude}]
-                </p>
-              </FormGroup>
-              <FormGroup
-                label="Physical address"
-                className="w-full text-left pt-5"
-              >
-                <textarea className="w-full resize-none border hover:border-primary focus:border-primary transition-colors outline-0 focus:ring-0 active:outline-0 rounded-lg px-3 py-2"></textarea>
-              </FormGroup>
-            </ScrollArea>
+              <div className="flex-1 rounded-lg bg-secondary w-full relative">
+                <LocationMap onLocationChange={handleLocationChange} />
+              </div>
+            </div>
+          </div>
+
+          {/* Step five */}
+          <div className="w-full text-center text-background/80 h-full flex flex-col flex-shrink-0">
+            <h1 className="">Step five:</h1>
+            <p className="text-xs font-thin pt-2">
+              Upload clean and clear images of what your selling.
+            </p>
+            <FileUploadForm onFilesChange={handleFilesChange} />
           </div>
         </div>
         <div className="flex justify-between px-5">
@@ -443,7 +517,11 @@ export default function CreateAdForm({ defaultAd }: AdFormProps) {
             <div className=""></div>
           )}
           {currentStep === 4 ? (
-            <Button className="transform bg-primary/80 text-white p-2 px-5 w-40 gap-5 rounded-full hover:bg-primary transition">
+            <Button
+              type="button"
+              onClick={handleSubmit}
+              className="transform bg-primary/80 text-white p-2 px-5 w-40 gap-5 rounded-full hover:bg-primary transition"
+            >
               Submit
             </Button>
           ) : (
@@ -1154,21 +1232,25 @@ const PriceMenuForm = ({
   );
 };
 
-const FileUploadForm = () => {
+const FileUploadForm = ({
+  onFilesChange,
+}: {
+  onFilesChange: (files: File[]) => void;
+}) => {
   const props = useSupabaseUpload({
     bucketName: "test",
     path: "test",
     allowedMimeTypes: ["image/*"],
-    maxFiles: 2,
+    maxFiles: 5,
     maxFileSize: 1000 * 1000 * 10, // 10MB,
   });
 
   return (
-    <FormGroup className="w-full max-w-sm mx-auto text-background py-10 ">
+    <div className="w-full mx-auto flex-1 p-5 flex-col text-background">
       <Dropzone {...props}>
         <DropzoneEmptyState />
-        <DropzoneContent />
+        <DropzoneContent onFilesChange={onFilesChange} />
       </Dropzone>
-    </FormGroup>
+    </div>
   );
 };

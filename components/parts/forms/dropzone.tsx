@@ -8,8 +8,11 @@ import {
   type PropsWithChildren,
   useCallback,
   useContext,
+  useEffect,
 } from "react";
 import Button from "@/components/ui/Button";
+import Image from "next/image";
+import ScrollArea from "../layout/ScrollArea";
 
 export const formatBytes = (
   bytes: number,
@@ -61,7 +64,7 @@ const Dropzone = ({
       <div
         {...getRootProps({
           className: cn(
-            "border-2 border-gray-300 rounded-lg p-6 text-center bg-card transition-colors duration-300 text-foreground",
+            "border-2 border-gray-300 rounded-lg text-center h-full flex flex-col transition-colors duration-300 text-foreground",
             className,
             isSuccess ? "border-solid" : "border-dashed",
             isActive && "border-primary bg-primary/10",
@@ -75,7 +78,13 @@ const Dropzone = ({
     </DropzoneContext.Provider>
   );
 };
-const DropzoneContent = ({ className }: { className?: string }) => {
+const DropzoneContent = ({
+  className,
+  onFilesChange,
+}: {
+  className?: string;
+  onFilesChange: (files: File[]) => void;
+}) => {
   const {
     files,
     setFiles,
@@ -97,11 +106,15 @@ const DropzoneContent = ({ className }: { className?: string }) => {
     [files, setFiles]
   );
 
+  useEffect(() => {
+    onFilesChange(files);
+  }, [files]);
+
   if (isSuccess) {
     return (
       <div
         className={cn(
-          "flex flex-row items-center gap-x-2 justify-center",
+          "flex flex-row items-center gap-x-2 justify-center p-4",
           className
         )}
       >
@@ -114,85 +127,106 @@ const DropzoneContent = ({ className }: { className?: string }) => {
   }
 
   return (
-    <div className={cn("flex flex-col", className)}>
-      {files.map((file, idx) => {
-        const fileError = errors.find((e) => e.name === file.name);
-        const isSuccessfullyUploaded = !!successes.find((e) => e === file.name);
+    <ScrollArea className={cn("h-80 p-2", className)}>
+      <div className="h-max">
+        {files.map((file, idx) => {
+          const fileError = errors.find((e) => e.name === file.name);
+          const isSuccessfullyUploaded = !!successes.find(
+            (e) => e === file.name
+          );
 
-        return (
-          <div
-            key={`${file.name}-${idx}`}
-            className="flex items-center gap-x-4 border-b py-2 first:mt-4 last:mb-4 "
-          >
-            {file.type.startsWith("image/") ? (
-              <div className="h-10 w-10 rounded border overflow-hidden shrink-0 bg-muted flex items-center justify-center">
-                <img
-                  src={file.preview}
-                  alt={file.name}
-                  className="object-cover"
-                />
-              </div>
-            ) : (
-              <div className="h-10 w-10 rounded border bg-muted flex items-center justify-center">
-                <File size={18} />
-              </div>
-            )}
-
-            <div className="shrink grow flex flex-col items-start truncate">
-              <p title={file.name} className="text-sm truncate max-w-full">
-                {file.name}
-              </p>
-              {file.errors.length > 0 ? (
-                <p className="text-xs text-destructive">
-                  {file.errors
-                    .map((e) =>
-                      e.message.startsWith("File is larger than")
-                        ? `File is larger than ${formatBytes(
-                            maxFileSize,
-                            2
-                          )} (Size: ${formatBytes(file.size, 2)})`
-                        : e.message
-                    )
-                    .join(", ")}
-                </p>
-              ) : loading && !isSuccessfullyUploaded ? (
-                <p className="text-xs text-muted-foreground">
-                  Uploading file...
-                </p>
-              ) : !!fileError ? (
-                <p className="text-xs text-destructive">
-                  Failed to upload: {fileError.message}
-                </p>
-              ) : isSuccessfullyUploaded ? (
-                <p className="text-xs text-primary">
-                  Successfully uploaded file
-                </p>
+          return (
+            <div
+              key={`${file.name}-${idx}`}
+              className="flex gap-x-2 items-center group first:mt-4 last:mb-4"
+            >
+              {file.type.startsWith("image/") ? (
+                <div className="h-32 w-32 rounded-lg border overflow-hidden shrink-0 bg-muted flex items-center justify-center">
+                  <Image
+                    src={file.preview!}
+                    height={100}
+                    width={100}
+                    alt={file.name}
+                    className="object-cover h-full w-full"
+                  />
+                </div>
               ) : (
-                <p className="text-xs text-muted-foreground">
-                  {formatBytes(file.size, 2)}
+                <div className="h-10 w-10 rounded border bg-muted flex items-center justify-center">
+                  <File size={18} />
+                </div>
+              )}
+
+              <div className="shrink grow flex flex-col items-start truncate">
+                <p
+                  title={file.name}
+                  className="text-sm text-background truncate max-w-full"
+                >
+                  {file.name}
                 </p>
+                <p
+                  title={String(file.size)}
+                  className="text-sm text-background truncate max-w-full"
+                >
+                  {formatBytes(file.size)}
+                </p>
+                <p
+                  title={file.type}
+                  className="text-sm text-background truncate max-w-full"
+                >
+                  {file.type}
+                </p>
+                {file.errors.length > 0 ? (
+                  <p className="text-xs text-destructive">
+                    {file.errors
+                      .map((e) =>
+                        e.message.startsWith("File is larger than")
+                          ? `File is larger than ${formatBytes(
+                              maxFileSize,
+                              2
+                            )} (Size: ${formatBytes(file.size, 2)})`
+                          : e.message
+                      )
+                      .join(", ")}
+                  </p>
+                ) : loading && !isSuccessfullyUploaded ? (
+                  <p className="text-xs text-muted-foreground">
+                    Uploading file...
+                  </p>
+                ) : !!fileError ? (
+                  <p className="text-xs text-destructive">
+                    Failed to upload: {fileError.message}
+                  </p>
+                ) : isSuccessfullyUploaded ? (
+                  <p className="text-xs text-primary">
+                    Successfully uploaded file
+                  </p>
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    {formatBytes(file.size, 2)}
+                  </p>
+                )}
+              </div>
+
+              {!loading && !isSuccessfullyUploaded && (
+                <Button
+                  className="shrink-0 text-background p-0 bg-transparent hover:bg-secondary/50 opacity-0 group-hover:opacity-100"
+                  onClick={() => handleRemoveFile(file.name)}
+                >
+                  <X />
+                </Button>
               )}
             </div>
-
-            {!loading && !isSuccessfullyUploaded && (
-              <Button
-                className="shrink-0 justify-self-end text-background"
-                onClick={() => handleRemoveFile(file.name)}
-              >
-                <X />
-              </Button>
-            )}
-          </div>
-        );
-      })}
-      {exceedMaxFiles && (
-        <p className="text-sm text-left mt-2 text-destructive">
-          You may upload only up to {maxFiles} files, please remove{" "}
-          {files.length - maxFiles} file
-          {files.length - maxFiles > 1 ? "s" : ""}.
-        </p>
-      )}
-      {files.length > 0 && !exceedMaxFiles && (
+          );
+        })}
+        {exceedMaxFiles && (
+          <p className="text-sm text-left mt-2 text-destructive">
+            You may upload only up to {maxFiles} files, please remove{" "}
+            {files.length - maxFiles} file
+            {files.length - maxFiles > 1 ? "s" : ""}.
+          </p>
+        )}
+      </div>
+      {/* {files.length > 0 && !exceedMaxFiles && (
         <div className="mt-2">
           <Button
             onClick={onUpload}
@@ -208,8 +242,8 @@ const DropzoneContent = ({ className }: { className?: string }) => {
             )}
           </Button>
         </div>
-      )}
-    </div>
+      )} */}
+    </ScrollArea>
   );
 };
 
@@ -221,7 +255,7 @@ const DropzoneEmptyState = ({ className }: { className?: string }) => {
   }
 
   return (
-    <div className={cn("flex flex-col items-center gap-y-2", className)}>
+    <div className={cn("flex flex-col items-center gap-y-2 p-2", className)}>
       <Upload size={20} className="text-background" />
       <p className="text-sm text-background">
         Upload{!!maxFiles && maxFiles > 1 ? ` ${maxFiles}` : ""} file

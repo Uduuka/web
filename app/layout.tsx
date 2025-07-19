@@ -1,17 +1,14 @@
 "use client";
 
+import { Suspense, useEffect, useTransition } from "react";
 import Navbar from "@/components/parts/layout/Navbar";
 import Footer from "@/components/parts/layout/Footer";
 import "./globals.css";
 import { useAppStore } from "@/lib/store";
-import { useEffect, useTransition } from "react";
 import Sidebar from "@/components/parts/layout/SideBar";
-import Popup from "@/components/ui/Popup";
-import Button from "@/components/ui/Button";
 import { getProfile, getUser } from "@/lib/actions";
 import { Currency } from "@/lib/types";
 import { geoCode } from "@/lib/utils";
-import ChatPanel from "@/components/parts/sidePanels/ChatPanel";
 import ActiveChats from "@/components/parts/buttons/ActiveChats";
 
 export default function RootLayout({
@@ -93,15 +90,17 @@ export default function RootLayout({
         <link rel="icon" href="/android-chrome-192x192.png" />
       </head>
       <body className="min-h-screen flex flex-col bg-background font-inter font-light text-sm">
-        <Navbar fetchingUser={fetching} />
-        <div className="flex flex-1">
-          <Sidebar />
-          <main className="flex-1 md:ml-64 overflow-auto">
-            <div className="min-h-screen">{children}</div>
-            <Footer />
-          </main>
-        </div>
-        <ActiveChats />
+        <Suspense>
+          <Navbar fetchingUser={fetching} />
+          <div className="flex flex-1">
+            <Sidebar />
+            <main className="flex-1 md:ml-64 overflow-auto">
+              <div className="min-h-screen">{children}</div>
+              <Footer />
+            </main>
+          </div>
+          <ActiveChats />
+        </Suspense>
       </body>
     </html>
   );

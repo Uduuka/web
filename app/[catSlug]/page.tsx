@@ -6,11 +6,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import React from "react";
 
-export default async function CategoryPage({
-  params,
-}: {
-  params: { catSlug: string };
-}) {
+export default async function CategoryPage({ params }: { params: any }) {
   const { catSlug } = await params;
   const { data } = await fetchCategories({ catSlug });
   const category = (data as Category[])[0];
@@ -48,7 +44,10 @@ export default async function CategoryPage({
           </ScrollArea>
         </div>
       )}
-      <AdsList className="" title={`Ads in ${category.name}`} />
+      <AdsList
+        className=""
+        title={`Ads in ${category.name}`}
+      />
     </div>
   );
 }

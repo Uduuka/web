@@ -31,7 +31,7 @@ export default function Sidebar() {
   const pathname = usePathname();
   const storeId = useParams()["storeID"];
   return (
-    <aside className="fixed top-16 left-0 bottom-0 w-64 bg-white font-light text-xs z-30 hidden md:block">
+    <aside className="fixed top-16 left-0 bottom-0 w-64 bg-white font-light text-xs z-10 hidden md:block">
       {pathname.startsWith("/dashboard") ? (
         storeId ? (
           <StoreNav />

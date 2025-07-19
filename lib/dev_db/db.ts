@@ -46,42 +46,7 @@ export const stores: Store[] = [
 ];
 
 export const messages: Message[] = [
-  {
-    id: "1",
-    sender: "1",
-    receiver: "2",
-    text: "Hello",
-  },
-  {
-    id: "2",
-    sender: "2",
-    receiver: "1",
-    text: "Hello, how are you?",
-  },
-  {
-    id: "3",
-    sender: "2",
-    receiver: "1",
-    text: "How may I help you today?",
-  },
-  {
-    id: "4",
-    sender: "1",
-    receiver: "2",
-    text: "I'm doing really well, how about you.?",
-  },
-  {
-    id: "5",
-    sender: "1",
-    receiver: "2",
-    text: "The reason I contacted you today was to find out whether the item is still available.",
-  },
-  {
-    id: "3",
-    sender: "2",
-    receiver: "1",
-    text: "Oh sure, it's still available. Can I send you an invoice?",
-  },
+ 
 ];
 
 export const fetchAds = async() => {

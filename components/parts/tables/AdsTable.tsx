@@ -12,6 +12,9 @@ import { PiDotsThreeOutlineVerticalFill } from "react-icons/pi";
 import { IoMdFlash } from "react-icons/io";
 import Dialog from "@/components/ui/Dialog";
 import { useFilteredAds } from "@/lib/hooks/use_filtered_ads";
+import Model from "../models/Model";
+import Link from "next/link";
+import DeleteDialog from "../dialogs/DeleteDialog";
 
 const adsColumns: Column<Listing>[] = [
   {
@@ -95,10 +98,7 @@ const adsColumns: Column<Listing>[] = [
             <Button className="gap-2 text-xs w-30 bg-transparent font-thin text-success justify-start hover:bg-green-100">
               <Check size={15} /> Mark sold
             </Button>
-
-            <Button className="gap-2 text-xs w-30 bg-transparent text-error font-thin justify-start hover:bg-error-background">
-              <Trash size={15} /> Delete ad
-            </Button>
+            <DeleteDialog ad={ad} />
           </div>
         </Popup>
       );
