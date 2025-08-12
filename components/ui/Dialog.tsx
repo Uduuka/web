@@ -8,6 +8,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import ScrollArea from "../parts/layout/ScrollArea";
 
 interface DialogProps extends ComponentProps<"div"> {
   trigger?: ReactNode;
@@ -52,7 +53,7 @@ export default function Dialog({
           id="dialog-content"
           ref={contentRef}
           className={cn(
-            "fixed top-0 right-0 z-50 w-80 h-screen p-2 pt-20 text-white bg-black/90 ",
+            "fixed top-0 right-0 z-50 w-full max-w-md h-screen p-2 pt-20 text-white bg-black/90 ",
             contentStyle
           )}
           role="main"

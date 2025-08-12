@@ -127,7 +127,7 @@ const DropzoneContent = ({
   }
 
   return (
-    <ScrollArea className={cn("h-80 p-2", className)}>
+    <ScrollArea className={cn("p-2", className)}>
       <div className="h-max">
         {files.map((file, idx) => {
           const fileError = errors.find((e) => e.name === file.name);
@@ -141,7 +141,7 @@ const DropzoneContent = ({
               className="flex gap-x-2 items-center group first:mt-4 last:mb-4"
             >
               {file.type.startsWith("image/") ? (
-                <div className="h-32 w-32 rounded-lg border overflow-hidden shrink-0 bg-muted flex items-center justify-center">
+                <div className="h-32 w-32 rounded-lg overflow-hidden shrink-0 bg-muted flex items-center justify-center">
                   <Image
                     src={file.preview!}
                     height={100}
@@ -157,22 +157,16 @@ const DropzoneContent = ({
               )}
 
               <div className="shrink grow flex flex-col items-start truncate">
-                <p
-                  title={file.name}
-                  className="text-sm text-background truncate max-w-full"
-                >
+                <p title={file.name} className="text-sm truncate max-w-full">
                   {file.name}
                 </p>
                 <p
                   title={String(file.size)}
-                  className="text-sm text-background truncate max-w-full"
+                  className="text-sm truncate max-w-full"
                 >
                   {formatBytes(file.size)}
                 </p>
-                <p
-                  title={file.type}
-                  className="text-sm text-background truncate max-w-full"
-                >
+                <p title={file.type} className="text-sm truncate max-w-full">
                   {file.type}
                 </p>
                 {file.errors.length > 0 ? (
@@ -209,7 +203,7 @@ const DropzoneContent = ({
 
               {!loading && !isSuccessfullyUploaded && (
                 <Button
-                  className="shrink-0 text-background p-0 bg-transparent hover:bg-secondary/50 opacity-0 group-hover:opacity-100"
+                  className="shrink-0 text-accent hover:text-background p-0 bg-transparent hover:bg-accent opacity-0 group-hover:opacity-100"
                   onClick={() => handleRemoveFile(file.name)}
                 >
                   <X />
@@ -226,23 +220,6 @@ const DropzoneContent = ({
           </p>
         )}
       </div>
-      {/* {files.length > 0 && !exceedMaxFiles && (
-        <div className="mt-2">
-          <Button
-            onClick={onUpload}
-            disabled={files.some((file) => file.errors.length !== 0) || loading}
-          >
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Uploading...
-              </>
-            ) : (
-              <>Upload files</>
-            )}
-          </Button>
-        </div>
-      )} */}
     </ScrollArea>
   );
 };
@@ -256,24 +233,24 @@ const DropzoneEmptyState = ({ className }: { className?: string }) => {
 
   return (
     <div className={cn("flex flex-col items-center gap-y-2 p-2", className)}>
-      <Upload size={20} className="text-background" />
-      <p className="text-sm text-background">
+      <Upload size={20} className="" />
+      <p className="text-sm">
         Upload{!!maxFiles && maxFiles > 1 ? ` ${maxFiles}` : ""} file
         {!maxFiles || maxFiles > 1 ? "s" : ""}
       </p>
       <div className="flex flex-col items-center gap-y-1">
-        <p className="text-xs text-background">
+        <p className="text-xs">
           Drag and drop or{" "}
           <a
             onClick={() => inputRef.current?.click()}
-            className="underline cursor-pointer transition hover:text-white"
+            className="underline cursor-pointer transition hover:text-primary"
           >
             select {maxFiles === 1 ? `file` : "files"}
           </a>{" "}
           to upload
         </p>
         {maxFileSize !== Number.POSITIVE_INFINITY && (
-          <p className="text-xs text-background">
+          <p className="text-xs">
             Maximum file size: {formatBytes(maxFileSize, 2)}
           </p>
         )}

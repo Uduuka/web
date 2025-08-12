@@ -1,9 +1,10 @@
 "use server";
 
 
+import { stores } from "./dev_db/db";
 import env from "./env";
 import { createClient } from "./supabase/server";
-import { ChatHead, Filters, Listing, Pricing } from "./types";
+import { ChatHead, Filters, Pricing } from "./types";
 
 export const signup = async({email, password} : {email: string, password: string}) => {
    return (await createClient()).auth.signUp({email, password})
@@ -65,6 +66,12 @@ export const fetchAds = async(filters: Filters) => {
    }
 
    return await query
+}
+
+export const fetchPersonalAds = async()=>{
+   const supabase = await createClient();
+   const {data} = await supabase.auth.getUser()
+     return await supabase.from("ads").select("*, pricing:pricings(*), images:ad_images(url)").eq("seller_id", data.user?.id);
 }
 
 export const fetchAd = async(id: string) => {
@@ -171,6 +178,7 @@ export const uploadFiles = async(files: File[], backetName: string, folderName: 
             return {error: `${file.name} failed to upload, ${error.message}`}
          }
          // https://mqistandrulavcbncpwn.supabase.co/storage/v1/object/public/ads/30/online-is-beter.avif
+         // http://127.0.0.1:54321/storage/v1/object/public/ads/114/logo-colored.png
 
          return {url: `https://mqistandrulavcbncpwn.supabase.co/storage/v1/object/public/${data.fullPath}`}
 
@@ -247,6 +255,72 @@ return ((await createClient()).from("ad_images").insert(images).select())
 
 export const updateAd = async(id: string, fields: object) => {
  return (await createClient()).from("ads").update(fields).eq("id", id)
+}
+
+export const deleteImages = async(paths: string[]) => {
+   return (await createClient()).storage.from('ads').remove(paths)
+}
+
+export const fetchUnits = async() => {
+   const supabase = await createClient()
+   return await supabase.from("base_units").select("id, name, abbr, plural, sub_units(id, name, abbr, conversion_factor)")
+}
+
+export const fetchSubscriptions = async()=>{
+   const supabase = await createClient()
+   const {data: {user}} = await supabase.auth.getUser()
+   const subs = await supabase.from("subscriptions").select("plan, expires_at").eq("user_id", user?.id)
+   const adsCount = await supabase.from("ads").select("count").eq("seller_id", user?.id)
+   
+   if(subs.error || adsCount.error){
+      return {
+         subscription: null,
+         adsCount: null,
+         usage: {
+            ads: 0,
+            stores: 0, // Assuming you will fetch stores count later
+            flashSales: 0, // Assuming you will fetch flash sales count later 
+            adImages: 0, // Assuming you will fetch ad images count later
+            storage: 0
+         },
+         error: subs.error || adsCount.error
+      }
+   }
+
+   const usage = {
+      ads: adsCount.data[0].count,
+      stores: 1, // Assuming you will fetch stores count later
+      flashSales: 0, // Assuming you will fetch flash sales count later
+      adImages: 0, // Assuming you will fetch ad images count later
+      storage: 2
+   }
+
+
+   return {
+      subscription: subs.data[0],
+      adsCount: adsCount.data[0].count,
+      usage
+   }
+   
+}
+
+export const requestToPay = async(data: object) => {
+      return (await createClient()).from("payement_requests").insert(data).select("id, created_at")
+}
+
+export const fetchPersonalStores = async()=>{
+   const supabase = await createClient()
+   const {data: {user}} = await supabase.auth.getUser()
+
+   return await supabase.from("stores").select("*").eq("keeper_id", user?.id)
+}
+
+export const fetchStoreData = async(storeID: string) => {
+   return (await createClient()).from("store_data").select('*').eq('id', storeID).single()
+}
+
+export const createStore = async(data: object) =>{
+   return (await createClient()).from("stores").insert(data)
 }
  
 

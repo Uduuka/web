@@ -51,6 +51,10 @@ export default function Table<T>({
                 loading ...
               </td>
             </tr>
+          ) : error ? (
+            <tr>
+              <td className="text-center p-5 text-error">{error}</td>
+            </tr>
           ) : (
             data.map((item, index) => (
               <tr

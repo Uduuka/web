@@ -1,6 +1,6 @@
-import React, { useState, useTransition } from "react";
+import React, { useEffect, useState, useTransition } from "react";
 import Model from "../models/Model";
-import { Trash } from "lucide-react";
+import { Check, Trash } from "lucide-react";
 import Link from "next/link";
 import Button from "@/components/ui/Button";
 import { Listing } from "@/lib/types";
@@ -17,39 +17,41 @@ export default function MarkSoldDialog({ ad }: Props) {
 
   const handleMarkSold = () => {
     startUpdating(async () => {
-      const { error } = await updateAd(ad.id, { status: "sold" });
+      const { error } = await updateAd(ad.id, { status: "sold", quantity: 0 });
       if (error) {
         setError(error.message);
         return;
       }
 
+      setError("");
       setCloseModel(true);
     });
   };
+
   return (
     <Model
-      triggerStyle="gap-2 text-xs w-30 bg-transparent text-error font-thin justify-start hover:bg-error-background"
+      triggerStyle="gap-2 text-xs w-30 bg-transparent text-success font-thin justify-start hover:bg-green-100"
       trigger={
         <>
-          <Trash size={15} /> Delete ad
+          <Check size={15} /> Mark sold
         </>
       }
-      header={<span className="text-error">Delete ad</span>}
+      header={<span className="text-success">Mark sold</span>}
       className="w-full max-w-sm h-fit"
       close={closeModel}
     >
       <div className="w-full p-5">
-        {error && <p className="text-error py-5 text-center">{error}</p>}
+        {error && <p className="text-error pb-5 text-center">{error}</p>}
         <p className="text-accent text-center">
-          You are about to delete your ad ({ad.title}), if you are not sure
-          about this close the dialog or click delete to continue.
+          You are about to mark your ad ({ad.title}) as sold, if you are not
+          sure about this close the dialog or click mark sold to continue.
         </p>
 
         <Button
           onClick={handleMarkSold}
-          className="gap-2 text-xs w-30 bg-transparent font-thin text-success justify-start hover:bg-green-100"
+          className="gap-2 text-xs w-30 mx-auto mt-5 bg-transparent border border-green-400 font-thin text-green-500 hover:bg-green-200"
         >
-          Delete
+          <Check size={15} /> Mark sold
         </Button>
       </div>
     </Model>
