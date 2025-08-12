@@ -41,6 +41,9 @@ export interface Listing {
   category?: Category;
   subCategory?: SubCategory;
   specs?: object
+  quantity?: number;
+  units?: string;
+  pricings?: Pricing<any>[];
 }
 
 export interface AdImage {
@@ -66,6 +69,8 @@ export interface UnitPrice {
   price: string;
   initialPrice?: string;
   units: string;
+  conversionFactor?: number;
+  conversionRatio?: Record<string, string>;
 }
 
 export interface PriceRange {
@@ -91,6 +96,7 @@ export type Store = {
   logo?: string;
   address?: string
   location?: Location
+  slug?: string
   rating?: number;
   ratings?: number;
   description?: string;
@@ -224,4 +230,20 @@ export interface Profile {
   username?: string
   profile_pic?: string
   about?: string
+}
+
+export interface Unit {
+  id: string
+  name: string
+  abbr: string
+  plural: string
+  sub_units?: SubUnit[]
+}
+
+export interface SubUnit {
+  id: string
+  name: string
+  base_unit?: string
+  abbr: string
+  conversion_factor: number
 }

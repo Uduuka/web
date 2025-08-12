@@ -39,7 +39,7 @@ export default function RootLayout({
           setLocation({
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,
-            coordinates: [position.coords.longitude, position.coords.longitude],
+            coordinates: [position.coords.longitude, position.coords.latitude],
           });
         },
         async (error) => {

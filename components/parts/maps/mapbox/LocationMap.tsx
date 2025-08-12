@@ -4,20 +4,26 @@ import React, { useEffect, useRef, useState } from "react";
 import mapboxgl, { LngLat, LngLatLike, Map, Marker } from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { useAppStore } from "@/lib/store";
+import { Location } from "@/lib/types";
 
 interface MapProps {
   onLocationChange: (location: string, address: string) => void;
+  adLocation?: Location;
 }
 
 // Set your Mapbox access token
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 
-export default function MapboxMap({ onLocationChange }: MapProps) {
+export default function LocationMap({
+  onLocationChange,
+  adLocation,
+}: MapProps) {
   const { location } = useAppStore();
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const map = useRef<Map | null>(null);
   const marker = useRef<Marker | null>(null);
+  const loc = adLocation || location;
 
   const [address, setAddress] = useState<string>("Fetching address...");
 
@@ -40,7 +46,7 @@ export default function MapboxMap({ onLocationChange }: MapProps) {
   };
 
   useEffect(() => {
-    if (!location) {
+    if (!loc) {
       console.log("location is missing");
       return;
     }
@@ -50,14 +56,13 @@ export default function MapboxMap({ onLocationChange }: MapProps) {
       return;
     }
 
-    const center: LngLatLike = [location.longitude, location.latitude];
-
+    const center: LngLatLike = loc.coordinates;
     map.current = new mapboxgl.Map({
       container: mapContainerRef.current as HTMLDivElement,
       style: "mapbox://styles/mapbox/standard",
       center, // Example coordinates
       zoom: 12,
-      attributionControl: false,
+      // attributionControl: false,
     });
 
     // Add controls
@@ -83,7 +88,7 @@ export default function MapboxMap({ onLocationChange }: MapProps) {
       map.current?.remove();
       map.current = null;
     };
-  }, [location]);
+  }, [loc]);
 
   useEffect(() => {
     marker.current

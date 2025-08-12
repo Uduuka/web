@@ -71,7 +71,10 @@ export default function Model({
         >
           <div
             ref={contentRef}
-            className={cn("w-60 h-80 bg-background rounded-lg", className)}
+            className={cn(
+              "w-60 h-80 bg-background rounded-lg flex flex-col",
+              className
+            )}
           >
             <div className="flex justify-between items-center border-b border-secondary">
               <h1 className="p-1 text-sm font-semibold text-center w-full">
@@ -84,7 +87,9 @@ export default function Model({
                 <X size={20} />
               </Button>
             </div>
-            {children}
+            <div className="flex-1 rounded-b-lg flex flex-col overflow-hidden">
+              {children}
+            </div>
           </div>
         </div>
       )}

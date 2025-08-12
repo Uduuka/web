@@ -7,14 +7,16 @@ import FormInput from "@/components/ui/Input";
 import PriceTag from "../cards/PriceTag";
 import Popup from "@/components/ui/Popup";
 import Button from "@/components/ui/Button";
-import { Check, Eye, Pencil, Trash } from "lucide-react";
+import { Eye, Pencil } from "lucide-react";
 import { PiDotsThreeOutlineVerticalFill } from "react-icons/pi";
 import { IoMdFlash } from "react-icons/io";
-import Dialog from "@/components/ui/Dialog";
-import { useFilteredAds } from "@/lib/hooks/use_filtered_ads";
-import Model from "../models/Model";
 import Link from "next/link";
 import DeleteDialog from "../dialogs/DeleteDialog";
+import MarkSoldDialog from "../dialogs/MarkSoldDialog";
+import Model from "../models/Model";
+import CreateAdForm from "../forms/CreateAdForm";
+import { usePersonalAds } from "@/lib/hooks/use_personal_ads";
+import AdForm from "../forms/AdForm";
 
 const adsColumns: Column<Listing>[] = [
   {
@@ -40,7 +42,11 @@ const adsColumns: Column<Listing>[] = [
     label: "Price",
     render: (value, ad) => {
       const { pricing } = ad;
-      return <PriceTag pricing={pricing} />;
+      return (
+        <div className="">
+          <PriceTag pricing={pricing} />
+        </div>
+      );
     },
   },
   {
@@ -81,23 +87,15 @@ const adsColumns: Column<Listing>[] = [
             <Button className="gap-2 text-xs w-30 bg-transparent font-thin text-primary justify-start hover:bg-primary/20">
               <IoMdFlash size={15} /> Flash sell
             </Button>
-            <Dialog
-              trigger={
-                <Button className="gap-2 text-xs w-30 bg-transparent text-accent font-thin hover:bg-accent/20 justify-start">
-                  <Eye size={15} /> View details
-                </Button>
-              }
-            >
-              <div className="py-5">
-                <h1 className="text-center border-b pb-2">{ad.title}</h1>
-              </div>
-            </Dialog>
-            <Button className="gap-2 text-xs w-30 bg-transparent font-thin text-blue-500 hover:bg-blue-100 justify-start">
-              <Pencil size={15} /> Edit ad
-            </Button>
-            <Button className="gap-2 text-xs w-30 bg-transparent font-thin text-success justify-start hover:bg-green-100">
-              <Check size={15} /> Mark sold
-            </Button>
+            <Model className="w-full max-w-lg h-[80%] flex flex-col">
+              <AdForm initailData={ad} setter={() => {}} />
+            </Model>
+            <Link href={`/ads/${ad.id}`}>
+              <Button className="gap-2 text-xs w-30 bg-transparent font-thin text-blue-500 hover:bg-blue-100 justify-start">
+                <Eye size={15} /> View details
+              </Button>
+            </Link>
+            <MarkSoldDialog ad={ad} />
             <DeleteDialog ad={ad} />
           </div>
         </Popup>
@@ -107,7 +105,7 @@ const adsColumns: Column<Listing>[] = [
 ];
 
 export default function AdsTable() {
-  const { ads, error, fetching } = useFilteredAds();
+  const { ads, error, fetching } = usePersonalAds();
   return (
     <Table
       data={ads}

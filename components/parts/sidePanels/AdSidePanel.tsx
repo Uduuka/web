@@ -2,10 +2,17 @@
 
 import Button from "@/components/ui/Button";
 import { Plus, X } from "lucide-react";
-import React, { useState } from "react";
+import React, { ReactNode, useState } from "react";
 import CreateAdForm from "../forms/CreateAdForm";
+import { Listing } from "@/lib/types";
 
-export default function CreateAd() {
+export default function AdSidePanel({
+  trigger,
+  ad,
+}: {
+  trigger: ReactNode;
+  ad?: Listing;
+}) {
   const [open, setOpen] = useState(false);
 
   const openPanel = () => {
@@ -21,13 +28,13 @@ export default function CreateAd() {
         onClick={openPanel}
         className="bg-primary hover:bg-primary/90 text-white text-xs gap-2"
       >
-        <Plus size={15} /> Post new ad
+        {trigger}
       </Button>
       {open && (
         <div className="w-screen fixed flex justify-end cursor-not-allowed top-0 right-0 h-screen transition transform z-50">
           <div
             className={`transition-all duration-500 h-screen flex flex-col cursor-auto bg-black/90 text-white ${
-              open ? "w-full max-w-lg" : "w-0"
+              open ? "w-full max-w-md" : "w-0"
             }`}
           >
             <div className="px-5 py-3 h-fit flex justify-between items-center border-b ">
@@ -39,7 +46,7 @@ export default function CreateAd() {
                 <X size={20} />
               </Button>
             </div>
-            <CreateAdForm />
+            
           </div>
         </div>
       )}

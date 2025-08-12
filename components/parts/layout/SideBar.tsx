@@ -11,6 +11,7 @@ import {
   ChevronRight,
   MapPin,
   StoreIcon,
+  Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Button from "@/components/ui/Button";
@@ -21,11 +22,17 @@ import { IoMdFlash } from "react-icons/io";
 import { FiFilter } from "react-icons/fi";
 import { RxDashboard } from "react-icons/rx";
 import { useAppStore } from "@/lib/store";
-import { BsChatRightText, BsMegaphone } from "react-icons/bs";
+import { BsCashCoin, BsChatRightText, BsMegaphone } from "react-icons/bs";
 import { SlBell } from "react-icons/sl";
 import { PiStorefront, PiTrashSimpleLight } from "react-icons/pi";
 import { Category } from "@/lib/types";
 import { fetchCategories } from "@/lib/actions";
+import { BiMoney } from "react-icons/bi";
+import { GoListOrdered, GoReport } from "react-icons/go";
+import { FcFeedback } from "react-icons/fc";
+import { MdFeedback } from "react-icons/md";
+import { RiFeedbackLine } from "react-icons/ri";
+import { TbReportAnalytics } from "react-icons/tb";
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -225,6 +232,19 @@ const DashboardNav = () => {
               Dashbaord
             </Button>
           </Link>
+          <Link href="/dashboard/billing">
+            <Button
+              className={cn(
+                "w-full justify-start text-sm bg-transparent",
+                pathname.startsWith("/dashboard/billing")
+                  ? "bg-primary text-background"
+                  : "bg-transparent hover:bg-secondary/50"
+              )}
+            >
+              <BsCashCoin className="mr-2 h-4 w-4" />
+              Billing
+            </Button>
+          </Link>
           <Link href="/dashboard/stores">
             <Button
               className={cn(
@@ -300,19 +320,14 @@ const StoreNav = () => {
   const pathname = usePathname();
   const storeId = useParams()["storeID"];
   return (
-    <ScrollArea maxHeight="100%" className="h-full pr-3">
+    <ScrollArea maxHeight="100%" className="h-full pr-3 flex flex-col">
       <nav className="flex-1 px-2 py-4 flex flex-col gap-2">
-        <div className="w-full py-5 flex flex-col justify-center items-center border-b border-secondary">
-          <div className="h-20 w-full bg-secondary rounded-full mb-5"></div>
-
-          <p className="text-xs text-accent">{storeId}</p>
-        </div>
-        <div className="flex flex-col gap-2 pt-5">
-          <Link href="/dashboard/stores">
+        <div className="flex flex-1 flex-col gap-2 pt-5">
+          <Link href={`/dashboard/stores/${storeId}`}>
             <Button
               className={cn(
                 "w-full justify-start text-sm bg-transparent",
-                pathname.startsWith("/dashboard/stores")
+                pathname === `/dashboard/stores/${storeId}`
                   ? "bg-primary text-background"
                   : "bg-transparent hover:bg-secondary/50"
               )}
@@ -321,43 +336,82 @@ const StoreNav = () => {
               Store overview
             </Button>
           </Link>
-          <Link href="/dashboard/ads">
+          <Link href={`/dashboard/stores/${storeId}/ads`}>
             <Button
               className={cn(
                 "w-full justify-start text-sm bg-transparent",
-                pathname.startsWith("/dashboard/ads")
+                pathname.startsWith(`/dashboard/stores/${storeId}/ads`)
                   ? "bg-primary text-background"
                   : "bg-transparent hover:bg-secondary/50"
               )}
             >
               <BsMegaphone className="mr-2 h-4 w-4" />
-              My ads
+              My stock
             </Button>
           </Link>
-          <Link href="/dashboard/chats">
+          <Link href={`/dashboard/stores/${storeId}/pos`}>
             <Button
               className={cn(
                 "w-full justify-start text-sm bg-transparent",
-                pathname.startsWith("/dashboard/chats")
+                pathname.startsWith(`/dashboard/stores/${storeId}/pos`)
                   ? "bg-primary text-background"
                   : "bg-transparent hover:bg-secondary/50"
               )}
             >
-              <BsChatRightText className="mr-2 h-4 w-4" />
-              Chats
+              <BiMoney className="mr-2 h-4 w-4" />
+              Point of sales
             </Button>
           </Link>
-          <Link href="/dashboard/notifications">
+          <Link href={`/dashboard/stores/${storeId}/orders`}>
             <Button
               className={cn(
                 "w-full justify-start text-sm bg-transparent",
-                pathname.startsWith("/dashboard/notifications")
+                pathname.startsWith(`/dashboard/stores/${storeId}/orders`)
                   ? "bg-primary text-background"
                   : "bg-transparent hover:bg-secondary/50"
               )}
             >
-              <SlBell className="mr-2 h-4 w-4" />
-              Notifications
+              <GoListOrdered className="mr-2 h-4 w-4" />
+              Orders
+            </Button>
+          </Link>
+          <Link href={`/dashboard/stores/${storeId}/reports`}>
+            <Button
+              className={cn(
+                "w-full justify-start text-sm bg-transparent",
+                pathname.startsWith(`/dashboard/stores/${storeId}/reports`)
+                  ? "bg-primary text-background"
+                  : "bg-transparent hover:bg-secondary/50"
+              )}
+            >
+              <TbReportAnalytics className="mr-2 h-4 w-4" />
+              Reports
+            </Button>
+          </Link>
+          <Link href={`/dashboard/stores/${storeId}/settings`}>
+            <Button
+              className={cn(
+                "w-full justify-start text-sm bg-transparent",
+                pathname.startsWith(`/dashboard/stores/${storeId}/settings`)
+                  ? "bg-primary text-background"
+                  : "bg-transparent hover:bg-secondary/50"
+              )}
+            >
+              <Settings className="mr-2 h-4 w-4" />
+              Settings
+            </Button>
+          </Link>
+          <Link href={`/dashboard/stores/${storeId}/feedback`}>
+            <Button
+              className={cn(
+                "w-full justify-start text-sm bg-transparent",
+                pathname.startsWith(`/dashboard/stores/${storeId}/feedback`)
+                  ? "bg-primary text-background"
+                  : "bg-transparent hover:bg-secondary/50"
+              )}
+            >
+              <RiFeedbackLine className="mr-2 h-4 w-4" />
+              Feedback
             </Button>
           </Link>
           <Link href="/dashboard/trash">
@@ -373,6 +427,9 @@ const StoreNav = () => {
               Trash bin
             </Button>
           </Link>
+        </div>
+        <div className="w-full py-5 flex flex-col justify-center items-center border-t border-secondary">
+          <div className="h-20 w-full bg-secondary mb-5 rounded-lg"></div>
         </div>
       </nav>
     </ScrollArea>

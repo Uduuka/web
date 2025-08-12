@@ -108,14 +108,14 @@ export default function Select<T>({
         disabled={disabled}
         ref={buttonRef}
         className={cn(
-          "py-1 px-2 rounded-md text-xs shadow flex items-center gap-5 justify-between",
+          "py-1 px-2 rounded-md line-clamp-1 text-xs shadow flex items-center gap-5 justify-between",
           triggerStyle
         )}
         onClick={() => setIsOpen(!isOpen)}
         aria-expanded={isOpen}
         aria-haspopup="listbox"
       >
-        <span>{selectedLabel}</span>
+        <span className="line-clamp-1">{selectedLabel}</span>
         <svg
           className={`w-4 h-4 transition-all transform ${
             isOpen ? "rotate-180" : ""

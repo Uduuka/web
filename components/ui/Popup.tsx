@@ -146,7 +146,7 @@ export default function Popup({
     >
       <div
         ref={triggerRef}
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => setIsOpen(true)}
         className={cn("cursor-pointer", triggerStyle)}
         role="button"
         tabIndex={0}
@@ -160,7 +160,7 @@ export default function Popup({
           id="dropdown-content"
           ref={contentRef}
           className={cn(
-            "absolute z-10 w-fit bg-white shadow-md rounded-lg p-2 transition transform",
+            "absolute z-50 w-fit bg-white shadow-md rounded-lg p-2 transition transform",
             contentStyle
           )}
           role="menu"
