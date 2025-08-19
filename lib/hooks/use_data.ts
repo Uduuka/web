@@ -3,15 +3,16 @@ import { useEffect, useState, useTransition } from "react"
 import { fetchStoreData } from "../actions"
 import { Store } from "../types"
 
-export const useDashboardContexts = () => {
+export const useDashboardData = () => {
     const pathname = usePathname()
     const storeID = useParams()['storeID']
+    const [fetching, startFetching] = useTransition()
 
-    const [route, setRoute] = useState("")
+    
     const [dashboardData, setDashboardData] = useState()
     
 
-    return {route, dashboardData}
+    return {fetching, dashboardData}
 }
 
 export const useStoreData = () => {

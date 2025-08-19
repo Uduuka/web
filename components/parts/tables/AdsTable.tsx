@@ -1,117 +1,164 @@
 "use client";
 
-import React from "react";
-import Table, { Column } from "./Table";
-import { Listing } from "@/lib/types";
-import FormInput from "@/components/ui/Input";
-import PriceTag from "../cards/PriceTag";
-import Popup from "@/components/ui/Popup";
+import { Listing, Pricing } from "@/lib/types";
+import { ColumnDef } from "@tanstack/react-table";
+import { DataTable } from "./DataTable";
 import Button from "@/components/ui/Button";
-import { Eye, Pencil } from "lucide-react";
-import { PiDotsThreeOutlineVerticalFill } from "react-icons/pi";
-import { IoMdFlash } from "react-icons/io";
 import Link from "next/link";
-import DeleteDialog from "../dialogs/DeleteDialog";
-import MarkSoldDialog from "../dialogs/MarkSoldDialog";
-import Model from "../models/Model";
-import CreateAdForm from "../forms/CreateAdForm";
-import { usePersonalAds } from "@/lib/hooks/use_personal_ads";
-import AdForm from "../forms/AdForm";
+import { Info, Plus } from "lucide-react";
+import PriceTag from "../cards/PriceTag";
+import { BiSort } from "react-icons/bi";
+import Popup from "@/components/ui/Popup";
+import { useParams } from "next/navigation";
+import AdsModel from "../models/AdsModel";
 
-const adsColumns: Column<Listing>[] = [
+export const columns: ColumnDef<Listing>[] = [
   {
-    key: "select",
-    label: "Select",
-    render: () => (
-      <FormInput
-        type="checkbox"
-        className=""
-        wrapperStyle="w-fit h-fit border-none p-2"
-      />
+    accessorKey: "title",
+    header: () => <h1 className="font-semibold">Title</h1>,
+    cell: ({ row }) => (
+      <div className="">
+        <p className="w-full">{row.getValue("title")}</p>
+        <p className="text-xs w-full  text-gray-500 line-clamp-1">
+          {row.original.description}
+        </p>
+      </div>
     ),
   },
   {
-    key: "title",
-    label: "Title",
-    render: (value, ad) => (
-      <p className="text-accent line-clamp-1">{ad.title}</p>
-    ),
-  },
-  {
-    key: "price",
-    label: "Price",
-    render: (value, ad) => {
-      const { pricing } = ad;
+    accessorKey: "Price",
+    header: () => <h1 className="font-semibold">Pricing</h1>,
+    cell: ({ row }) => {
+      const pricing = row.original.pricing as Pricing<any>;
+      const pricings = row.original.pricings as Pricing<any>[];
+
       return (
-        <div className="">
-          <PriceTag pricing={pricing} />
+        <div className="flex gap-5 justify-between items-center">
+          <PriceTag className="text-accent" pricing={pricing} />
+          {pricings && pricings.length > 1 && (
+            <Popup
+              align="vertical"
+              contentStyle="mt-1 p-0"
+              trigger={<Button>+{pricings.length - 1}</Button>}
+            >
+              <div className="flex flex-col gap-2">
+                <h1 className="font-thin text-xs px-5 pt-2 pb-0.5 border-b border-gray-200">
+                  Other Pricing Options
+                </h1>
+                <ul className="flex flex-col">
+                  {pricings.map((p, i) => (
+                    <li
+                      key={i}
+                      className="flex px-3 justify-between items-center"
+                    >
+                      <PriceTag pricing={p} />
+                    </li>
+                  ))}
+                  <li className="flex p-3 justify-between items-center">
+                    <Button className="bg-primary text-xs text-background w-full">
+                      Edit Pricing
+                    </Button>
+                  </li>
+                </ul>
+              </div>
+            </Popup>
+          )}
         </div>
       );
     },
   },
   {
-    key: "views",
-    label: "Views",
-    render: (value, ad) => (
-      <p className="text-accent line-clamp-1">{ad.views ?? 0}</p>
+    accessorKey: "created_at",
+    header: ({ column }) => (
+      <h1
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        className="font-semibold flex justify-between items-center hover:bg-orange-50 px-5 py-2 rounded-lg transition-colors"
+      >
+        <span>Date</span>
+        <BiSort />
+      </h1>
     ),
-  },
-  {
-    key: "likes",
-    label: "Likes",
-    render: (value, ad) => (
-      <p className="text-accent line-clamp-1">{ad.likes ?? 0}</p>
-    ),
-  },
-  {
-    key: "dislikes",
-    label: "Dislikes",
-    render: (value, ad) => (
-      <p className="text-accent line-clamp-1">{ad.dislikes ?? 0}</p>
-    ),
-  },
-  {
-    key: "actions",
-    label: "Actions",
-    render: (value, ad) => {
+    cell: ({ row }) => {
       return (
-        <Popup
-          trigger={
-            <Button className="bg-transparent hover:bg-transparent p-0 text-accent/80 hover:text-accent`">
-              <PiDotsThreeOutlineVerticalFill size={18} />
-            </Button>
-          }
-          align="diagonal-left"
-        >
-          <div className="space-y-1">
-            <Button className="gap-2 text-xs w-30 bg-transparent font-thin text-primary justify-start hover:bg-primary/20">
-              <IoMdFlash size={15} /> Flash sell
-            </Button>
-            <Model className="w-full max-w-lg h-[80%] flex flex-col">
-              <AdForm initailData={ad} setter={() => {}} />
-            </Model>
-            <Link href={`/ads/${ad.id}`}>
-              <Button className="gap-2 text-xs w-30 bg-transparent font-thin text-blue-500 hover:bg-blue-100 justify-start">
-                <Eye size={15} /> View details
-              </Button>
-            </Link>
-            <MarkSoldDialog ad={ad} />
-            <DeleteDialog ad={ad} />
-          </div>
-        </Popup>
+        <p className="">
+          {new Date(row.getValue("created_at")).toDateString()}
+        </p>
       );
+    },
+  },
+  {
+    accessorKey: "views",
+    header: () => <h1 className="font-semibold">Views</h1>,
+    cell: ({ row }) => {
+      return <p className="">{row.getValue("views")}</p>;
+    },
+  },
+  {
+    accessorKey: "likes",
+    header: () => <h1 className="font-semibold">Likes</h1>,
+    cell: ({ row }) => {
+      return <p className="">{row.getValue("likes")}</p>;
+    },
+  },
+
+  {
+    accessorKey: "rating",
+    header: () => <h1 className="font-semibold">Rating</h1>,
+    cell: ({ row }) => {
+      const rating = row.getValue("rating")
+        ? `${row.getValue("rating")} (${row.original.ratings})`
+        : "No ratings";
+      return <p className="">{rating}</p>;
     },
   },
 ];
 
-export default function AdsTable() {
-  const { ads, error, fetching } = usePersonalAds();
+export default function AdsTable({
+  data,
+  empty,
+  error,
+  showAdd,
+}: {
+  data?: Listing[];
+  error?: string;
+  empty?: string;
+  showAdd?: boolean;
+}) {
+  const storeID = useParams()["storeID"] as string;
   return (
-    <Table
-      data={ads}
-      columns={adsColumns}
-      loading={fetching}
-      error={error as string | undefined}
+    <DataTable
+      columns={columns}
+      data={data ?? []}
+      emptyMessage={
+        <div className="text-gray-500 h-full w-full bg-gray-50 p-5">
+          <h1 className="flex gap-3 items-center justify-center">
+            <Info /> {empty ?? "No ads found."}
+          </h1>
+          {showAdd && storeID && (
+            <div className="flex gap-5 justify-center items-center pt-5">
+              <Link
+                href={`/dashboard/stores/${storeID}/ads/create`}
+                className="inline-block w-fit"
+              >
+                <Button className="bg-primary py-1 gap-1 text-xs text-background">
+                  <Plus size={15} />
+                  Post new ad
+                </Button>
+              </Link>
+              <AdsModel />
+            </div>
+          )}
+        </div>
+      }
+      errorMessage={
+        error && (
+          <div className="text-error h-full w-full bg-red-100 p-5">
+            <h1 className="flex gap-3 items-center justify-center">
+              <Info /> {error}.
+            </h1>
+          </div>
+        )
+      }
     />
   );
 }

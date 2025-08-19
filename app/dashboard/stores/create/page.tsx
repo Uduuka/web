@@ -8,8 +8,6 @@ export default async function StoreCreatePage() {
   const { subscription, usage, error } = await fetchSubscriptions();
   const planName = subscription?.plan ?? "hobby";
   const plan = env.subscriptionPlans[planName];
-
-  console.log({ subscription, usage, error });
   return (
     <div className="bg-white rounded-lg p-5 space-y-5 max-w-md mx-auto shadow relative">
       <h1 className="text-center">Create a store</h1>

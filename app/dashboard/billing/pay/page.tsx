@@ -6,7 +6,7 @@ import React from "react";
 export default async function PaymentPage({
   searchParams,
 }: {
-  searchParams: { plan?: string; method?: string };
+  searchParams: Promise<{ plan?: string; method?: string }>;
 }) {
   const { plan, method } = await searchParams;
 

@@ -10,11 +10,9 @@ import { IoMdFlash } from "react-icons/io";
 import { useFilteredFlashSales } from "@/lib/hooks/use_filtered_flash_sales";
 
 export default function FlashSales({
-  title,
   orientation = "vertical",
   className,
 }: {
-  title?: string;
   className?: string;
   orientation?: "vertical" | "horizontal";
 }) {

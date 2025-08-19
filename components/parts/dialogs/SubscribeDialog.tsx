@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function SubscribeDialog({ message }: { message: string }) {
   return (
-    <div className="absolute w-full h-full bg-white/90 top-0 left-0">
+    <div className="absolute w-full h-full bg-white/90 z-10 pt-10 top-0 left-0">
       <div className="w-full max-w-80 min-h-96 rounded-lg bg-orange-50 shadow-2xl z-40 mx-auto p-5 flex flex-col gap-5">
         <h1 className="text-center text-primary text-xl pt-5 ">
           Upgrade your plan.

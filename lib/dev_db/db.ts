@@ -1,53 +1,9 @@
 
 import { createClient as old } from "@supabase/supabase-js";
-import { AdImage, Category, Message, Store, SubCategory } from "../types";
+import { AdImage, Category, SubCategory } from "../types";
 import { fetchCategories } from "../actions";
 import { createClient } from "../supabase/client";
 
-
-export const stores: Store[] = [
-  {
-    id: "1",
-    name: "Best electronics Store 1",
-    description:
-      "A really really long description of the store describing its products and services.",
-    logo: "",
-  },
-  {
-    id: "2",
-    name: "A realy realy long store name like, Store 1",
-    logo: "",
-  },
-  {
-    id: "3",
-    name: "Store 1",
-    logo: "",
-  },
-  {
-    id: "4",
-    name: "Store 1",
-    logo: "",
-  },
-  {
-    id: "5",
-    name: "Store 1",
-    logo: "",
-  },
-  {
-    id: "6",
-    name: "Store 1",
-    logo: "",
-  },
-  {
-    id: "7",
-    name: "Store 1",
-    logo: "",
-  },
-];
-
-export const messages: Message[] = [
- 
-];
 
 export const fetchAds = async() => {
   const supabase  = old(

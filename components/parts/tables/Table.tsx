@@ -1,88 +1,116 @@
 "use client";
 
-import { ReactNode } from "react";
+import * as React from "react";
 
-export interface Column<T> {
-  key: string;
-  label: string;
-  render?: (value: any, item: T) => ReactNode;
-}
+import { cn } from "@/lib/utils";
 
-interface TableProps<T> {
-  columns: Column<T>[];
-  loading?: boolean;
-  error?: string;
-  data: T[];
-}
-
-export default function Table<T>({
-  columns,
-  data,
-  loading,
-  error,
-}: TableProps<T>) {
+function Table({ className, ...props }: React.ComponentProps<"table">) {
   return (
-    <div className="overflow-x-auto">
+    <div
+      data-slot="table-container"
+      className="relative w-full flex-1 overflow-x-auto"
+    >
       <table
-        className="w-full text-xs text-accent border-collapse"
-        role="table"
-        aria-labelledby="table-caption"
-      >
-        <thead>
-          <tr className="bg-primary text-white">
-            {columns.map((column) => (
-              <th
-                key={column.key}
-                className="p-3 text-left font-bold w-fit"
-                scope="col"
-              >
-                {column.label}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {loading ? (
-            <tr>
-              <td
-                colSpan={columns.length}
-                className="p-3 text-center bg-uduuka-bg"
-              >
-                loading ...
-              </td>
-            </tr>
-          ) : error ? (
-            <tr>
-              <td className="text-center p-5 text-error">{error}</td>
-            </tr>
-          ) : (
-            data.map((item, index) => (
-              <tr
-                key={index}
-                className={`${
-                  index % 2 === 0 ? "" : "bg-background/50"
-                } hover:bg-accent/10 transition`}
-              >
-                {columns.map((column, colIndex) => {
-                  const value = (item as any)[column.key];
-                  const content = column.render
-                    ? column.render(value, item)
-                    : value?.toString() || "-";
-                  return (
-                    <td
-                      key={column.key}
-                      className="p-3"
-                      scope={colIndex === 0 ? "row" : undefined}
-                    >
-                      {content}
-                    </td>
-                  );
-                })}
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
+        data-slot="table"
+        className={cn("w-full caption-bottom text-sm border-none", className)}
+        {...props}
+      />
     </div>
   );
 }
+
+function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
+  return (
+    <thead
+      data-slot="table-header"
+      className={cn("[&_tr]:border-b-0", className)}
+      {...props}
+    />
+  );
+}
+
+function TableBody({ className, ...props }: React.ComponentProps<"tbody">) {
+  return (
+    <tbody
+      data-slot="table-body"
+      className={cn("[&_tr:last-child]:border-0", className)}
+      {...props}
+    />
+  );
+}
+
+function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
+  return (
+    <tfoot
+      data-slot="table-footer"
+      className={cn(
+        "bg-muted/50 border-t font-medium [&>tr]:last:border-b-0",
+        className
+      )}
+      {...props}
+    />
+  );
+}
+
+function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
+  return (
+    <tr
+      data-slot="table-row"
+      className={cn(
+        "hover:bg-muted/50 data-[state=selected]:bg-muted border-b-0  hover:bg-orange-50 even:bg-gray-50 bg-white transition-colors",
+        className
+      )}
+      {...props}
+    />
+  );
+}
+
+function TableHead({ className, ...props }: React.ComponentProps<"th">) {
+  return (
+    <th
+      data-slot="table-head"
+      className={cn(
+        "text-foreground h-10 px-2 border-r max-w-60 first:sticky first:left-0 z-10 last:border-r-0 border-gray-300 bg-gray-200 text-left align-middle font-medium whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+        className
+      )}
+      {...props}
+    />
+  );
+}
+
+function TableCell({ className, ...props }: React.ComponentProps<"td">) {
+  return (
+    <td
+      data-slot="table-cell"
+      className={cn(
+        "p-2 align-middle whitespace-nowrap bg-inherit border-r max-w-60 first:sticky first:left-0 z-10 last:border-r-0 border-gray-300 [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+        className
+      )}
+      {...props}
+    />
+  );
+}
+
+function TableCaption({
+  className,
+  ...props
+}: React.ComponentProps<"caption">) {
+  return (
+    <caption
+      data-slot="table-caption"
+      className={cn("text-muted-foreground mt-4 text-sm", className)}
+      {...props}
+    />
+  );
+}
+
+export {
+  Table,
+  TableHeader,
+  TableBody,
+  TableFooter,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableCaption,
+};

@@ -17,9 +17,8 @@ import { HiOutlineEmojiHappy, HiOutlineMicrophone } from "react-icons/hi";
 import { MdSend } from "react-icons/md";
 import { createChatThread, sendMessage } from "@/lib/actions";
 import { useChatThread } from "@/lib/hooks/use_chat_threads";
-import { BiError } from "react-icons/bi";
-import Tooltip from "../buttons/Tooltip";
 import { BsExclamationCircle } from "react-icons/bs";
+import { Info } from "lucide-react";
 
 interface FormProps extends ComponentProps<"div"> {
   thread: ChatHead;
@@ -57,12 +56,14 @@ export default function ChatForm({ thread }: FormProps) {
         newMessage.thread_id = thread.id;
       } else {
         // Else we create the thread on the database then set the thread_id of the message.
-        const { data } = await createChatThread({
+        const { data, error } = await createChatThread({
           buyer_id: thread.buyer_id,
           seller_id: thread.seller_id,
         });
         if (!data?.length) {
-          setSendError("Failed to send");
+          setSendError(
+            `Failed to send. \n ${error?.message && error.message}.`
+          );
           setMessages([...messages, { ...newMessage, status: "error" }]);
           setMessage("");
           return;
@@ -77,7 +78,7 @@ export default function ChatForm({ thread }: FormProps) {
       const { text, sender_id, thread_id } = newMessage;
       const { error } = await sendMessage({ text, sender_id, thread_id });
       if (error) {
-        setSendError("Failed to send");
+        setSendError(`Failed to send. \n ${error?.message && error.message}.`);
         setMessages([...messages, { ...newMessage, status: "error" }]);
         setMessage("");
       }
@@ -101,7 +102,13 @@ export default function ChatForm({ thread }: FormProps) {
           ))}
         </div>
       </ScrollArea>
-      <form action={handleSend} className="px-4">
+      <form action={handleSend} className="px-4 space-y-3">
+        {sendError && (
+          <div className="px-5 py-3 text-error bg-red-100 rounded-lg flex gap-2 justify-center">
+            <Info size={15} />
+            <p className="text-xs">{sendError}</p>
+          </div>
+        )}
         <div className="bg-background rounded-sm p-3">
           <textarea
             name="message"

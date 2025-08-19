@@ -14,6 +14,7 @@ import { fetchCategories, fetchUnits } from "@/lib/actions";
 import Button from "@/components/ui/Button";
 import { toNumber } from "@/lib/utils";
 import Popup from "@/components/ui/Popup";
+import { useParams } from "next/navigation";
 
 interface AdFormProps extends ComponentProps<"form"> {
   initailData?: Listing;
@@ -32,14 +33,17 @@ export default function AdForm({
   className,
   ...props
 }: AdFormProps) {
-  const [ad, setAd] = useState(initailData);
+  const storeID = useParams().storeID as string;
+
+  const [ad, setAd] = useState(
+    initailData ?? ({ store_id: storeID ?? null } as Listing)
+  );
   const [categories, setCategories] = useState<Category[]>([]);
   const [spects, setSpects] = useState<string[]>([]);
   const [adSpects, setAdSpects] = useState<any>(initailData?.specs);
   const [units, setUnits] = useState<Unit[]>([]);
   const [unitSearchTerm, setUnitSearchTerm] = useState(ad?.units ?? "");
   const [filteredUnits, setFilteredUnits] = useState<Unit[]>(units);
-
   const [fetchingCategories, startFetchingCategories] = useTransition();
 
   useEffect(() => {
@@ -76,7 +80,6 @@ export default function AdForm({
 
   const handleSubmit = () => {
     if (!ad) return;
-
     setter({ ...ad, specs: adSpects });
     if (handleNext) {
       handleNext();

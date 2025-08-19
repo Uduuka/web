@@ -146,7 +146,7 @@ export default function Popup({
     >
       <div
         ref={triggerRef}
-        onClick={() => setIsOpen(true)}
+        onClick={() => setIsOpen(!isOpen)}
         className={cn("cursor-pointer", triggerStyle)}
         role="button"
         tabIndex={0}

@@ -122,10 +122,10 @@ export function PriceRangeSlider({
     <div className="relative w-full h-6">
       <div
         ref={trackRef}
-        className="absolute top-1/2 w-full h-2 bg-secondary rounded transform -translate-y-1/2"
+        className="absolute top-1/2 w-full h-2 bg-gray-300 rounded transform -translate-y-1/2"
       >
         <div
-          className="absolute h-2 bg-primary"
+          className="absolute h-2 bg-primary rounded-full"
           style={{
             left: `${minPosition}%`,
             width: `${maxPosition - minPosition}%`,
@@ -151,7 +151,7 @@ export function PriceRangeSlider({
         className={`absolute w-4 h-4 bg-primary rounded-full shadow-md cursor-pointer transform -translate-y-1/2 transition-colors hover:bg-primary ${
           dragging === "max" ? "z-20" : "z-10"
         }`}
-        style={{ left: `${maxPosition}%`, top: "50%" }}
+        style={{ left: `${maxPosition - 1}%`, top: "50%" }}
         onMouseDown={handleMouseDown("max")}
         onTouchStart={handleMouseDown("max")}
         onKeyDown={handleKeyDown("max")}
@@ -208,7 +208,7 @@ export function Slider({
 
   return (
     <div className="w-full mx-auto">
-      <div className="relative h-2 bg-secondary rounded-full" ref={sliderRef}>
+      <div className="relative h-2 bg-gray-300 rounded-full" ref={sliderRef}>
         <div
           className="absolute h-2 bg-primary rounded-full"
           style={{ width: `${value}%` }}

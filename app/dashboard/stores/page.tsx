@@ -23,7 +23,7 @@ export default async function page() {
           <StoreList
             stores={data}
             nextUrl="/dashboard/stores"
-            className="w-full grid grid-cols-2 gap-5"
+            className="w-full grid sm:grid-cols-2 gap-5"
           />
         ) : (
           <div className="flex max-w-md mx-auto gap-3">

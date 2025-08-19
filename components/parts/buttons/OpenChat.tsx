@@ -52,10 +52,12 @@ export default function OpenChat({ ad, seller, buyer, isSeller }: ChatProps) {
     }
     setActiveChatHead(head);
   };
+
   return (
     <Button
       onClick={startChat}
-      className="bg-accent w-full hover:bg-accent/90 text-background"
+      disabled={!Boolean(profile)}
+      className="bg-accent w-full hover:bg-accent/90 text-background disabled:opacity-30 disabled:cursor-not-allowed"
     >
       <BsChatRightText className="mr-2 h-4 w-4" /> Live chat
     </Button>

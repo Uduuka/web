@@ -11,6 +11,8 @@ interface AppState {
   filters?: Filters;
   chatHeads?: ChatHead[];
   activeChatHead?: ChatHead
+  deviceWidth?: number;
+  setDeviceWidth: (width: number) => void;
   setCurrency: (currency: Currency) => void;
   setLoading: (loading: boolean) => void,
   setUser: (user: User | null) => void;
@@ -38,5 +40,6 @@ export const useAppStore = create<AppState>((set) => ({
   setLocation: (location) => set({ location }),
   clearLocation: () => set({ location: null }),
   setfilters: (st) => set({ filters: st }),
-  setActiveChatHead: (activeChatHead) => set({activeChatHead})
+  setActiveChatHead: (activeChatHead) => set({activeChatHead}),
+  setDeviceWidth: (deviceWidth) => set({ deviceWidth }),
 }));

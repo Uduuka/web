@@ -59,7 +59,7 @@ export default function Model({
   const containerRef = useRef<HTMLDivElement>(null);
   return (
     <>
-      <Button onClick={handleOpen} className={cn("w-full", triggerStyle)}>
+      <Button onClick={handleOpen} className={cn("w-full gap-1", triggerStyle)}>
         {trigger ?? "Open model"}
       </Button>
       {open && (
@@ -71,13 +71,10 @@ export default function Model({
         >
           <div
             ref={contentRef}
-            className={cn(
-              "w-60 h-80 bg-background rounded-lg flex flex-col",
-              className
-            )}
+            className={cn("bg-background rounded-lg flex flex-col", className)}
           >
             <div className="flex justify-between items-center border-b border-secondary">
-              <h1 className="p-1 text-sm font-semibold text-center w-full">
+              <h1 className="p-2 text-left px-5 line-clamp-1 text-sm font-semibold w-full">
                 {header}
               </h1>
               <Button

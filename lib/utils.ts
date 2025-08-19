@@ -7,14 +7,12 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export const responsiveColumns = <T>(arr: T[]): T[][] => {
-  const getScreenWidth = (): number => window.innerWidth;
-
+export const responsiveColumns = <T>(arr: T[], containerWidth: number): T[][] => {
   const splitSequentiallyBasedOnWidth = (width: number): T[][] => {
     let numSubArrays: number;
-    if (width >= 1200) {
+    if (width >= 1000) {
       numSubArrays = 4;
-    } else if (width >= 768) {
+    } else if (width >= 600) {
       numSubArrays = 3;
     } else {
       numSubArrays = 2;
@@ -28,7 +26,7 @@ export const responsiveColumns = <T>(arr: T[]): T[][] => {
   };
 
   // Initial split on load
-  let currentSubArrays = splitSequentiallyBasedOnWidth(getScreenWidth());
+  let currentSubArrays = splitSequentiallyBasedOnWidth(containerWidth);
 
   return currentSubArrays;
 };
@@ -56,18 +54,22 @@ export const displayCurrencyAndPrice = (
   const acceptedCurrencies = ["USD", "UGX", "KSH", "TSH"];
   if (ad_currency?.toUpperCase() in acceptedCurrencies)
     return "Unsupported currency";
-  if (currency === ad_currency)
-    return `${currency.toUpperCase()} ${toMoney(toNumber(price).toFixed(2))}`;
   const exchangeRate: any = {
     USD: 1,
     UGX: 3720,
     KSH: 124,
     TSH: 2067,
   };
+
   if (ad_currency === "USD")
     return `${currency} ${toMoney(
       (toNumber(price) * exchangeRate[currency]).toFixed(2)
     )}`;
+
+
+  if (currency === ad_currency)
+    return `${currency.toUpperCase()} ${toMoney(toNumber(price).toFixed(0))}`;
+  
 
   return `${currency} ${toMoney(
     (

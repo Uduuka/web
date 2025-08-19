@@ -8,10 +8,10 @@ import React from "react";
 export default async function SubscriptionPage() {
   const { subscription, error, usage } = await fetchSubscriptions();
   const plan = env.subscriptionPlans[subscription?.plan ?? "hobby"];
-  console.log(plan);
+
   if (error || !plan) {
     return (
-      <div className="p-5 flex flex-col gap-5 text-accent">
+      <div className="flex flex-col gap-5 text-accent">
         <div className="p-5 bg-white shadow rounded-lg">
           <h1 className="text-2xl font-bold">Subscription & Billing</h1>
           <p>Manage your subscription, view usage, and billing history</p>
@@ -34,7 +34,7 @@ export default async function SubscriptionPage() {
   }
 
   return (
-    <div className="p-5 flex flex-col gap-5 text-accent">
+    <div className="flex flex-col gap-5 text-accent">
       <div className="p-5 bg-white shadow rounded-lg">
         <h1 className="text-2xl font-bold">Subscription & Billing</h1>
         <p>Manage your subscription, view usage, and billing history</p>
@@ -112,6 +112,11 @@ export default async function SubscriptionPage() {
                   Cancel subscription
                 </Button>
               )}
+              <Link href="/pricing">
+                <Button className="bg-transparent border border-primary text-primary hover:bg-primary hover:text-background">
+                  See all plans
+                </Button>
+              </Link>
             </div>
           </div>
           <div className="bg-white flex-1 rounded-lg shadow p-5 flex flex-col gap-5 col-span-3">

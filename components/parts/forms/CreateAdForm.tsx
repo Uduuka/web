@@ -2,7 +2,7 @@
 
 import Button from "@/components/ui/Button";
 import { Listing, Pricing } from "@/lib/types";
-import React, { useEffect, useState, useTransition } from "react";
+import React, { useState, useTransition } from "react";
 
 import AdForm from "./AdForm";
 import { PricingForm } from "./PricingForm";
@@ -11,7 +11,7 @@ import AdImagesUploadForm from "./AdImagesUploadForm";
 import { cn } from "@/lib/utils";
 import { Check, CheckCheck, ChevronLeft, LoaderCircle, X } from "lucide-react";
 import { BiQuestionMark } from "react-icons/bi";
-import { fetchAds, postAd } from "@/lib/actions";
+import { postAd, postPricing } from "@/lib/actions";
 
 export default function CreateAdForm({ className }: { className?: string }) {
   const [ad, setAd] = useState<Listing>();
@@ -60,14 +60,26 @@ export default function CreateAdForm({ className }: { className?: string }) {
         address: location.address,
       };
 
+      // Create a new ad with the provided data
       const newAd = await postAd(adData);
-      console.log(newAd);
+      if (!newAd.data?.id) {
+        setError("Failed to create ad. Please try again.");
+        return;
+      }
+
+      // Add pricing information
+      const { error: pricingError } = await postPricing(
+        pricings.map((p) => ({ ...p, ad_id: newAd.data.id }))
+      );
+
+      if (pricingError) {
+        setError("Failed to add pricing information.");
+        return;
+      }
+
+      // Upload ad images
     });
   };
-
-  useEffect(() => {
-    console.log({ submitting });
-  }, [submitting]);
 
   return (
     <div

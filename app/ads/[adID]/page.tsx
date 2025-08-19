@@ -3,7 +3,6 @@ import PriceMenuItem from "@/components/parts/cards/PriceMenuItem";
 import PriceTag from "@/components/parts/cards/PriceTag";
 import Carousel from "@/components/parts/layout/Carousel";
 import DetailsReviesTabs from "@/components/parts/layout/DetailsReviesTabs";
-import ScrollArea from "@/components/parts/layout/ScrollArea";
 import Distance from "@/components/parts/maps/Distance";
 import Button from "@/components/ui/Button";
 import { fetchAd, getProfile, getUser } from "@/lib/actions";
@@ -26,20 +25,21 @@ export default async function AdDetailsPage({
   const { error, data } = await fetchAd(adID);
   const ad = data as Listing;
 
-  const { pricing, seller_id } = ad;
+  const { pricings, seller_id } = ad;
 
   const userData = await getUser();
   const sellerProfile = await getProfile(ad.seller_id);
   const isSeller = userData.data?.user?.id === seller_id;
 
-  if (error) {
+  if (error || !pricings || !ad) {
     return notFound();
   }
+  const pricingScheme = pricings[0].scheme;
   return (
     <div className="grid grid-cols-4 p-5 gap-5">
       <div
         className={`bg-white p-5 justify-center items-center rounded-lg overflow-hidden col-span-4 sm:col-span-2 ${
-          pricing.scheme === "menu" ? "" : "sm:row-span-2"
+          pricingScheme === "menu" ? "" : "sm:row-span-2"
         }`}
       >
         <Carousel
@@ -51,7 +51,7 @@ export default async function AdDetailsPage({
 
       <div
         className={`h-fit bg-white p-5 rounded-lg flex flex-col gap-2 col-span-4 sm:col-span-2 ${
-          pricing.scheme === "menu" ? "sm:row-span-2 h-full" : ""
+          pricings[0].scheme === "menu" ? "sm:row-span-2 h-full" : ""
         }`}
       >
         <h1 className="text-accent text-2xl font-bold">{ad?.title}</h1>
@@ -59,19 +59,24 @@ export default async function AdDetailsPage({
 
         <div className="flex-1">
           <h1 className="text-accent font-bold text-lg pb-2 capitalize">
-            Pricing: {pricing.scheme} price
+            Pricing: {pricingScheme} price
           </h1>
-          {pricing.scheme === "menu" ? (
-            <PriceBoard pricing={ad.pricing} />
+          {pricingScheme === "menu" ? (
+            <PriceBoard pricing={pricings[0]} />
           ) : (
-            <ScrollArea className="flex flex-wrap justify-between items-center gap-2">
-              <div className="w-fit">
-                <PriceTag pricing={ad?.pricing!} className="w-full" />
-              </div>
-              <Button className="bg-primary/80 h-fit hover:bg-primary text-background w-fit min-w-40">
-                Add to cart
-              </Button>
-            </ScrollArea>
+            <div className="space-y-2">
+              {ad.pricings?.map((pricing, index) => (
+                <div
+                  className="flex group items-center justify-between gap-5 bg-orange-50 px-5 py-2 rounded-md"
+                  key={index}
+                >
+                  <PriceTag className="" pricing={pricing} />
+                  <Button className="bg-primary hidden group-hover:block transition-transform text-xs hover:bg-primary/90 text-background">
+                    Add to cart
+                  </Button>
+                </div>
+              ))}
+            </div>
           )}
         </div>
 
