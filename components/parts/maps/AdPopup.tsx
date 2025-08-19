@@ -38,9 +38,9 @@ export default function AdPopup({ ad, single }: ListingCardProps) {
           <h3 className="line-clamp-2 text-xs font-light">{title}</h3>
         </div>
 
-        <div className="pt-2">
-          {ad_pricing.scheme !== "menu" && <PriceTag pricing={ad_pricing} />}
-        </div>
+        {/* <div className="pt-2">
+          {ad_pricing?.scheme !== "menu" && <PriceTag pricing={ad_pricing} />}
+        </div> */}
 
         <div className="">
           <p className="text-xs font-thin">{distance} Km</p>

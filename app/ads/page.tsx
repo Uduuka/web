@@ -3,7 +3,7 @@ import React, { Suspense } from "react";
 
 export default async function ListingsPage() {
   return (
-    <div className="">
+    <div className="py-5">
       <Suspense>
         <AdsList />
       </Suspense>

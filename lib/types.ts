@@ -91,12 +91,14 @@ export interface PriceMenu {
 }
 
 export type Store = {
+  ads: any;
   id: string;
   name: string;
   logo?: string;
   address?: string
   location?: Location
   slug?: string
+  is_member?: boolean
   rating?: number;
   ratings?: number;
   description?: string;
@@ -227,6 +229,8 @@ export interface Profile {
   email: string
   phone: string | null
   full_names?: string
+  default_address?: string
+  location?: Location
   username?: string
   profile_pic?: string
   about?: string

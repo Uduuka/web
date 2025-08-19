@@ -1,10 +1,7 @@
 "use server";
-
-
-import { stores } from "./dev_db/db";
 import env from "./env";
 import { createClient } from "./supabase/server";
-import { ChatHead, Filters, Pricing } from "./types";
+import { ChatHead, Filters, Pricing, Profile } from "./types";
 
 export const signup = async({email, password} : {email: string, password: string}) => {
    return (await createClient()).auth.signUp({email, password})
@@ -18,8 +15,13 @@ export const getUser = async() =>{
    return (await createClient()).auth.getUser()
 }
 
-export const getProfile = async(uid: string) => {
-   return (await createClient()).from('users_view').select().eq('user_id', uid).single()
+export const createOrUpdateProfile = async(data: Profile) => {
+   return (await createClient()).from("profiles").upsert(data).select().single()
+}
+
+export const getProfile = async(uid?: string) => {
+   const {data: {user}} = await getUser()
+   return (await createClient()).from('profile_view').select().eq('user_id', uid ?? user?.id).single()
 }
 
 export const signout = async() => {
@@ -36,7 +38,7 @@ export const fetchCategories = async(filters?: {catSlug?: string, subCateSlug?: 
    return (await createClient()).from('categories').select("*, sub_categories(*)")
 }
 
-export const fetchAds = async(filters: Filters) => {
+export const fetchAds = async(filters: any) => {
    const supabase = createClient()
    
    const {location} = filters
@@ -45,16 +47,19 @@ export const fetchAds = async(filters: Filters) => {
    if(location){
       query = (await supabase).rpc('fetch_nearby_ads', {lat: location.latitude, lon: location.longitude})
    }else{
-      query = (await supabase).from("ads_list_view").select()
+      query = (await supabase).from("ads_list_view").select("*")
    }
 
    // Filter by search
-   if(filters){
-      if(filters.search){
-         query = query.or(`title.ilike.%${filters.search}%, description.ilike.%${filters.search}%, category_id.ilike.%${filters.search}%, sub_category_id.ilike.%${filters.search}%`)
-      }
+   if(filters.search){
+      query = query.or(`title.ilike.%${filters.search}%, description.ilike.%${filters.search}%, category_id.ilike.%${filters.search}%, sub_category_id.ilike.%${filters.search}%`)
    }
 
+   // Filter by store id
+   if(filters.storeID){
+      query = query.eq('store_id', filters.storeID)
+   }
+   
    // Filter by category slug
    if(filters.category){
       query = query.eq('category_id', filters.category)
@@ -68,14 +73,23 @@ export const fetchAds = async(filters: Filters) => {
    return await query
 }
 
-export const fetchPersonalAds = async()=>{
+export const fetchPersonalAds = async({store_id}: any)=>{
    const supabase = await createClient();
-   const {data} = await supabase.auth.getUser()
-     return await supabase.from("ads").select("*, pricing:pricings(*), images:ad_images(url)").eq("seller_id", data.user?.id);
+   const {data} = await supabase.auth.getUser();
+
+   let query = supabase.from("ads_list_view").select("*, pricings(*), images:ad_images(url)").eq("seller_id", data.user?.id)
+
+   if(store_id){
+      query = query.eq('store_id', store_id)
+   }else if(store_id === null){
+      query = query.is("store_id", null)
+   }
+
+   return await query;
 }
 
 export const fetchAd = async(id: string) => {
-   return(await createClient()).from("ads").select("*, seller:profiles(*), pricing:pricings(*), images:ad_images(*)").eq('id', id).single()
+   return(await createClient()).from("ads").select("*, seller:profiles(*), pricings(*), images:ad_images(*)").eq('id', id).single()
 }
 
 export const fetchFlashsales = async(filters: Filters) => {
@@ -159,8 +173,8 @@ export const postAd = async(ad: any) => {
    return (await createClient()).from("ads").insert(ad).select("id").single()
 }
 
-export const postPricing = async(pricing: Pricing<any>) => {
-   return (await createClient()).from("pricings").insert(pricing).select().single()
+export const postPricing = async(pricings: Pricing<any>[]) => {
+   return (await createClient()).from("pricings").insert(pricings).select()
 }
 
 export const uploadFiles = async(files: File[], backetName: string, folderName: string) => {
@@ -183,8 +197,10 @@ export const uploadFiles = async(files: File[], backetName: string, folderName: 
          return {url: `https://mqistandrulavcbncpwn.supabase.co/storage/v1/object/public/${data.fullPath}`}
 
       })
+
+      return Promise.all(uploadPromises)
    } catch (error) {
-      
+      return {error: `Unknown error occured while uploading files`}
    }
 }
 
@@ -257,6 +273,10 @@ export const updateAd = async(id: string, fields: object) => {
  return (await createClient()).from("ads").update(fields).eq("id", id)
 }
 
+export const updateMultipleAds = async(ids: string[], fields: object) => {
+   return (await createClient()).from("ads").update(fields).in("id", ids)
+}
+
 export const deleteImages = async(paths: string[]) => {
    return (await createClient()).storage.from('ads').remove(paths)
 }
@@ -321,6 +341,14 @@ export const fetchStoreData = async(storeID: string) => {
 
 export const createStore = async(data: object) =>{
    return (await createClient()).from("stores").insert(data)
+}
+
+export const fetchStoreAds = async(storeID: string) => {
+   return (await createClient()).from("ads_list_view").select("*, pricings(*)").eq("store_id", storeID)
+}
+
+export const fetchStores = async() => {
+   return (await createClient()).from("store_data").select("*")
 }
  
 

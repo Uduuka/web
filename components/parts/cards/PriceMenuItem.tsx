@@ -10,6 +10,9 @@ export default function PriceMenuItem({
   item: MenuItem;
   currency: Currency;
 }) {
+  if (!item) {
+    return null;
+  }
   return (
     <div className="flex gap-2 bg-secondary/70 hover:bg-secondary transition-colors rounded-lg overflow-hidden">
       <div className="w-20"></div>
@@ -22,7 +25,14 @@ export default function PriceMenuItem({
             defaultCurrency={currency}
             className="text-primary font-bold"
           />
-          <Button className="bg-primary text-background">Order now</Button>
+        </div>
+        <div className="flex gap-2 justify-end">
+          <Button className="bg-primary text-xs hover:bg-primary/90 text-background">
+            Place order
+          </Button>
+          <Button className="text-primary text-xs hover:bg-primary border border-primary hover:text-background">
+            Add to cart
+          </Button>
         </div>
       </div>
     </div>

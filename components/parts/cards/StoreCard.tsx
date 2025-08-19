@@ -1,6 +1,6 @@
 import { Store } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { MapPin, ShoppingBag, Star } from "lucide-react";
+import { ShoppingBag, Star } from "lucide-react";
 import Link from "next/link";
 import React, { ComponentProps } from "react";
 
@@ -40,16 +40,12 @@ export default function StoreCard({
                 <Star className="text-yellow-300 fill-yellow-300" size={15} />
                 <span>4.5 (83)</span>
               </p>
-              <p className="flex text-xs text-gray-500 gap-1 items-center">
-                <MapPin className="text-primary fill-primary" size={15} />
-                <span>4.5 Km from you</span>
-              </p>
             </div>
           </div>
         </div>
         <div className="h-10 bg-secondary px-3 py-2 flex items-center">
           <ShoppingBag className="mr-1 h-3.5 w-3.5" />
-          <p className="text-xs pl-2 mt-0.5">67 Ads</p>
+          <p className="text-xs pl-2 mt-0.5">{store.ads} Ads</p>
         </div>
       </div>
     </Link>

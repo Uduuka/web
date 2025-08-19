@@ -44,10 +44,7 @@ export default async function CategoryPage({ params }: { params: any }) {
           </ScrollArea>
         </div>
       )}
-      <AdsList
-        className=""
-        title={`Ads in ${category.name}`}
-      />
+      <AdsList className="" />
     </div>
   );
 }

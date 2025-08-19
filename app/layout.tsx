@@ -17,11 +17,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   const [fetching, startFetching] = useTransition();
-  const { setLocation, setCurrency, setUser, setProfile } = useAppStore();
+  const { setLocation, setCurrency, setUser, setProfile, setDeviceWidth } =
+    useAppStore();
 
   useEffect(() => {
     startFetching(async () => {
       const { error, data } = await getUser();
+      // Get the window width and set the search text accordingly
+      if (typeof window !== "undefined") {
+        const width = window.innerWidth;
+        setDeviceWidth(width);
+      }
       if (data.user) {
         setUser(data.user);
         const prof = await getProfile(data.user?.id);

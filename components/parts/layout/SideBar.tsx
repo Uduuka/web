@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { ComponentProps, useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 import {
@@ -52,11 +52,11 @@ export default function Sidebar() {
   );
 }
 
-const DefaultNav = () => {
+export const DefaultNav = ({ className, ...props }: ComponentProps<"nav">) => {
   const pathname = usePathname();
 
-  const [expandedCategories, setExpandedCategories] = useState(true);
-  const [expandedFilters, setExpandedFilters] = useState(true);
+  const [expandedCategories, setExpandedCategories] = useState(false);
+  const [expandedFilters, setExpandedFilters] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
 
   const [fetchingCategories, startFetchingCategories] = useTransition();
@@ -75,12 +75,15 @@ const DefaultNav = () => {
 
   return (
     <ScrollArea maxHeight="100%" className="h-full pr-3">
-      <nav className="flex-1 px-2 py-4 flex flex-col gap-2">
+      <nav
+        {...props}
+        className={cn("flex-1 px-2 py-4 flex flex-col gap-2", className)}
+      >
         <div className="flex flex-col gap-2">
           <Link href="/">
             <Button
               className={cn(
-                "w-full justify-start text-sm bg-transparent",
+                "w-full justify-start  text-inherit text-sm bg-transparent",
                 pathname === "/"
                   ? "bg-primary text-background"
                   : "bg-transparent hover:bg-secondary/50"
@@ -146,9 +149,9 @@ const DefaultNav = () => {
 
         <div className="">
           <Button
-            className={`w-full justify-between px-2 py-1 text-sm font-medium hover:bg-secondary/50 ${
+            className={`w-full justify-between px-2 py-1 text-sm ${
               expandedCategories
-                ? "bg-secondary/50 rounded-b-none"
+                ? "bg-secondary text-foreground rounded-b-none"
                 : "bg-transparent hover:bg-secondary/50"
             }`}
             onClick={() => setExpandedCategories(!expandedCategories)}
@@ -165,7 +168,7 @@ const DefaultNav = () => {
           </Button>
 
           {expandedCategories && (
-            <div className="p-3 bg-secondary/50 rounded-b-lg">
+            <div className="p-3 bg-secondary text-accent rounded-b-lg">
               {categories.map((category) => (
                 <CategoryButton category={category} key={category.slug} />
               ))}
@@ -175,9 +178,9 @@ const DefaultNav = () => {
 
         <div className="">
           <Button
-            className={`w-full justify-between px-2 text-sm py-1 font-medium hover:bg-secondary/50 ${
+            className={`w-full justify-between px-2 py-1 text-sm ${
               expandedFilters
-                ? "bg-secondary/50 rounded-b-none"
+                ? "bg-secondary text-foreground rounded-b-none"
                 : "bg-transparent hover:bg-secondary/50"
             }`}
             onClick={() => setExpandedFilters(!expandedFilters)}
@@ -194,7 +197,7 @@ const DefaultNav = () => {
           </Button>
 
           {expandedFilters && (
-            <FilterCard className="bg-secondary/50 p-3 rounded-b-lg" />
+            <FilterCard className="p-3 bg-secondary text-accent rounded-b-lg" />
           )}
         </div>
       </nav>
@@ -202,22 +205,13 @@ const DefaultNav = () => {
   );
 };
 
-const DashboardNav = () => {
+export const DashboardNav = () => {
   const pathname = usePathname();
 
   const { user } = useAppStore();
   return (
     <ScrollArea maxHeight="100%" className="h-full pr-3">
       <nav className="flex-1 px-2 py-4 flex flex-col gap-2">
-        <div className="w-full py-5 flex flex-col justify-center items-center border-b border-secondary">
-          <div className="h-20 w-20 bg-secondary rounded-full mb-5"></div>
-          {user?.user_metadata.username && (
-            <h1 className="text-xs text-accent">
-              {user?.user_metadata.username}
-            </h1>
-          )}
-          <p className="text-xs text-accent">{user?.email}</p>
-        </div>
         <div className="flex flex-col gap-2 pt-5">
           <Link href="/dashboard">
             <Button
@@ -316,17 +310,20 @@ const DashboardNav = () => {
   );
 };
 
-const StoreNav = () => {
+export const StoreNav = ({ className, ...props }: ComponentProps<"div">) => {
   const pathname = usePathname();
   const storeId = useParams()["storeID"];
   return (
     <ScrollArea maxHeight="100%" className="h-full pr-3 flex flex-col">
       <nav className="flex-1 px-2 py-4 flex flex-col gap-2">
-        <div className="flex flex-1 flex-col gap-2 pt-5">
+        <div
+          {...props}
+          className={cn("flex flex-1 flex-col gap-2 pt-5", className)}
+        >
           <Link href={`/dashboard/stores/${storeId}`}>
             <Button
               className={cn(
-                "w-full justify-start text-sm bg-transparent",
+                "w-full justify-start text-inherit text-sm bg-transparent",
                 pathname === `/dashboard/stores/${storeId}`
                   ? "bg-primary text-background"
                   : "bg-transparent hover:bg-secondary/50"
@@ -339,7 +336,7 @@ const StoreNav = () => {
           <Link href={`/dashboard/stores/${storeId}/ads`}>
             <Button
               className={cn(
-                "w-full justify-start text-sm bg-transparent",
+                "w-full justify-start text-inherit text-sm bg-transparent",
                 pathname.startsWith(`/dashboard/stores/${storeId}/ads`)
                   ? "bg-primary text-background"
                   : "bg-transparent hover:bg-secondary/50"
@@ -352,7 +349,7 @@ const StoreNav = () => {
           <Link href={`/dashboard/stores/${storeId}/pos`}>
             <Button
               className={cn(
-                "w-full justify-start text-sm bg-transparent",
+                "w-full justify-start text-inherit text-sm bg-transparent",
                 pathname.startsWith(`/dashboard/stores/${storeId}/pos`)
                   ? "bg-primary text-background"
                   : "bg-transparent hover:bg-secondary/50"
@@ -365,7 +362,7 @@ const StoreNav = () => {
           <Link href={`/dashboard/stores/${storeId}/orders`}>
             <Button
               className={cn(
-                "w-full justify-start text-sm bg-transparent",
+                "w-full justify-start text-inherit text-sm bg-transparent",
                 pathname.startsWith(`/dashboard/stores/${storeId}/orders`)
                   ? "bg-primary text-background"
                   : "bg-transparent hover:bg-secondary/50"
@@ -378,7 +375,7 @@ const StoreNav = () => {
           <Link href={`/dashboard/stores/${storeId}/reports`}>
             <Button
               className={cn(
-                "w-full justify-start text-sm bg-transparent",
+                "w-full justify-start text-inherit text-sm bg-transparent",
                 pathname.startsWith(`/dashboard/stores/${storeId}/reports`)
                   ? "bg-primary text-background"
                   : "bg-transparent hover:bg-secondary/50"
@@ -391,7 +388,7 @@ const StoreNav = () => {
           <Link href={`/dashboard/stores/${storeId}/settings`}>
             <Button
               className={cn(
-                "w-full justify-start text-sm bg-transparent",
+                "w-full justify-start text-inherit text-sm bg-transparent",
                 pathname.startsWith(`/dashboard/stores/${storeId}/settings`)
                   ? "bg-primary text-background"
                   : "bg-transparent hover:bg-secondary/50"
@@ -404,7 +401,7 @@ const StoreNav = () => {
           <Link href={`/dashboard/stores/${storeId}/feedback`}>
             <Button
               className={cn(
-                "w-full justify-start text-sm bg-transparent",
+                "w-full justify-start text-inherit text-sm bg-transparent",
                 pathname.startsWith(`/dashboard/stores/${storeId}/feedback`)
                   ? "bg-primary text-background"
                   : "bg-transparent hover:bg-secondary/50"
@@ -417,7 +414,7 @@ const StoreNav = () => {
           <Link href="/dashboard/trash">
             <Button
               className={cn(
-                "w-full justify-start text-sm bg-transparent",
+                "w-full justify-start text-inherit text-sm bg-transparent",
                 pathname.startsWith("/dashboard/trash")
                   ? "bg-primary text-background"
                   : "bg-transparent hover:bg-secondary/50"

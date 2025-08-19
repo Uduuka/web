@@ -1,7 +1,6 @@
 "use client";
 
 import Button from "@/components/ui/Button";
-import Popup from "@/components/ui/Popup";
 import { useAppStore } from "@/lib/store";
 import {
   FixedPrice,
@@ -13,7 +12,7 @@ import {
 } from "@/lib/types";
 import { cn, displayCurrencyAndPrice } from "@/lib/utils";
 import React, { ComponentProps } from "react";
-import PriceMenuItem from "./PriceMenuItem";
+import Link from "next/link";
 
 type PriceTagProps<T> = ComponentProps<"div"> & {
   pricing: Pricing<T>;
@@ -162,28 +161,17 @@ const RecurringTag = ({ pricing }: { pricing: Pricing<RecurringPrice> }) => {
 };
 
 const PriceMenuTag = ({ pricing }: { pricing: Pricing<PriceMenu> }) => {
+  const item = pricing.details.items[0];
+  if (!item) {
+    return null;
+  }
   return (
-    <div className="py-2">
-      <Popup
-        align="vertical"
-        className="w-full"
-        contentStyle="bg-gray-100"
-        trigger={
-          <Button className="bg-primary hover:bg-primary/95 text-background w-full">
-            View price menu
-          </Button>
-        }
-      >
-        <div className="w-full min-w-64 flex flex-col gap-1">
-          {pricing.details.items.map((item, index) => (
-            <PriceMenuItem
-              item={item}
-              currency={pricing.currency}
-              key={index}
-            />
-          ))}
-        </div>
-      </Popup>
+    <div className="">
+      <h1 className="flex gap-2 items-center flex-wrap">
+        <span>From</span>
+        <Money defaultCurrency={pricing.currency} price={item.price} />
+        <Button className="hover:bg-gray-200 text-xs">See full menu</Button>
+      </h1>
     </div>
   );
 };

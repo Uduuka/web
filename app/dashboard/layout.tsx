@@ -1,7 +1,7 @@
 "use client";
 
 import Button from "@/components/ui/Button";
-import { useBradcramps, useStoreData } from "@/lib/hooks/use_data";
+import { useBradcramps, useDashboardData } from "@/lib/hooks/use_data";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -10,7 +10,7 @@ import React, { ReactNode } from "react";
 export default function StoreLayout({ children }: { children: ReactNode }) {
   const { bradcramp } = useBradcramps();
   const pathname = usePathname();
-  const { fetching, error, storeData } = useStoreData();
+  const { fetching } = useDashboardData();
 
   return (
     <>
@@ -43,14 +43,23 @@ export default function StoreLayout({ children }: { children: ReactNode }) {
               )}
             </h1>
           )}
-
-          {pathname.includes("stores") && !pathname.includes("create") && (
+          {pathname.includes("/ads") && !pathname.includes("/create") ? (
+            <Link href="/dashboard/ads/create">
+              <Button className="bg-primary py-1 gap-1 text-xs text-background">
+                <Plus size={15} />
+                Post new ad
+              </Button>
+            </Link>
+          ) : pathname.startsWith("/dashboard/stores") &&
+            !pathname.startsWith("/dashboard/create") ? (
             <Link href="/dashboard/stores/create">
               <Button className="bg-primary py-1 text-xs text-background">
                 <Plus size={15} />
-                New store
+                Create a store
               </Button>
             </Link>
+          ) : (
+            <></>
           )}
         </div>
         {fetching ? <></> : children}

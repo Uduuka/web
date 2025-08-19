@@ -1,26 +1,30 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Filters, Listing } from "@/lib/types";
+import { useContext, useEffect, useRef, useState } from "react";
+import { Listing } from "@/lib/types";
 import { cn, responsiveColumns } from "@/lib/utils";
 import AdCard from "../cards/AdCard";
 import { useFilteredAds } from "@/lib/hooks/use_filtered_ads";
-import { useAppStore } from "@/lib/store";
+import AdCardSkelton from "@/components/skeltons/AdCardSkelton";
+import Button from "@/components/ui/Button";
+import { Info } from "lucide-react";
+import { StoreContext } from "@/contexts/store-context/StoreContext";
 
 export default function AdsList({
-  title,
   className,
+  errorMessage,
+  emptyMessage,
 }: {
-  title?: string;
   className?: string;
+  errorMessage?: string;
+  emptyMessage?: string;
 }) {
   const [columns, setColumns] = useState<Listing[][] | null>(null);
+  const { store } = useContext(StoreContext);
+  const { ads, fetching, error } = useFilteredAds(store?.id);
+  console.log(ads);
 
-  const { location } = useAppStore();
-
-  const { ads, fetching, error } = useFilteredAds();
-
-  // Organise ads in columns based on the device width
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!ads) {
@@ -28,7 +32,8 @@ export default function AdsList({
     }
 
     const organise = () => {
-      setColumns(responsiveColumns(ads));
+      const width = containerRef.current?.clientWidth || window.innerWidth;
+      setColumns(responsiveColumns(ads, width));
     };
     organise();
     window.addEventListener("resize", organise);
@@ -38,11 +43,72 @@ export default function AdsList({
     };
   }, [ads]);
 
+  if (fetching) {
+    const loadingColumns = responsiveColumns(
+      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+      containerRef.current?.clientWidth || window.innerWidth
+    );
+    return (
+      <div className={cn("px-5 py-3", className)}>
+        <div className="flex gap-5" ref={containerRef}>
+          {loadingColumns?.map((items, index) => (
+            <div
+              key={index}
+              className="flex flex-col gap-5 w-full"
+              style={{ minWidth: `${(1 / loadingColumns.length) * 90}%` }}
+            >
+              {items.map((item, i) => (
+                <AdCardSkelton key={item} />
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={cn("px-5 py-3", className)}>
+        <div className="flex flex-col  gap-3 bg-red-50 p-5 max-w-lg mx-auto text-error">
+          <div className="flex gap-2">
+            <Info />
+            <p className="text-sm">
+              Error: {errorMessage} {error}
+            </p>
+          </div>
+          <Button
+            onClick={() => {
+              window.location.reload();
+            }}
+            className="bg-primary w-full max-w-40 text-background"
+          >
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (ads?.length === 0) {
+    return (
+      <div className={cn("px-5 py-3", className)}>
+        <div className="bg-gray-200 text-gray-500 p-5 rounded-lg max-w-lg mx-auto">
+          <div className="flex  gap-2 justify-center mb-3">
+            <Info className="w-8 h-8" />
+            <p className="text-sm">
+              {emptyMessage ||
+                "No ads available that could match with the apllied filters. Please adjust the filters and try again"}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className={cn("px-5 py-3", className)}>
-      {fetching && <p className="text-uduuka-gray">Loading...</p>}
-      {error && <p className="text-error text-center w-full">Error: {error}</p>}
-      <div className="flex gap-5">
+    <div className={cn("px-5", className)}>
+      <div className="flex gap-5" ref={containerRef}>
         {columns?.map((items, index) => (
           <div
             key={index}

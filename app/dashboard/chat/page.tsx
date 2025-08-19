@@ -9,7 +9,6 @@ import { fetchThreads, getUser } from "@/lib/actions";
 import { useChatThread } from "@/lib/hooks/use_chat_threads";
 import { useAppStore } from "@/lib/store";
 import { ChatHead, Message } from "@/lib/types";
-import { profile } from "console";
 import Image from "next/image";
 
 export default function page() {
@@ -29,20 +28,17 @@ export default function page() {
   }, []);
   const { profile } = useAppStore();
   return (
-    <div className="p-5 space-y-5">
-      <div className="p-5 bg-white rounded-lg ">
-        <h1 className="text-accent">My chats</h1>
-      </div>
-      <div className="flex gap-5">
-        <div className="flex flex-col space-y-2 bg-white rounded-lg p-2 w-[25rem] h-[77vh]">
+    <div className="space-y-5">
+      <div className="flex gap-5 flex-col sm:flex-row">
+        <div className="flex flex-col space-y-2 bg-white rounded-lg p-2 w-full sm:w-[25rem] sm:h-[77vh]">
           <FormInput
             className="w-full px-3 text-xs py-2 text-accent"
             wrapperStyle="border-accent"
             placeholder="Search for chat threads"
           />
 
-          <ScrollArea maxHeight="100%" className="flex-1">
-            <div className="h-max w-full space-y-2">
+          <ScrollArea maxHeight="100%" maxWidth="100%" className="flex-1">
+            <div className="h-max w-full">
               {threads?.map((t, i) => {
                 const isSeller = t.seller_id === profile?.user_id;
                 return (
@@ -99,7 +95,7 @@ const ThreadButton = ({
   }, [messages]);
   return (
     <Button
-      className={`flex gap-2 w-full justify-start bg-transparent hover:bg-secondary/50  relative${
+      className={`flex gap-2 w-fit sm:w-full justify-start bg-transparent hover:bg-secondary/50  relative${
         isActive && "bg-secondary/70"
       }`}
       onClick={() => {

@@ -20,9 +20,11 @@ export default async function PricingPage() {
           <div className="border-b border-accent/30 pb-5">
             <h1 className="text-lg flex gap-2 items-center line-clamp-1">
               Hobby{" "}
-              <Button className="px-3 py-1 text-xs text-accent">
-                Current plan
-              </Button>
+              {(!subscription || subscription?.plan === "hobby") && (
+                <Button className="px-3 py-1 text-xs text-accent">
+                  Current plan
+                </Button>
+              )}
             </h1>
             <h1 className="text-4xl text-primary mt-3 font-[700]">
               Free{" "}
@@ -30,7 +32,7 @@ export default async function PricingPage() {
                 Forever
               </span>
             </h1>
-            {subscription?.plan === "hobby" ? (
+            {!subscription || subscription?.plan === "hobby" ? (
               <p className="text-success line-clamp-1 py-2 text-sm mx-auto mt-5 flex items-center gap-1">
                 <Check size={15} />
                 You are currently subscribed to this plan.
@@ -75,18 +77,26 @@ export default async function PricingPage() {
             Ads are set to in-active state if they are not browsed in for two
             week
           </p>
-          <p className="bg-green-50 flex text-xs items-center gap-1 text-success p-2 rounded-md mt-3">
+          <p className="bg-gray-50 flex text-xs items-center gap-1 text-gray-500 p-2 rounded-md mt-3">
             <Info className="h-8 w-8" />
             <span className="line-clamp-2 flex-1">
-              This plan is auto activated when a user signs up for an account.
+              This plan is suitable for buyers and quick dealers with a few ads
+              or a single ad to sell.
             </span>
           </p>
         </div>
         <div className="p-5 bg-white shadow hover:shadow-2xl flex flex-col transition-shadow rounded-lg">
           <div className="border-b border-accent/30 pb-5">
-            <h1 className="text-lg">Pro</h1>
+            <h1 className="text-lg">
+              Pro{" "}
+              {subscription?.plan === "pro" && (
+                <Button className="px-3 py-1 text-xs text-accent">
+                  Current plan
+                </Button>
+              )}
+            </h1>
             <h1 className="text-4xl text-primary mt-3 font-[700]">
-              Ugx 24,900
+              Ugx 30,000
               <span className="text-sm text-accent/50 font-normal">
                 / Month
               </span>
@@ -139,22 +149,25 @@ export default async function PricingPage() {
             Ads remain active untill they are intensionally deleted or archived
             by the seller
           </p>
-          <p className="bg-green-50 flex text-xs items-center gap-1 text-success p-2 rounded-md mt-3">
+          <p className="bg-blue-50 flex text-xs items-center gap-1 text-blue-500 p-2 rounded-md mt-3">
             <Info className="h-8 w-8" />
             <span className="line-clamp-2 flex-1">
-              This plan is maximises sales for sellers with shops or stores.
+              This plan is suitable for sellers who want to maximise sales and
+              are continuesily selling or have stores.
             </span>
           </p>
         </div>
         <div className="p-5 bg-white shadow hover:shadow-2xl  flex flex-col transition-shadow rounded-lg">
           <div className="border-b border-accent/30 pb-5">
-            <h1 className="text-lg">Entreprise</h1>
-            <h1 className="text-4xl text-primary mt-3 font-[700]">
-              Ugx 99,000
-              <span className="text-sm text-accent/50 font-normal">
-                / Month
-              </span>
+            <h1 className="text-lg">
+              Entreprise{" "}
+              {subscription?.plan === "entreprise" && (
+                <Button className="px-3 py-1 text-xs text-accent">
+                  Current plan
+                </Button>
+              )}
             </h1>
+            <h1 className="text-4xl text-primary mt-3 font-[700]">Custom</h1>
             {subscription?.plan === "pro" ? (
               <p className="text-success line-clamp-1 py-2 text-sm mx-auto mt-5 flex items-center gap-1">
                 <Check size={15} />
@@ -163,7 +176,7 @@ export default async function PricingPage() {
             ) : (
               <Link href="/dashboard/billing/pay?plan=entreprise">
                 <Button className="px-5 py-2 bg-primary hover:bg-primary/90 transition-shadow text-background text-sm mx-auto mt-5">
-                  Go Entreprise
+                  Contact sales
                 </Button>
               </Link>
             )}
@@ -198,10 +211,11 @@ export default async function PricingPage() {
             Ads remain active untill they are intensionally deleted or archived
             by the seller
           </p>
-          <p className="bg-green-50 flex text-xs items-center gap-1 text-success p-2 rounded-md mt-3">
+          <p className="bg-orange-50 flex text-xs items-center gap-1 text-primary p-2 rounded-md mt-3">
             <Info className="h-8 w-8" />
             <span className="line-clamp-2 flex-1">
-              This plan is maximises sales for sellers with shops or stores.
+              This plan is suitable for sellers who want custom features for an
+              entreprise business.
             </span>
           </p>
         </div>

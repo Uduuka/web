@@ -3,7 +3,6 @@
 import ScrollArea from "@/components/parts/layout/ScrollArea";
 import { ComponentProps, useState, useTransition } from "react";
 import { Error, Listing, Store } from "@/lib/types";
-import { cn } from "@/lib/utils";
 import Link from "next/link";
 import Button from "@/components/ui/Button";
 import { ArrowLeft, ArrowRight, ArrowUp } from "lucide-react";
