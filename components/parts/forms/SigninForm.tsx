@@ -4,8 +4,12 @@ import Button from "@/components/ui/Button";
 import FormInput from "@/components/ui/Input";
 import { getProfile, signin } from "@/lib/actions";
 import { useAppStore } from "@/lib/store";
+import { createClient } from "@/lib/supabase/client";
+import { Eye, EyeOff, Lock, Mail } from "lucide-react";
+import Link from "next/link";
 import { redirect, useSearchParams } from "next/navigation";
 import React, { useState } from "react";
+import { GrGoogle } from "react-icons/gr";
 
 export default function SigninForm() {
   const { setUser, setProfile } = useAppStore();
@@ -13,7 +17,7 @@ export default function SigninForm() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
   const handleSignin = async () => {
@@ -32,44 +36,107 @@ export default function SigninForm() {
     }
   };
 
+  const handleSigninWithGoogle = async () => {
+    const supabase = createClient();
+    let redirectTo =
+      process.env.NEXT_PUBLIC_SITE_URL ??
+      process.env.NEXT_PUBLIC_VERCEL_URL ??
+      "http://localhost:3000";
+    redirectTo = redirectTo.startsWith("http")
+      ? redirectTo
+      : `https://${redirectTo}`;
+    redirectTo = redirectTo.endsWith("/")
+      ? `${redirectTo}auth`
+      : `${redirectTo}/auth`;
+
+    console.log({ redirectTo });
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo,
+      },
+    });
+
+    if (error) {
+      setError(error.message);
+      return;
+    }
+  };
+
   return (
     <div className="w-full max-w-xs space-y-5 bg-white rounded-lg min-h-96 md:-ml-20 p-5">
-      <h1 className="text-center text-accent">Welcome back, please sign in</h1>
+      <h1 className="text-accent text-xl font-bold">Welcome back, sign in</h1>
+      <p className="text-sm -mt-5 text-gray-500">
+        To never miss on a deal near you.
+      </p>
       {error && <p className="text-error w-full text-center">{error}</p>}
-      <FormInput
-        placeholder="Username or email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        className="px-3 text-accent py-2"
-        type="text"
-      />
-      <FormInput
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        className="px-3 text-accent py-2"
-        type="password"
-      />
-      <Button
-        onClick={handleSignin}
-        className="bg-primary hover:bg-primary/95 text-background w-full py-2"
-      >
-        Submit
-      </Button>
-
+      <div className="flex gap-5">
+        <Button
+          onClick={handleSigninWithGoogle}
+          className="p-0 gap-2 px-5 py-2 text-primary w-full font-bold hover:bg-secondary shadow"
+        >
+          <GrGoogle size={20} />
+          Signin with Google
+        </Button>
+      </div>
       <div className="relative mb-10">
         <p className="text-center w-fit mx-auto text-accent/90 bg-white px-2 z-10 top-[50%] left-[50%] translate-y-[50%]">
           Or continue with
         </p>
         <div className="bg-accent/80 w-full h-0.5"></div>
       </div>
-
-      <Button className="bg-accent hover:bg-accent/95 text-background w-full py-2">
-        Google
+      <FormInput
+        placeholder="Email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        className="px-0 pr-3 text-accent py-2"
+        type="email"
+        icon={
+          <span className="px-2">
+            <Mail size={15} />
+          </span>
+        }
+        required
+      />
+      <FormInput
+        placeholder="Password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        className="px-0 pr-3 text-accent py-2"
+        type={showPassword ? "text" : "password"}
+        icon={
+          <span className="px-2">
+            <Lock size={15} />
+          </span>
+        }
+        actionBtn={
+          <span
+            className="px-1 text-gray-600"
+            onClick={() => setShowPassword(!showPassword)}
+          >
+            {!showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+          </span>
+        }
+        required
+      />
+      <Button
+        onClick={handleSignin}
+        className="bg-primary hover:bg-primary/95 text-background w-full py-2"
+      >
+        Signin
       </Button>
-      <Button className="bg-secondary hover:bg-secondary/95 w-full py-2">
-        Facebook
-      </Button>
+      <p className="text-center text-xs text-gray-500">
+        Not yet a member?{" "}
+        <Link href="/signup">
+          <span className="text-blue-500 hover:underline">Signup</span>
+        </Link>{" "}
+        or{" "}
+        <Link href="/reset-passord">
+          <span className="text-blue-500 line-clamp-1 hover:underline">
+            Reset password
+          </span>
+        </Link>
+      </p>
     </div>
   );
 }

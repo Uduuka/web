@@ -25,9 +25,9 @@ export default async function page() {
       </div>
     );
   }
-  
+
   return (
-    <div className="w-full flex min-h-[70vh] justify-center items-center p-5 pt-20">
+    <div className="w-full pt-5 flex min-h-[70vh] justify-center items-center">
       <SignupForm />
     </div>
   );
