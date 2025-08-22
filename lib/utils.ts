@@ -1,7 +1,7 @@
 import { twMerge } from "tailwind-merge";
 import { clsx, type ClassValue } from "clsx";
 import axios from "axios";
-import { Location } from "./types";
+import { ContactResult, Location } from "./types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -137,3 +137,41 @@ export const fetchDrivingDistance = async (
     return;
   }
 };
+
+
+export const detectContactType = (input: string): ContactResult => {
+  // Normalize email: lowercase + trim
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const emailCandidate = input.trim().toLowerCase();
+
+  if (emailRegex.test(emailCandidate)) {
+    return { type: "email", value: emailCandidate };
+  }
+
+  // Normalize phone: remove spaces, dashes, parentheses
+  const cleaned = input.replace(/[\s\-()]/g, "");
+
+  // Phone regex (digits, optional leading +)
+  const phoneRegex = /^\+?\d{7,}$/;
+
+  if (phoneRegex.test(cleaned)) {
+    return { type: "phone", value: cleaned };
+  }
+
+  return { type: "unknown", value: input };
+}
+
+export const getRedirectUrl = () => {
+  let redirectTo =
+      process.env.NEXT_PUBLIC_SITE_URL ??
+      process.env.NEXT_PUBLIC_VERCEL_URL ??
+      "http://localhost:3000";
+    redirectTo = redirectTo.startsWith("http")
+      ? redirectTo
+      : `https://${redirectTo}`;
+    redirectTo = redirectTo.endsWith("/")
+      ? `${redirectTo}auth`
+      : `${redirectTo}/auth`;
+
+  return redirectTo
+}

@@ -52,6 +52,10 @@ export interface AdImage {
 }
 
 export type Currency =  "USD" | "UGX" | "KSH" | "TSH"
+export type ContactResult =
+  | { type: "phone"; value: string }
+  | { type: "email"; value: string }
+  | { type: "unknown"; value: string };
 
 export interface Pricing<T> {
   ad_id?: string
