@@ -11,7 +11,13 @@ import AdImagesUploadForm from "./AdImagesUploadForm";
 import { cn } from "@/lib/utils";
 import { Check, CheckCheck, ChevronLeft, LoaderCircle, X } from "lucide-react";
 import { BiQuestionMark } from "react-icons/bi";
-import { postAd, postPricing } from "@/lib/actions";
+import {
+  createAdImages,
+  postAd,
+  postPricing,
+  uploadFiles,
+} from "@/lib/actions";
+import { redirect, useSearchParams } from "next/navigation";
 
 export default function CreateAdForm({ className }: { className?: string }) {
   const [ad, setAd] = useState<Listing>();
@@ -19,7 +25,7 @@ export default function CreateAdForm({ className }: { className?: string }) {
   const [currentStep, setCurrentStep] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [submitting, startSubmitting] = useTransition();
-
+  const store_id = useSearchParams().get("store_id");
   const [location, setLocation] = useState<{
     locationString: string;
     address: string;
@@ -58,12 +64,14 @@ export default function CreateAdForm({ className }: { className?: string }) {
         ...ad,
         location: location.locationString,
         address: location.address,
+        store_id: store_id,
       };
 
       // Create a new ad with the provided data
       const newAd = await postAd(adData);
+
       if (!newAd.data?.id) {
-        setError("Failed to create ad. Please try again.");
+        setError(`An error ocuured. \n ${newAd.error?.message}`);
         return;
       }
 
@@ -78,6 +86,24 @@ export default function CreateAdForm({ className }: { className?: string }) {
       }
 
       // Upload ad images
+      const uploadResults = await uploadFiles(adImages, "ads", newAd.data.id);
+      uploadResults.forEach((r) => {
+        if (r.error) {
+          setError((e) => (e ?? "")?.concat(`\n ${r.error}`));
+        }
+      });
+      const adImagesUrls = uploadResults
+        .filter((i) => Boolean(i.url))
+        .map((i) => ({ url: i.url!, ad_id: newAd.data.id, is_default: true }));
+
+      const { error: imagesError } = await createAdImages(adImagesUrls);
+      if (imagesError) {
+        setError("An error occured while creating images for the ad");
+        return;
+      }
+      return redirect(
+        store_id ? `/dashboard/stores/${store_id}/ads` : `/dashboard/ads`
+      );
     });
   };
 
@@ -234,10 +260,6 @@ export default function CreateAdForm({ className }: { className?: string }) {
             /* Step four */
             currentStep === 3 && (
               <AdImagesUploadForm
-                adImages={adImages.map((image) => ({
-                  url: URL.createObjectURL(image),
-                  ad_id: ad?.id || "",
-                }))}
                 handleUpload={handleUpload}
                 handleBack={prev}
                 handleNext={next}
@@ -357,3 +379,5 @@ export default function CreateAdForm({ className }: { className?: string }) {
     </div>
   );
 }
+
+// Complete error handling and create update form.

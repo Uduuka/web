@@ -1,6 +1,6 @@
-import { getUser } from "./actions";
+import { Environment } from "./types";
 
-const env: any = {
+const env: Environment = {
   currencyOptions: [
     { value: "USD" as const, label: "USD" },
     { value: "UGX" as const, label: "UGX" },
@@ -8,7 +8,7 @@ const env: any = {
     { value: "TSH" as const, label: "TSH" },
   ],
   pricingSchemes: [
-    { value: "fixed" as const, label: "Fixed price" },
+    { value: "fixed", label: "Fixed price" },
     { value: "range" as const, label: "Price Range" },
     { value: "unit" as const, label: "Unit price" },
     { value: "recurring" as const, label: "Recurring price" },
@@ -27,7 +27,7 @@ const env: any = {
       features: ["Pro for the first week", "Ad browsing", "Map cruising","In app real time chat", "Upto 5 active ads", "Upto 5 images per ad", "One free store", "Limited POS system" ] 
     },
     pro: {
-      pricing: "Ugx 29000", 
+      pricing: "UGX 30,000", 
       limits: {
         ads: "Unlimited",
         stores: 5,
@@ -38,7 +38,7 @@ const env: any = {
       features: ["Unlimited active ads", "Upto 5 stores", "Upto 5 flash sales", "One free ad promotion per week", "Pricing promotions", "AI powered mini POS system", "And much more"] 
     },
     entrprise:{ 
-      pricing: "Ugx ", 
+      pricing: "Custom", 
       limits: {
         ads: "Unlimited",
         stores: "Unlimited",
@@ -49,7 +49,12 @@ const env: any = {
       features: ["Custom features", "Custom pricing", "Priority support", "And much more"] 
     },
   },
-  storageUrl: "http://127.0.0.1:54321/storage/v1/object/public/"
+  storageUrl: "http://127.0.0.1:54321/storage/v1/object/public/",
+  nextUrls: {
+    pay: "/dashboard/billing/pay",
+    "create-ad": "/dashboard/ads/create",
+    "create-store": "/dashboard/stores/create"
+  }
 };
 
 export default env;

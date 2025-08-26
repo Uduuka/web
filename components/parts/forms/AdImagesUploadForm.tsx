@@ -1,11 +1,8 @@
 import Button from "@/components/ui/Button";
-import Image from "next/image";
 import React from "react";
 import ScrollArea from "../layout/ScrollArea";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
-import { AdImage } from "@/lib/types";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import FileUploadForm from "./FileUploadForm";
-import { deleteImages } from "@/lib/actions";
 
 export default function AdImagesUploadForm({
   adImages,
@@ -13,52 +10,20 @@ export default function AdImagesUploadForm({
   handleBack,
   handleNext,
 }: {
-  adImages?: AdImage[];
+  adImages?: string[];
   handleUpload: (files: File[]) => void;
   handleBack?: () => void;
   handleNext?: () => void;
 }) {
-  const handleDeleteImage = async (url: string) => {
-    const index = url.indexOf("/ads");
-    if (index !== -1) {
-      const path = url.slice(index);
-      const { error, data } = await deleteImages([path]);
-
-      console.log({ error, data });
-    }
-  };
   return (
     <div className="w-full text-center h-full flex flex-col">
       <p className="text-xs font-thin text-accent pt-2">
         Upload clean and clear images of what your selling.
       </p>
-      {adImages && (
-        <div className="flex flex-wrap gap-2 pt-2 px-5">
-          {adImages.map((image, index) => (
-            <div
-              key={index}
-              className="w-20 h-20 rounded-lg group overflow-hidden relative"
-            >
-              <Button
-                onDoubleClick={() => handleDeleteImage(image.url)}
-                className="absolute top-1 right-1 p-1 rounded-full text-error bg-secondary hidden group-hover:flex"
-              >
-                <X size={12} />
-              </Button>
-              <Image
-                src={image.url}
-                height={100}
-                width={100}
-                alt="Image"
-                className="object-cover h-full w-full"
-              />
-            </div>
-          ))}
-        </div>
-      )}
       <ScrollArea maxHeight="100%" className="flex-1">
         <FileUploadForm
           onFilesChange={handleUpload}
+          oldImages={adImages}
           options={{
             allowedMimeTypes: ["image/*"],
             bucketName: "ads",

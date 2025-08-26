@@ -21,7 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from "./Table";
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import Button from "@/components/ui/Button";
 import FormInput from "@/components/ui/Input";
 import Popup from "@/components/ui/Popup";
@@ -32,6 +32,7 @@ interface DataTableProps<TData, TValue> {
   data: TData[];
   errorMessage?: ReactNode;
   emptyMessage?: ReactNode;
+  onRowSelect?: (seletedRows: TData[]) => void;
 }
 
 export function DataTable<TData, TValue>({
@@ -39,6 +40,7 @@ export function DataTable<TData, TValue>({
   data,
   errorMessage,
   emptyMessage = "No results.",
+  onRowSelect,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -61,6 +63,12 @@ export function DataTable<TData, TValue>({
       columnVisibility,
     },
   });
+
+  useEffect(() => {
+    if (onRowSelect) {
+      onRowSelect(table.getSelectedRowModel().rows.map((r) => r.original));
+    }
+  }, [table.getSelectedRowModel().rows]);
 
   return (
     <div className="flex flex-col gap-5 min-h-[80vh]">
@@ -127,21 +135,32 @@ export function DataTable<TData, TValue>({
             </TableHeader>
             <TableBody>
               {table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && "selected"}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
+                table.getRowModel().rows.map((row) => {
+                  const isSelected = row.getIsSelected();
+                  return (
+                    <TableRow
+                      key={row.id}
+                      onClick={() => {
+                        row.toggleSelected(!isSelected);
+                      }}
+                      data-state={row.getIsSelected() && "selected"}
+                    >
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell
+                          key={cell.id}
+                          className={`first:max-w-40 ${
+                            isSelected ? "bg-orange-100" : ""
+                          }`}
+                        >
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  );
+                })
               ) : (
                 <TableRow>
                   <TableCell

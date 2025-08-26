@@ -39,6 +39,21 @@ const nextConfig: NextConfig = {
         port: "54321",
         pathname: "/**",
         search: "",
+      },
+      {
+        hostname: "lh3.googleusercontent.com",
+        protocol: "https",
+        port: "",
+        pathname: "/**",
+        search: "",
+      },
+
+      {
+        hostname: "mqistandrulavcbncpwn.supabase.co",
+        protocol: "https",
+        port: "",
+        pathname: "/**",
+        search: "",
       }
       
     ],

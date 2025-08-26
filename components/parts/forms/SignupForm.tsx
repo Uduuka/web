@@ -6,9 +6,18 @@ import { signup } from "@/lib/actions";
 import { createClient } from "@/lib/supabase/client";
 import { Profile } from "@/lib/types";
 import { getRedirectUrl } from "@/lib/utils";
-import { Eye, EyeOff, Lock, Mail, User, UserSearch } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  LoaderCircle,
+  Lock,
+  Mail,
+  User,
+  UserSearch,
+} from "lucide-react";
 import Link from "next/link";
-import React, { useState } from "react";
+import { redirect } from "next/navigation";
+import React, { useState, useTransition } from "react";
 import { GrGoogle } from "react-icons/gr";
 
 export default function SignupForm() {
@@ -16,28 +25,27 @@ export default function SignupForm() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [profile, setProfile] = useState<Profile>();
-  const [success, setSuccess] = useState<boolean>();
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [submiting, startSubmiting] = useTransition();
 
-  const handleSignupWithEmail = async () => {
-    const { error, data } = await signup({
-      email,
-      password,
-      // options: {
-      //   emailRedirectTo: getRedirectUrl(),
-      //   data: profile,
-      // },
+  const handleSignupWithEmail = () => {
+    startSubmiting(async () => {
+      const { error } = await signup({
+        email,
+        password,
+        profile,
+      });
+
+      if (error) {
+        console.log(error);
+        setError(error.message);
+        return;
+      }
+
+      redirect(`/verify-email?email=${email}`);
     });
-
-    console.log({ error, data });
-    if (error) {
-      setError(error.message);
-      return;
-    }
-
-    setSuccess(true);
   };
 
   const handleSignupWithGoogle = async () => {
@@ -55,18 +63,11 @@ export default function SignupForm() {
     }
   };
 
-  if (success) {
-    return (
-      <div className="h-96 w-full flex justify-center items-center p-5">
-        <div className="p-5 bg-green-50 text-success rounded-lg w-full max-w-sm">
-          <p className="text-center">Signup was successiful!</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="w-full max-w-xs space-y-5 bg-white rounded-lg min-h-96 md:-ml-20 p-5">
+    <form
+      action={handleSignupWithEmail}
+      className="w-full max-w-xs space-y-5 bg-white rounded-lg min-h-96 md:-ml-20 p-5"
+    >
       <h1 className="text-accent text-xl font-bold">
         Welcome, create an account.
       </h1>
@@ -75,6 +76,7 @@ export default function SignupForm() {
       </p>
       {error && <p className="text-error w-full text-center">{error}</p>}
       <Button
+        type="button"
         onClick={handleSignupWithGoogle}
         className="p-0 gap-2 px-5 py-2 text-primary font-bold w-full hover:bg-secondary shadow"
       >
@@ -101,13 +103,14 @@ export default function SignupForm() {
         }
         required
       />
+
       <FormInput
-        placeholder="Username"
-        value={profile?.username ?? ""}
+        placeholder="name"
+        value={profile?.name ?? ""}
         onChange={(e) =>
           setProfile({
             ...(profile ?? ({} as Profile)),
-            username: e.target.value,
+            name: e.target.value,
           })
         }
         className="px-0 pr-3 text-accent py-2"
@@ -118,13 +121,14 @@ export default function SignupForm() {
           </span>
         }
       />
+
       <FormInput
         placeholder="Full names"
-        value={profile?.full_names ?? ""}
+        value={profile?.full_name ?? ""}
         onChange={(e) =>
           setProfile({
             ...(profile ?? ({} as Profile)),
-            full_names: e.target.value,
+            full_name: e.target.value,
           })
         }
         className="px-0 pr-3 text-accent capitalize py-2"
@@ -178,11 +182,11 @@ export default function SignupForm() {
         }
       />
       <Button
-        onClick={handleSignupWithEmail}
+        type="submit"
         disabled={!email || !(password && password === confirmPassword)}
         className="bg-primary hover:bg-primary/95 text-background w-full py-2 disabled:cursor-not-allowed"
       >
-        Submit
+        {submiting ? <LoaderCircle className="animate-spin" /> : <>Signup</>}
       </Button>
       <p className="text-center text-xs text-gray-500">
         Already a member?{" "}
@@ -190,12 +194,12 @@ export default function SignupForm() {
           <span className="text-blue-500 hover:underline">Signin</span>
         </Link>{" "}
         or{" "}
-        <Link href="/reset-passord">
+        <Link href="/forgot-password">
           <span className="text-blue-500 line-clamp-1 hover:underline">
-            Reset password
+            Forgot password
           </span>
         </Link>
       </p>
-    </div>
+    </form>
   );
 }

@@ -125,10 +125,14 @@ export default function AdsTable({
   showAdd?: boolean;
 }) {
   const storeID = useParams()["storeID"] as string;
+  const handleRowSelect = (selectedRows: Listing[]) => {
+    console.log(selectedRows);
+  };
   return (
     <DataTable
       columns={columns}
       data={data ?? []}
+      onRowSelect={handleRowSelect}
       emptyMessage={
         <div className="text-gray-500 h-full w-full bg-gray-50 p-5">
           <h1 className="flex gap-3 items-center justify-center">
