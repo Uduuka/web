@@ -81,9 +81,11 @@ const Dropzone = ({
 const DropzoneContent = ({
   className,
   onFilesChange,
+  oldImages,
 }: {
   className?: string;
   onFilesChange: (files: File[]) => void;
+  oldImages?: string[];
 }) => {
   const {
     files,
@@ -128,7 +130,27 @@ const DropzoneContent = ({
 
   return (
     <ScrollArea className={cn("p-2", className)}>
-      <div className="h-max">
+      <div className="h-fit space-y-2">
+        {oldImages?.length &&
+          oldImages.map((o, i) => (
+            <div key={i} className="flex gap-x-2 items-center group">
+              <div className="h-32 w-32 rounded-lg overflow-hidden shrink-0 bg-muted flex items-center justify-center">
+                <Image
+                  src={o}
+                  height={100}
+                  width={100}
+                  alt={`old image ${i}`}
+                  className="object-cover h-full w-full"
+                />
+              </div>
+              <Button
+                className="shrink-0 text-accent hover:text-background p-0 bg-transparent hover:bg-accent opacity-0 group-hover:opacity-100"
+                onClick={() => {}}
+              >
+                <X />
+              </Button>
+            </div>
+          ))}
         {files.map((file, idx) => {
           const fileError = errors.find((e) => e.name === file.name);
           const isSuccessfullyUploaded = !!successes.find(
@@ -138,7 +160,7 @@ const DropzoneContent = ({
           return (
             <div
               key={`${file.name}-${idx}`}
-              className="flex gap-x-2 items-center group first:mt-4 last:mb-4"
+              className="flex gap-x-2 items-center group"
             >
               {file.type.startsWith("image/") ? (
                 <div className="h-32 w-32 rounded-lg overflow-hidden shrink-0 bg-muted flex items-center justify-center">

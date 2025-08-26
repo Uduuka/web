@@ -104,43 +104,45 @@ export default async function AdDetailsPage({
 
       <div className="bg-white flex-1 p-5 rounded-lg col-span-4 sm:col-span-2">
         <h1 className="text-accent border-b ">Seller details</h1>
-        <div className="flex-1 flex flex-col h-full py-5 ">
-          <h1 className="text-accent/80 pb-2">
-            {sellerProfile.data.full_names}
-          </h1>
-          <p className="text-accent/60 text-xs">{sellerProfile.data.about}</p>
-          {!isSeller && userData.data.user && (
-            <div className="flex gap-5 py-4">
-              <Button
-                disabled={isSeller}
-                className="bg-secondary w-full hover:bg-secondary/90 text-xs"
-              >
-                Show contacts
+        {sellerProfile.data && (
+          <div className="flex-1 flex flex-col h-full py-5 ">
+            <h1 className="text-accent/80 pb-2 capitalize">
+              {sellerProfile.data.full_name}
+            </h1>
+            <p className="text-accent/60 text-xs">{sellerProfile.data.about}</p>
+            {!isSeller && userData.data.user && (
+              <div className="flex gap-5 py-4">
+                <Button
+                  disabled={isSeller}
+                  className="bg-secondary w-full hover:bg-secondary/90 text-xs"
+                >
+                  Show contacts
+                </Button>
+                <OpenChat
+                  ad={{ ...ad, seller: sellerProfile.data }}
+                  seller={ad.seller_id}
+                  buyer={userData.data.user?.id}
+                  isSeller={isSeller}
+                />
+              </div>
+            )}
+            <div className="flex-1"></div>
+            <div className="flex gap-2 justify-end">
+              <Button className="bg-transparent hover:bg-accent/50 text-accent/80 hover:text-background  h-6 w-6 p-0 rounded-sm">
+                <RxShare1 size={18} />
+              </Button>{" "}
+              <Button className="bg-transparent hover:bg-accent/50 text-accent/80 hover:text-background  h-6 w-6 p-0 rounded-sm">
+                <SlLike size={18} />
+              </Button>{" "}
+              <Button className="bg-transparent hover:bg-accent/50 text-accent/80 hover:text-background  h-6 w-6 p-0 rounded-sm">
+                <SlDislike size={18} />
+              </Button>{" "}
+              <Button className="bg-transparent hover:bg-accent/50 text-accent/80 hover:text-background  h-6 w-6 p-0 rounded-sm">
+                <VscFeedback size={18} />
               </Button>
-              <OpenChat
-                ad={{ ...ad, seller: sellerProfile.data }}
-                seller={ad.seller_id}
-                buyer={userData.data.user?.id}
-                isSeller={isSeller}
-              />
             </div>
-          )}
-          <div className="flex-1"></div>
-          <div className="flex gap-2 justify-end">
-            <Button className="bg-transparent hover:bg-accent/50 text-accent/80 hover:text-background  h-6 w-6 p-0 rounded-sm">
-              <RxShare1 size={18} />
-            </Button>{" "}
-            <Button className="bg-transparent hover:bg-accent/50 text-accent/80 hover:text-background  h-6 w-6 p-0 rounded-sm">
-              <SlLike size={18} />
-            </Button>{" "}
-            <Button className="bg-transparent hover:bg-accent/50 text-accent/80 hover:text-background  h-6 w-6 p-0 rounded-sm">
-              <SlDislike size={18} />
-            </Button>{" "}
-            <Button className="bg-transparent hover:bg-accent/50 text-accent/80 hover:text-background  h-6 w-6 p-0 rounded-sm">
-              <VscFeedback size={18} />
-            </Button>
           </div>
-        </div>
+        )}
       </div>
 
       <div className="col-span-4 bg-white p-5 rounded-lg">

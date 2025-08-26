@@ -32,8 +32,8 @@ export default function OpenChat({ ad, seller, buyer, isSeller }: ChatProps) {
         head = {
           ...thread,
           title: isSeller
-            ? thread.buyer.username ?? "New chat"
-            : thread.seller.username ?? "New chat",
+            ? thread.buyer.name ?? "New chat"
+            : thread.seller.name ?? "New chat",
         };
       } else {
         const s = isSeller ? profile : ad.seller;
@@ -41,8 +41,8 @@ export default function OpenChat({ ad, seller, buyer, isSeller }: ChatProps) {
         head = {
           seller_id: seller,
           seller: s,
-          buyer: b,
-          title: isSeller ? b.username : s.username,
+          buyer: b!,
+          title: (isSeller ? b?.name : s.name) ?? "",
           ad_id: ad.id,
           buyer_id: buyer,
           messages: [],

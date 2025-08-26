@@ -7,7 +7,15 @@ import Link from "next/link";
 import React, { useEffect, useRef, useState } from "react";
 import env from "@/lib/env";
 import Dropdown from "@/components/ui/Dropdown";
-import { Check, Lock, MapPin, Menu, ShieldQuestion, X } from "lucide-react";
+import {
+  Check,
+  LoaderCircle,
+  Lock,
+  MapPin,
+  Menu,
+  ShieldQuestion,
+  X,
+} from "lucide-react";
 import SearchBar from "../forms/SearchBar";
 import { cn } from "@/lib/utils";
 import Button from "@/components/ui/Button";
@@ -18,6 +26,7 @@ import { signout } from "@/lib/actions";
 import { redirect, useParams, usePathname } from "next/navigation";
 import { DashboardNav, DefaultNav, StoreNav } from "./SideBar";
 import ScrollArea from "./ScrollArea";
+import { Currency } from "@/lib/types";
 
 export default function Navbar({ fetchingUser }: { fetchingUser?: boolean }) {
   const {
@@ -92,12 +101,12 @@ export default function Navbar({ fetchingUser }: { fetchingUser?: boolean }) {
         </div>
         <div className="hidden md:flex items-center gap-4">
           <Select
-            options={env.currencyOptions}
+            options={env.currencyOptions as { label: string; value: string }[]}
             className="bg-background text-primary text-xs"
             triggerStyle="text-sm py-2 gap-1"
             value={currency}
             onChange={(c) => {
-              setCurrency(c);
+              setCurrency(c as Currency);
               localStorage.setItem("currency", c);
             }}
             placeholder="Currency"
@@ -158,20 +167,36 @@ export default function Navbar({ fetchingUser }: { fetchingUser?: boolean }) {
           </Dropdown>
 
           {fetchingUser ? (
-            <></>
+            <Button className="bg-background text-primary border-2 h-10 w-10 rounded-full p-0">
+              <LoaderCircle className="animate-spin" />
+            </Button>
           ) : (
             <>
               {user ? (
                 <Popup
                   trigger={
-                    <Button className="bg-transparent border-2 rounded-full p-1">
-                      <BiUser size={25} />
+                    <Button className="bg-transparent border-2 h-10 w-10 rounded-full p-0">
+                      <Image
+                        src={profile?.avatar_url ?? "/placeholder.svg"}
+                        alt="avatar"
+                        height={100}
+                        width={100}
+                        className="h-full w-full bg-cover rounded-full"
+                      />
                     </Button>
                   }
                   align="diagonal-left"
                 >
                   <div className="w-54 p-2">
-                    <div className="h-20 w-20 bg-secondary rounded-full mx-auto"></div>
+                    <div className="h-20 w-20 bg-secondary rounded-full mx-auto">
+                      <Image
+                        src={profile?.avatar_url ?? "/placeholder.svg"}
+                        alt="avatar"
+                        height={100}
+                        width={100}
+                        className="h-full w-full bg-cover rounded-full"
+                      />
+                    </div>
                     <div className="py-2 text-accent border-b border-accent/50">
                       <h1 className="text-center py-2">
                         {user.user_metadata.username}
@@ -254,12 +279,14 @@ export default function Navbar({ fetchingUser }: { fetchingUser?: boolean }) {
         <div className="flex w-full justify-end px-5 py-3 border-b border-background">
           <div className="w-full flex gap-3">
             <Select
-              options={env.currencyOptions}
+              options={
+                env.currencyOptions as { label: string; value: string }[]
+              }
               className="bg-background text-primary text-xs"
               triggerStyle="text-sm py-2 gap-1"
               value={currency}
               onChange={(c) => {
-                setCurrency(c);
+                setCurrency(c as Currency);
                 localStorage.setItem("currency", c);
               }}
               placeholder="Currency"
@@ -332,10 +359,18 @@ export default function Navbar({ fetchingUser }: { fetchingUser?: boolean }) {
           <div className="h-fit w-full">
             {user && (
               <div className="space-y-5 p-5 border-b border-background">
-                <div className="flex gap-3 items-center">
-                  <div className="h-24 w-20 rounded-lg border-background bg-background border"></div>
+                <div className="flex flex-col justify-center items-center gap-3">
+                  <div className="h-24 w-24 rounded-full border-background bg-background border">
+                    <Image
+                      src={profile?.avatar_url ?? "/placeholder.svg"}
+                      alt="avatar"
+                      height={100}
+                      width={100}
+                      className="h-full w-full bg-cover rounded-full"
+                    />
+                  </div>
                   <div className="h-fit text-center">
-                    <h1 className="text-lg font-bold">{profile?.full_names}</h1>
+                    <h1 className="text-lg font-bold">{profile?.full_name}</h1>
                     <p className="text-xs">
                       {user.email || "No email provided"}
                     </p>

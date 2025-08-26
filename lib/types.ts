@@ -232,12 +232,23 @@ export interface Profile {
   user_id: string
   email: string
   phone: string | null
-  full_names?: string
+  full_name?: string
   default_address?: string
   location?: Location
-  username?: string
-  profile_pic?: string
+  conections?: any[]
+  name?: string
+  avatar_url?: string
   about?: string
+  subscription?: Subscription
+}
+
+interface Subscription{
+  plan?: "hobby"| "pro"| "entreprise"
+  pricing?: "Free" | "UGX 30,000" | "Custom"
+  features?: string[]
+  expires_at?: string
+  usage?: Record<string, number>
+  limits?: Record<string, number | string>
 }
 
 export interface Unit {
@@ -254,4 +265,12 @@ export interface SubUnit {
   base_unit?: string
   abbr: string
   conversion_factor: number
+}
+
+export interface Environment{
+  currencyOptions: Record<string, string>[]
+  pricingSchemes: Record<string, string>[]
+  subscriptionPlans: Record<string, Subscription>
+  storageUrl: string
+  nextUrls: Record<string, string>
 }

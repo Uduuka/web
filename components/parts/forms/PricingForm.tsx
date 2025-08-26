@@ -56,12 +56,14 @@ export function PricingForm({
         <div className="flex gap-5 w-full">
           <FormGroup label="Currency" required className="w-full  text-left">
             <Select
-              options={env.currencyOptions}
+              options={
+                env.currencyOptions as { label: string; value: string }[]
+              }
               className="text-foreground "
               triggerStyle="w-full bg-background py-2"
               value={currency ?? currency}
               onChange={(v) => {
-                setCurrency(v);
+                setCurrency(v as Currency);
               }}
             />
           </FormGroup>
@@ -72,7 +74,7 @@ export function PricingForm({
           >
             <Select
               placeholder="Select a pricing scheme"
-              options={env.pricingSchemes}
+              options={env.pricingSchemes as { label: string; value: string }[]}
               className="text-foreground "
               triggerStyle="w-full bg-background py-2"
               value={scheme}

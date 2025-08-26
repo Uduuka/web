@@ -8,7 +8,9 @@ import FormInput from "@/components/ui/Input";
 import { cn } from "@/lib/utils";
 import Button from "@/components/ui/Button";
 import { createOrUpdateProfile } from "@/lib/actions";
-import { redirect } from "next/navigation";
+import { redirect, useSearchParams } from "next/navigation";
+import { Info, LoaderCircle } from "lucide-react";
+import env from "@/lib/env";
 
 export default function ProfileForm({
   currentProfile,
@@ -21,6 +23,13 @@ export default function ProfileForm({
   const [error, setError] = useState<string>();
   const [submiting, startSubmiting] = useTransition();
 
+  const next = useSearchParams().get("next");
+  const nextSearchQuery = useSearchParams().get("sq");
+
+  const nextUrl = next
+    ? `${env.nextUrls[next]}${nextSearchQuery ? `?${nextSearchQuery}` : ""}`
+    : "/dashboard";
+
   const handleSubmit = () => {
     startSubmiting(async () => {
       if (!profile) {
@@ -29,63 +38,74 @@ export default function ProfileForm({
         return;
       }
 
-      const { user_id, full_names, about, username, default_address } = profile;
+      const { user_id, full_name, about, name, default_address } = profile;
       const profilData = {
-        full_names,
+        full_name,
         about,
-        username,
+        name,
         default_address,
       } as Profile;
 
       if (user_id) {
         profilData.user_id = user_id;
       }
-      const { error, data } = await createOrUpdateProfile(profilData);
+      const { error } = await createOrUpdateProfile(profilData);
 
       if (error) {
         setError(error.message);
         return;
       }
 
-      redirect("/dashboard");
+      redirect(nextUrl);
     });
   };
   return (
     <form
       {...props}
       action={handleSubmit}
-      className={cn("w-full max-w-sm mx-auto space-y-5", className)}
+      className={cn(
+        "w-full max-w-sm mx-auto space-y-5 text-gray-500",
+        className
+      )}
     >
+      {next && (
+        <div className="bg-yellow-50 text-yellow-500 p-5 rounded-lg text-xs">
+          <p className="flex gap-1 items-start">
+            <Info size={15} />{" "}
+            <span>You need to create or save your profile to continue</span>
+          </p>
+        </div>
+      )}
       {error && <ErrorCard error={error} />}
-      <FormGroup label="Username" required>
+      <FormGroup label="name" required>
         <FormInput
-          id="username"
-          name="username"
-          value={profile?.username ?? ""}
+          id="name"
+          name="name"
+          value={profile?.name ?? ""}
           onChange={(e) => {
             setProfile({
               ...(profile ?? ({} as Profile)),
-              username: e.target.value,
+              name: e.target.value,
             });
           }}
-          className=" text-sm py-2 px-5 "
-          autoComplete="false"
-          placeholder="Your username"
+          className=" text-sm py-1 px-5 "
+          required
+          placeholder="Your name"
         />
       </FormGroup>
       <FormGroup label="Full names" required>
         <FormInput
-          id="full_names"
-          className="capitalize text-sm py-2 px-5 "
-          name="full_names"
-          value={profile?.full_names ?? ""}
+          id="full_name"
+          className="capitalize text-sm py-1 px-5 "
+          name="full_name"
+          value={profile?.full_name ?? ""}
           onChange={(e) => {
             setProfile({
               ...(profile ?? ({} as Profile)),
-              full_names: e.target.value,
+              full_name: e.target.value,
             });
           }}
-          autoComplete="false"
+          required
           placeholder="Your full names"
         />
       </FormGroup>
@@ -101,7 +121,7 @@ export default function ProfileForm({
             });
           }}
           autoComplete="false"
-          className="resize-none outline-0 focus:outline-0 border hover:border-primary rounded-lg px-5 py-2 border-secondary"
+          className="resize-none outline-0 focus:outline-0 border hover:border-primary rounded-lg px-5 py-1 border-secondary"
           placeholder="About you"
         />
       </FormGroup>
@@ -117,13 +137,17 @@ export default function ProfileForm({
             });
           }}
           autoComplete="false"
-          className="resize-none outline-0 focus:outline-0 border hover:border-primary rounded-lg px-5 py-2 border-secondary"
+          className="resize-none outline-0 focus:outline-0 border hover:border-primary rounded-lg px-5 py-1 border-secondary"
           placeholder="Your shipping address"
         />
       </FormGroup>
 
       <Button type="submit" className="w-full bg-primary text-background">
-        Save changes
+        {submiting ? (
+          <LoaderCircle className="animate-spin" />
+        ) : (
+          <>Save changes</>
+        )}
       </Button>
     </form>
   );

@@ -1,11 +1,10 @@
-"use client";
 
 import ScrollArea from "@/components/parts/layout/ScrollArea";
-import { ComponentProps, useState, useTransition } from "react";
+import { ComponentProps} from "react";
 import { Error, Listing, Store } from "@/lib/types";
 import Link from "next/link";
 import Button from "@/components/ui/Button";
-import { ArrowLeft, ArrowRight, ArrowUp } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import StoreCard from "../cards/StoreCard";
 
 interface ListProps extends ComponentProps<"div"> {
@@ -23,8 +22,6 @@ export default function StoreList({
   stores,
   className,
 }: ListProps) {
-  const [isLoading, startLoading] = useTransition();
-  const [error, setError] = useState<Error | null>(null);
 
   return (
     <div className="px-5 pt-3">
@@ -39,8 +36,7 @@ export default function StoreList({
           </Link>
         </h1>
       )}
-      {isLoading && <p className="text-uduuka-gray">Loading...</p>}
-      {error && <p className="text-uduuka-red">Error: {error.message}</p>}
+
       <ScrollArea
         maxHeight={orientation === "vertical" ? "100%" : "fit-content"}
         ariaLabel="Listings scroll area"

@@ -5,8 +5,10 @@ import { Dropzone, DropzoneContent, DropzoneEmptyState } from "./dropzone";
 export default function FileUploadForm({
   onFilesChange,
   options,
+  oldImages
 }: {
   onFilesChange: (files: File[]) => void;
+  oldImages?: string[];
   options: {
     bucketName: string;
     path: string;
@@ -16,12 +18,11 @@ export default function FileUploadForm({
   };
 }) {
   const props = useSupabaseUpload(options);
-
   return (
-    <div className="w-full mx-auto flex-1 p-5 flex-col">
+    <div className="w-full h-full flex mx-auto flex-1 p-5 flex-col">
       <Dropzone {...props}>
         <DropzoneEmptyState />
-        <DropzoneContent onFilesChange={onFilesChange} />
+        <DropzoneContent oldImages={oldImages} onFilesChange={onFilesChange} />
       </Dropzone>
     </div>
   );

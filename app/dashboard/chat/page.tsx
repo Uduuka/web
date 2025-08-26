@@ -5,11 +5,12 @@ import ChatForm from "@/components/parts/forms/ChatForm";
 import ScrollArea from "@/components/parts/layout/ScrollArea";
 import Button from "@/components/ui/Button";
 import FormInput from "@/components/ui/Input";
-import { fetchThreads, getUser } from "@/lib/actions";
+import { fetchThreads } from "@/lib/actions";
 import { useChatThread } from "@/lib/hooks/use_chat_threads";
 import { useAppStore } from "@/lib/store";
 import { ChatHead, Message } from "@/lib/types";
 import Image from "next/image";
+import { Info } from "lucide-react";
 
 export default function page() {
   const [threads, setThreads] = useState<ChatHead[]>();
@@ -26,7 +27,9 @@ export default function page() {
       }
     });
   }, []);
+
   const { profile } = useAppStore();
+
   return (
     <div className="space-y-5">
       <div className="flex gap-5 flex-col sm:flex-row">
@@ -39,29 +42,42 @@ export default function page() {
 
           <ScrollArea maxHeight="100%" maxWidth="100%" className="flex-1">
             <div className="h-max w-full">
-              {threads?.map((t, i) => {
-                const isSeller = t.seller_id === profile?.user_id;
-                return (
-                  <ThreadButton
-                    key={i}
-                    thread={t}
-                    isActive={activeThread === t}
-                    activate={setActiveThread}
-                    title={
-                      (isSeller ? t.buyer.username : t.seller.username) ??
-                      "New chat"
-                    }
-                  />
-                );
-              })}
+              {(threads?.length ?? 0) > 0 ? (
+                threads?.map((t, i) => {
+                  const isSeller = t.seller_id === profile?.user_id;
+                  return (
+                    <ThreadButton
+                      key={i}
+                      thread={t}
+                      isActive={activeThread === t}
+                      activate={setActiveThread}
+                      title={
+                        (isSeller ? t.buyer.name : t.seller.name) ?? "New chat"
+                      }
+                    />
+                  );
+                })
+              ) : (
+                <p className="text-gray-400 flex items-start gap-1 p-5">
+                  <Info width={100} />
+                  <span>
+                    You {"don't"} have any chat threads and you {"aren't"}{" "}
+                    connected to any sellers or buyers. Past chat or connections
+                    will appear here
+                  </span>
+                </p>
+              )}
             </div>
           </ScrollArea>
         </div>
-        <div className="bg-white w-full rounded-lg h-[77vh] pt-5">
+        <div className="bg-white w-full rounded-lg h-[77vh] pt-5 flex flex-col justify-center items-center">
           {activeThread ? (
             <ChatForm thread={activeThread} />
           ) : (
-            <div className=""></div>
+            <p className="text-gray-400 flex items-start justify-start gap-1 p-5">
+              <Info size={20} />
+              <span>Select a chat head to start chating.</span>
+            </p>
           )}
         </div>
       </div>
@@ -95,7 +111,7 @@ const ThreadButton = ({
   }, [messages]);
   return (
     <Button
-      className={`flex gap-2 w-fit sm:w-full justify-start bg-transparent hover:bg-secondary/50  relative${
+      className={`flex gap-2 w-fit sm:w-full relative justify-start bg-transparent hover:bg-secondary/50  relative${
         isActive && "bg-secondary/70"
       }`}
       onClick={() => {
@@ -118,6 +134,11 @@ const ThreadButton = ({
           {lastMessage?.text}
         </p>
       </div>
+      {unread > 0 && (
+        <span className="p-1 rounded-full absolute -top-2 -right-2 bg-primary text-background">
+          {unread}
+        </span>
+      )}
     </Button>
   );
 };

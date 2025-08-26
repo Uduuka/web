@@ -30,8 +30,7 @@ export default function RootLayout({
       }
       if (data.user) {
         setUser(data.user);
-        const prof = await getProfile(data.user?.id);
-
+        const prof = await getProfile();
         setProfile(prof.data);
       }
     });

@@ -1,6 +1,9 @@
 import PayementRequestForm from "@/components/parts/forms/PayementRequestForm";
+import Button from "@/components/ui/Button";
+import { getProfile } from "@/lib/actions";
 import Image from "next/image";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import React from "react";
 
 export default async function PaymentPage({
@@ -11,6 +14,31 @@ export default async function PaymentPage({
   const { plan, method } = await searchParams;
 
   const ammount = "30,000";
+  const { data, error } = await getProfile();
+
+  if (error) {
+    return (
+      <div className="flex flex-col gap-5 text-accent">
+        <div className="flex justify-center items-center py-20">
+          <div className="bg-red-50 p-5 shadow rounded-lg text-error font-light text-center">
+            <p>
+              An error occured while fetching subscription data. <br /> Check
+              your internet conectivity and try again or contact support.
+            </p>
+            <Link href="#">
+              <Button className="bg-primary text-background mt-3 mx-auto">
+                Contact support
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return redirect(`/dashboard/profile?next=pay&sq=plan=${plan}`);
+  }
 
   return (
     <div className="p-5">

@@ -13,11 +13,11 @@ export default function ProfilePic({
   ...props
 }: { picUrl?: string; editable?: boolean } & ComponentProps<"div">) {
   const [profilePicFile, setProfilePicFile] = useState<File | null>(null);
-  const [imageUrl, setImageUrl] = useState<string>();
+  const [imageUrl, setImageUrl] = useState(picUrl);
   return (
     <div
       className={cn(
-        "h-40 w-40 rounded-lg mx-auto relative bg-white border-primary border flex justify-center items-center",
+        "h-40 w-40 rounded-lg overflow-hidden mx-auto relative bg-white border-primary border flex justify-center items-center",
         className
       )}
       {...props}

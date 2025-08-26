@@ -5,10 +5,10 @@ import FormInput from "@/components/ui/Input";
 import { getProfile, signin } from "@/lib/actions";
 import { useAppStore } from "@/lib/store";
 import { createClient } from "@/lib/supabase/client";
-import { Eye, EyeOff, Lock, Mail } from "lucide-react";
+import { Eye, EyeOff, LoaderCircle, Lock, Mail } from "lucide-react";
 import Link from "next/link";
 import { redirect, useSearchParams } from "next/navigation";
-import React, { useState } from "react";
+import React, { useState, useTransition } from "react";
 import { GrGoogle } from "react-icons/gr";
 
 export default function SigninForm() {
@@ -19,21 +19,24 @@ export default function SigninForm() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [submiting, startSubmiting] = useTransition();
 
-  const handleSignin = async () => {
-    const { error, data } = await signin({ email, password });
+  const handleSignin = () => {
+    startSubmiting(async () => {
+      const { error, data } = await signin({ email, password });
 
-    if (error) {
-      setError(error.message);
-      return;
-    }
+      if (error) {
+        setError(error.message);
+        return;
+      }
 
-    if (data.user) {
-      const profile = await getProfile(data.user.id);
-      setUser(data.user);
-      setProfile(profile.data);
-      redirect(next ?? "/");
-    }
+      if (data.user) {
+        const profile = await getProfile(data.user.id);
+        setUser(data.user);
+        setProfile(profile.data);
+        redirect(next ?? "/");
+      }
+    });
   };
 
   const handleSigninWithGoogle = async () => {
@@ -64,7 +67,10 @@ export default function SigninForm() {
   };
 
   return (
-    <div className="w-full max-w-xs space-y-5 bg-white rounded-lg min-h-96 md:-ml-20 p-5">
+    <form
+      action={handleSignin}
+      className="w-full max-w-xs space-y-5 bg-white rounded-lg min-h-96 md:-ml-20 p-5"
+    >
       <h1 className="text-accent text-xl font-bold">Welcome back, sign in</h1>
       <p className="text-sm -mt-5 text-gray-500">
         To never miss on a deal near you.
@@ -73,6 +79,7 @@ export default function SigninForm() {
       <div className="flex gap-5">
         <Button
           onClick={handleSigninWithGoogle}
+          type="button"
           className="p-0 gap-2 px-5 py-2 text-primary w-full font-bold hover:bg-secondary shadow"
         >
           <GrGoogle size={20} />
@@ -90,7 +97,7 @@ export default function SigninForm() {
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         className="px-0 pr-3 text-accent py-2"
-        type="email"
+        // type="email"
         icon={
           <span className="px-2">
             <Mail size={15} />
@@ -120,10 +127,10 @@ export default function SigninForm() {
         required
       />
       <Button
-        onClick={handleSignin}
+        type="submit"
         className="bg-primary hover:bg-primary/95 text-background w-full py-2"
       >
-        Signin
+        {submiting ? <LoaderCircle className="animate-spin" /> : <>Signin</>}
       </Button>
       <p className="text-center text-xs text-gray-500">
         Not yet a member?{" "}
@@ -131,12 +138,12 @@ export default function SigninForm() {
           <span className="text-blue-500 hover:underline">Signup</span>
         </Link>{" "}
         or{" "}
-        <Link href="/reset-passord">
+        <Link href="/forgot-password">
           <span className="text-blue-500 line-clamp-1 hover:underline">
-            Reset password
+            Forgot password
           </span>
         </Link>
       </p>
-    </div>
+    </form>
   );
 }

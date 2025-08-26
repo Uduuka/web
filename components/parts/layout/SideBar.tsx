@@ -28,9 +28,7 @@ import { PiStorefront, PiTrashSimpleLight } from "react-icons/pi";
 import { Category } from "@/lib/types";
 import { fetchCategories } from "@/lib/actions";
 import { BiMoney } from "react-icons/bi";
-import { GoListOrdered, GoReport } from "react-icons/go";
-import { FcFeedback } from "react-icons/fc";
-import { MdFeedback } from "react-icons/md";
+import { GoListOrdered } from "react-icons/go";
 import { RiFeedbackLine } from "react-icons/ri";
 import { TbReportAnalytics } from "react-icons/tb";
 

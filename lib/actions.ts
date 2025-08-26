@@ -1,14 +1,37 @@
 "use server";
+import { AuthError } from "@supabase/supabase-js";
 import env from "./env";
 import { createClient } from "./supabase/server";
 import { ChatHead, Filters, Pricing, Profile } from "./types";
 
-export const signup = async({email, password} : {email: string, password: string}) => {
-   return (await createClient()).auth.signUp({email, password})
+export const signup = async({email, password, profile} : {email: string, password: string, profile?: object}) => {
+   return (await createClient()).auth.signUp({email, password, options: {data: profile ?? {}}})
 }
 
 export const signin = async({email, password} : {email: string, password: string}) => {
    return (await createClient()).auth.signInWithPassword({email, password})
+}
+
+export const resendVerificarionEmail = async(email: string) => {
+   return await (await createClient()).auth.resend({
+      type: "signup",
+      email,
+   })
+}
+
+export const  sendPasswordResetEmail = async(email: string) => {
+   return ( await createClient()).auth.resetPasswordForEmail(
+      email,
+      {
+         redirectTo: "http://localhost:3000/reset-password", // Optional: URL to redirect after clicking the reset link
+      }
+   );
+}
+
+export const updateUserPassword = async(newPassword: string) => {
+   return (await createClient()).auth.updateUser({
+      password: newPassword,
+    });
 }
 
 export const getUser = async() =>{
@@ -20,8 +43,29 @@ export const createOrUpdateProfile = async(data: Profile) => {
 }
 
 export const getProfile = async(uid?: string) => {
-   const {data: {user}} = await getUser()
-   return (await createClient()).from('profile_view').select().eq('user_id', uid ?? user?.id).single()
+   let userID = uid
+
+   const {data: {user}, error: userError} = await getUser()
+   if(!userID){
+      userID = user?.id
+      
+   }
+
+   if(!userID){
+      return {
+         error: {message: "Missing user gredentials"} as AuthError,
+         data: null
+      }
+   }
+   
+   const {data, error} =  await (await createClient()).from('profiles').select("*, subscription:subscriptions(*)").eq('user_id', userID)
+
+   if(data && data.length === 1){
+      return {data: {...data[0], email: user?.email, phone: user?.phone, avatar_url: data[0].avatar_url ?? user?.user_metadata.avatar_url} as Profile, error: null}
+   }
+
+   return {error, data: null}
+   
 }
 
 export const signout = async() => {
@@ -179,8 +223,8 @@ export const postPricing = async(pricings: Pricing<any>[]) => {
 
 export const uploadFiles = async(files: File[], backetName: string, folderName: string) => {
    const supabase = await createClient()
-
-   try {
+   const base_url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  
       const uploadPromises = Array.from(files).map(async(file) => {
          const filePath = `${folderName}/${file.name}`
          const {data, error} = await supabase.storage.from(backetName).upload(filePath, file,{
@@ -194,14 +238,12 @@ export const uploadFiles = async(files: File[], backetName: string, folderName: 
          // https://mqistandrulavcbncpwn.supabase.co/storage/v1/object/public/ads/30/online-is-beter.avif
          // http://127.0.0.1:54321/storage/v1/object/public/ads/114/logo-colored.png
 
-         return {url: `https://mqistandrulavcbncpwn.supabase.co/storage/v1/object/public/${data.fullPath}`}
+         return {url: `${base_url}/storage/v1/object/public/${data.fullPath}`}
 
       })
 
-      return Promise.all(uploadPromises)
-   } catch (error) {
-      return {error: `Unknown error occured while uploading files`}
-   }
+      return await Promise.all(uploadPromises)
+   
 }
 
 // Batch upload helper with progress tracking
