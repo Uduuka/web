@@ -64,8 +64,9 @@ export default function Carousel({
             <Image
               src={image}
               alt={`${alt} ${index + 1}`}
-              fill
-              className="object-cover"
+              height={1000}
+              width={1000}
+              className="object-cover w-full h-auto"
               placeholder="blur"
               blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAErgJ9y0C0vQAAAABJRU5ErkJggg=="
               aria-current={index === currentIndex ? "true" : "false"}

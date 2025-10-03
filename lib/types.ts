@@ -59,9 +59,11 @@ export type ContactResult =
 
 export interface Pricing<T> {
   ad_id?: string
+  id?: string
   scheme: "fixed" | "recurring" | "range" | "menu" | "unit";
   currency: Currency
   details: T;
+  discount?: string
 }
 
 export interface FixedPrice {
@@ -71,27 +73,28 @@ export interface FixedPrice {
 
 export interface UnitPrice {
   price: string;
-  initialPrice?: string;
   units: string;
   conversionFactor?: number;
   conversionRatio?: Record<string, string>;
 }
 
 export interface PriceRange {
-  minPrice: string;
-  maxPrice?: string;
-  initialMinPrice?: string;
-  initialMaxPrice?: string;
+  specs?: Record<string, string>;
+  price: string
+  qty: number
 }
 
 export interface RecurringPrice {
   price: string;
-  initialPrice?: string;
   period: string;
 }
 
 export interface PriceMenu {
-  items: MenuItem[];
+  image?: string;
+  title: string;
+  description?: string;
+  price: string;
+  qty?: number
 }
 
 export type Store = {
@@ -151,14 +154,6 @@ export type SubCategory = {
 export interface Error {
   code: string;
   message: string;
-}
-
-export interface MenuItem {
-  image?: string;
-  title: string;
-  description?: string;
-  price: string;
-  initialPrice?: string
 }
 
 export interface Filters {
@@ -273,4 +268,62 @@ export interface Environment{
   subscriptionPlans: Record<string, Subscription>
   storageUrl: string
   nextUrls: Record<string, string>
+  currencies: any
+}
+
+export interface CartItem{
+  id: number
+  ad: CartAd
+  aqty: number
+  qty: number | string
+  sn?: string
+  units: string
+  period?: string
+  store: Store
+  pricing: Pricing<any>
+  subTotal: Pricing<FixedPrice>
+  specs: Record<string, any>
+}
+
+export interface GroupedResult<T> {
+  [key: string]: T[];
+}
+
+export interface Cart {
+  items: CartItem[]
+  store?: Store
+  total: number
+  clearCart?: ()=> void
+  addItem?: (item: CartItem) => void
+  deleteItem?: (item: CartItem) => void
+  updateItem?: (item: CartItem) => void
+ }
+
+ export interface CartAd {
+    id: string
+    title: string,
+    description: string
+  }
+
+export interface ExchangeRate {
+  code: Currency
+  rate: number
+}
+
+export interface OrderItem{
+  pricing_id: string,
+  quantity: number,
+  units: string,
+}
+
+export interface Order {
+  p_store_id: string,
+  p_received?: number,
+  p_desired_currency: Currency,
+  p_buyer_id?: string,
+  p_phone?: string
+  p_method: 'cash'| 'mtn'| 'airtel'
+  p_order_items: OrderItem[]
+  p_amount: number
+  p_type: "local" | "remote"
 }

@@ -40,8 +40,8 @@ export default function page() {
             placeholder="Search for chat threads"
           />
 
-          <ScrollArea maxHeight="100%" maxWidth="100%" className="flex-1">
-            <div className="h-max w-full">
+          <ScrollArea maxHeight="100%" maxWidth="100%" className="flex-1 pb-0">
+            <div className="w-fit sm:w-full h-fit flex sm:flex-col gap-2">
               {(threads?.length ?? 0) > 0 ? (
                 threads?.map((t, i) => {
                   const isSeller = t.seller_id === profile?.user_id;
@@ -111,7 +111,7 @@ const ThreadButton = ({
   }, [messages]);
   return (
     <Button
-      className={`flex gap-2 w-fit sm:w-full relative justify-start bg-transparent hover:bg-secondary/50  relative${
+      className={`flex gap-2 w-fit sm:w-full min-w-40 relative justify-start bg-gray-100 hover:bg-gray-200  relative${
         isActive && "bg-secondary/70"
       }`}
       onClick={() => {
@@ -128,14 +128,13 @@ const ThreadButton = ({
       <div className="fex flex-col items-start text-left">
         <h2 className="text-xs flex gap-2 w-fit">
           <span className="w-full">{title}</span>
-          {/* {unread > 0 && <span className="text-emerald-400">{unread}</span>} */}
         </h2>
         <p className="text-xs font-light text-accent/80 line-clamp-1">
           {lastMessage?.text}
         </p>
       </div>
       {unread > 0 && (
-        <span className="p-1 rounded-full absolute -top-2 -right-2 bg-primary text-background">
+        <span className="h-4 w-4 text-[0.5rem] flex justify-center items-center rounded-full absolute top-0.5 right-0.5 bg-primary text-background">
           {unread}
         </span>
       )}

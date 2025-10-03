@@ -17,7 +17,6 @@ export default function FlashSales({
   orientation?: "vertical" | "horizontal";
 }) {
   const { flashSales, error, fetching } = useFilteredFlashSales();
-
   return (
     <div className="px-5 pt-3">
       <div className="pb-2 text-base font-bold w-full flex justify-between">

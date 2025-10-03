@@ -1,14 +1,14 @@
-import { Currency, MenuItem } from "@/lib/types";
+import { Listing, PriceMenu, Pricing } from "@/lib/types";
 import React from "react";
 import { Money } from "./PriceTag";
-import Button from "@/components/ui/Button";
+import { AddToCartButton } from "../buttons/AddToCartButton";
 
 export default function PriceMenuItem({
   item,
-  currency,
+  ad,
 }: {
-  item: MenuItem;
-  currency: Currency;
+  item: PriceMenu;
+  ad: Listing;
 }) {
   if (!item) {
     return null;
@@ -19,20 +19,10 @@ export default function PriceMenuItem({
       <div className="w-full p-2">
         <p className="text-xs font-bold text-foreground">{item.title}</p>
         <p className="text-xs font-light text-accent">{item.description}</p>
-        <div className="flex flex-wrap justify-between pt-2">
-          <Money
-            price={item.price}
-            defaultCurrency={currency}
-            className="text-primary font-bold"
-          />
-        </div>
-        <div className="flex gap-2 justify-end">
-          <Button className="bg-primary text-xs hover:bg-primary/90 text-background">
-            Place order
-          </Button>
-          <Button className="text-primary text-xs hover:bg-primary border border-primary hover:text-background">
-            Add to cart
-          </Button>
+
+        <div className="flex gap-2 justify-between items-center pt-2 border-t border-gray-300">
+          <Money price={item.price} className="text-primary font-bold" />
+          <AddToCartButton ad={ad} />
         </div>
       </div>
     </div>

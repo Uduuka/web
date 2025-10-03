@@ -11,14 +11,16 @@ import { BiSort } from "react-icons/bi";
 import Popup from "@/components/ui/Popup";
 import { useParams } from "next/navigation";
 import AdsModel from "../models/AdsModel";
+import { toNumber } from "@/lib/utils";
 
 export const columns: ColumnDef<Listing>[] = [
   {
     accessorKey: "title",
+    id: "title",
     header: () => <h1 className="font-semibold">Title</h1>,
     cell: ({ row }) => (
       <div className="">
-        <p className="w-full">{row.getValue("title")}</p>
+        <p className="w-full line-clamp-1">{row.getValue("title")}</p>
         <p className="text-xs w-full  text-gray-500 line-clamp-1">
           {row.original.description}
         </p>
@@ -27,6 +29,7 @@ export const columns: ColumnDef<Listing>[] = [
   },
   {
     accessorKey: "Price",
+    id: "price",
     header: () => <h1 className="font-semibold">Pricing</h1>,
     cell: ({ row }) => {
       const pricing = row.original.pricing as Pricing<any>;
@@ -68,7 +71,30 @@ export const columns: ColumnDef<Listing>[] = [
     },
   },
   {
+    accessorKey: "quantity",
+    id: "quantity",
+    header: () => <h1 className="font-semibold">Quantity</h1>,
+    cell: ({ row }) => {
+      const quantity =
+        row.original.quantity ??
+        row.original.pricings
+          ?.map((r) => {
+            if (r.details.qty) {
+              return toNumber(r.details.qty);
+            }
+            return 1;
+          })
+          .reduce((a, b) => a + b, 0);
+      return (
+        <div className="">
+          <p className="w-full">{quantity}</p>
+        </div>
+      );
+    },
+  },
+  {
     accessorKey: "created_at",
+    id: "created_at",
     header: ({ column }) => (
       <h1
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
@@ -88,6 +114,7 @@ export const columns: ColumnDef<Listing>[] = [
   },
   {
     accessorKey: "views",
+    id: "views",
     header: () => <h1 className="font-semibold">Views</h1>,
     cell: ({ row }) => {
       return <p className="">{row.getValue("views")}</p>;
@@ -95,14 +122,15 @@ export const columns: ColumnDef<Listing>[] = [
   },
   {
     accessorKey: "likes",
+    id: "likes",
     header: () => <h1 className="font-semibold">Likes</h1>,
     cell: ({ row }) => {
       return <p className="">{row.getValue("likes")}</p>;
     },
   },
-
   {
     accessorKey: "rating",
+    id: "rating",
     header: () => <h1 className="font-semibold">Rating</h1>,
     cell: ({ row }) => {
       const rating = row.getValue("rating")
@@ -118,21 +146,30 @@ export default function AdsTable({
   empty,
   error,
   showAdd,
+  displayColumns,
+  onRowSelect,
 }: {
   data?: Listing[];
   error?: string;
   empty?: string;
   showAdd?: boolean;
+  displayColumns?: string[];
+  onRowSelect?: (ad: Listing) => void;
 }) {
   const storeID = useParams()["storeID"] as string;
   const handleRowSelect = (selectedRows: Listing[]) => {
-    console.log(selectedRows);
+    
   };
   return (
     <DataTable
-      columns={columns}
+      columns={
+        displayColumns?.length
+          ? columns.filter((c) => displayColumns.includes(c.id ?? ""))
+          : columns
+      }
       data={data ?? []}
-      onRowSelect={handleRowSelect}
+      onRowsSelect={handleRowSelect}
+      onRowClicked={onRowSelect}
       emptyMessage={
         <div className="text-gray-500 h-full w-full bg-gray-50 p-5">
           <h1 className="flex gap-3 items-center justify-center">

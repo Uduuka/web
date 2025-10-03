@@ -61,7 +61,7 @@ const Details = ({ specs }: { specs: any }) => {
   }, [specs]);
   return (
     <div className="bg-background rounded-lg p-5">
-      <div className="flex gap-5">
+      <div className="flex gap-x-5 flex-wrap">
         {details.map((d, i) => (
           <div key={i} className="py-3 w-fit text-xs text-center font-light">
             <p className="border-b-2 text-accent px-2 border-accent/60">

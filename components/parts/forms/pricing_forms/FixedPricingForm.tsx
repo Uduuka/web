@@ -16,7 +16,6 @@ export const FixedPricingForm = ({
   initialValue?: Pricing<FixedPrice>[];
   onChange: (pricing: Pricing<FixedPrice>[]) => void;
 }) => {
-  const [discounted, setDiscounted] = useState(false);
   const [newValue, setNewValue] = useState<FixedPrice>({} as FixedPrice);
 
   const [pricings, setPricings] = useState<Pricing<FixedPrice>[]>(
@@ -30,13 +29,6 @@ export const FixedPricingForm = ({
     setNewValue({ ...newValue, price: e.target.value });
   };
 
-  const setInitialPrice = (e: ChangeEvent<HTMLInputElement>) => {
-    if (isNaN(Number(e.target.value.replaceAll(",", "")))) {
-      return;
-    }
-    setNewValue({ ...newValue, initialPrice: e.target.value });
-  };
-
   const handleSave = () => {
     if (!newValue.price || toNumber(newValue.price) === 0) {
       return;
@@ -44,12 +36,6 @@ export const FixedPricingForm = ({
     setPricings([{ currency: curr, details: newValue, scheme: "fixed" }]);
     onChange([{ currency: curr, details: newValue, scheme: "fixed" }]);
   };
-
-  useEffect(() => {
-    if (!discounted) {
-      setNewValue({ ...newValue, initialPrice: undefined });
-    }
-  }, [discounted]);
 
   if (pricings.length > 0) {
     return (
@@ -81,62 +67,6 @@ export const FixedPricingForm = ({
           className="px-2 py-1.5 w-full"
         />
       </FormGroup>
-      <FormGroup
-        label="Is this price discounted?"
-        required
-        className="w-full  text-left"
-      >
-        <div className="px-5 py-1.5 rounded-lg border hover:border-primary focus-within:border-primary flex gap-10 justify-center items-center">
-          <FormGroup
-            label="Yes"
-            htmlFor="yes"
-            className="flex-row-reverse gap-0 w-fit"
-            labelStyle="pl-2"
-          >
-            <input
-              checked={discounted}
-              onChange={(e) => {
-                setDiscounted(e.target.checked);
-              }}
-              type="radio"
-              id="yes"
-              className="bg-primary border-primary checked:border-primary checked:bg-primary checked:text-primary"
-            />
-          </FormGroup>
-          <FormGroup
-            label="No"
-            htmlFor="no"
-            className="flex-row-reverse gap-0 w-fit"
-            labelStyle="pl-2"
-          >
-            <input
-              checked={!discounted}
-              onChange={(e) => {
-                setDiscounted(!e.target.checked);
-              }}
-              type="radio"
-              id="no"
-              className="bg-primary border-primary checked:border-primary checked:bg-primary checked:text-primary"
-            />
-          </FormGroup>
-        </div>
-      </FormGroup>
-      {discounted && (
-        <FormGroup
-          label="What was the initial price?"
-          required
-          className="w-full  text-left"
-        >
-          <FormInput
-            type="text"
-            value={newValue?.initialPrice ?? ""}
-            onChange={setInitialPrice}
-            icon={<span className="px-2">{curr}</span>}
-            min={0}
-            className="px-3 py-1.5"
-          />
-        </FormGroup>
-      )}
       <Button
         type="button"
         disabled={!newValue.price || toNumber(newValue.price) === 0}

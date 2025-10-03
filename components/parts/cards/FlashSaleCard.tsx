@@ -88,10 +88,7 @@ export default function FlashSaleCard({ item }: { item: FlashSale }) {
                 <p className="text-green-500 text-xs flex gap-2 font-thin">
                   Save up to{" "}
                   <span className="font-bold">
-                    <Money
-                      price={savings.money.toString()}
-                      defaultCurrency={item.ad.pricing.currency}
-                    />
+                    <Money price={savings.money.toString()} />
                   </span>{" "}
                   ({savings.pacentage}% off)
                 </p>

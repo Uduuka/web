@@ -1,16 +1,17 @@
 import OpenChat from "@/components/parts/buttons/OpenChat";
-import PriceMenuItem from "@/components/parts/cards/PriceMenuItem";
-import PriceTag from "@/components/parts/cards/PriceTag";
 import Carousel from "@/components/parts/layout/Carousel";
 import DetailsReviesTabs from "@/components/parts/layout/DetailsReviesTabs";
 import Distance from "@/components/parts/maps/Distance";
 import Button from "@/components/ui/Button";
 import { fetchAd, getProfile, getUser } from "@/lib/actions";
-import { Listing, PriceMenu, Pricing } from "@/lib/types";
+import { Listing } from "@/lib/types";
 import { notFound } from "next/navigation";
 import { RxShare1 } from "react-icons/rx";
 import { SlDislike, SlLike } from "react-icons/sl";
 import { VscFeedback } from "react-icons/vsc";
+import PriceBoard from "./(pricing)/Pricing";
+import { Store } from "lucide-react";
+import Link from "next/link";
 
 export default async function AdDetailsPage({
   params,
@@ -25,7 +26,7 @@ export default async function AdDetailsPage({
   const { error, data } = await fetchAd(adID);
   const ad = data as Listing;
 
-  const { pricings, seller_id } = ad;
+  const { pricings, seller_id, store } = ad;
 
   const userData = await getUser();
   const sellerProfile = await getProfile(ad.seller_id);
@@ -51,9 +52,22 @@ export default async function AdDetailsPage({
 
       <div
         className={`h-fit bg-white p-5 rounded-lg flex flex-col gap-2 col-span-4 sm:col-span-2 ${
-          pricings[0].scheme === "menu" ? "sm:row-span-2 h-full" : ""
+          pricingScheme === "menu" || pricingScheme === "range"
+            ? "sm:row-span-2 h-full"
+            : ""
         }`}
       >
+        {store && (
+          <div className="w-full flex gap-2 justify-end items-center">
+            <Link
+              href={`/stores/${store.id}`}
+              className="w-fit flex gap-2 items-center text-primary"
+            >
+              <Store />
+              {store.name}
+            </Link>
+          </div>
+        )}
         <h1 className="text-accent text-2xl font-bold">{ad?.title}</h1>
         <p className="text-accent/90">{ad?.description}</p>
 
@@ -61,23 +75,7 @@ export default async function AdDetailsPage({
           <h1 className="text-accent font-bold text-lg pb-2 capitalize">
             Pricing: {pricingScheme} price
           </h1>
-          {pricingScheme === "menu" ? (
-            <PriceBoard pricing={pricings[0]} />
-          ) : (
-            <div className="space-y-2">
-              {ad.pricings?.map((pricing, index) => (
-                <div
-                  className="flex group items-center justify-between gap-5 bg-orange-50 px-5 py-2 rounded-md"
-                  key={index}
-                >
-                  <PriceTag className="" pricing={pricing} />
-                  <Button className="bg-primary hidden group-hover:block transition-transform text-xs hover:bg-primary/90 text-background">
-                    Add to cart
-                  </Button>
-                </div>
-              ))}
-            </div>
-          )}
+          <PriceBoard ad={ad} />
         </div>
 
         <div className="flex justify-between items-center">
@@ -151,15 +149,3 @@ export default async function AdDetailsPage({
     </div>
   );
 }
-
-const PriceBoard = ({ pricing }: { pricing: Pricing<PriceMenu> }) => {
-  const items = pricing.details.items;
-
-  return (
-    <div className="w-full flex flex-col gap-2">
-      {items.map((item, index) => (
-        <PriceMenuItem item={item} currency={pricing.currency} key={index} />
-      ))}
-    </div>
-  );
-};

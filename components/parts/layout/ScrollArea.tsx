@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import { ComponentProps, ReactNode, useRef } from "react";
 
 interface ScrollAreaProps extends ComponentProps<"div"> {
@@ -20,7 +21,10 @@ export default function ScrollArea({
 }: ScrollAreaProps) {
   return (
     <div
-      className={`relative z-0 pb-5 overflow-auto scrollbar-thin scrollbar-thumb-primary scrollbar-track-accent scrollbar-thumb ${className}`}
+      className={cn(
+        "relative z-0 pb-5 overflow-auto scrollbar-thin scrollbar-thumb-primary scrollbar-track-accent scrollbar-thumb",
+        className
+      )}
       style={{ maxHeight, maxWidth, scrollBehavior: "smooth" }}
       role="region"
       aria-label={ariaLabel}

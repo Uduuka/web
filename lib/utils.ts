@@ -1,7 +1,10 @@
 import { twMerge } from "tailwind-merge";
 import { clsx, type ClassValue } from "clsx";
 import axios from "axios";
-import { ContactResult, Location } from "./types";
+import { CartItem, ContactResult, Currency, FixedPrice, GroupedResult, Location, Pricing } from "./types";
+import _ from "lodash";
+import env from "./env";
+import { fetchCurrencyRates } from "./actions";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -9,18 +12,11 @@ export function cn(...inputs: ClassValue[]) {
 
 export const responsiveColumns = <T>(arr: T[], containerWidth: number): T[][] => {
   const splitSequentiallyBasedOnWidth = (width: number): T[][] => {
-    let numSubArrays: number;
-    if (width >= 1000) {
-      numSubArrays = 4;
-    } else if (width >= 600) {
-      numSubArrays = 3;
-    } else {
-      numSubArrays = 2;
-    }
+    const cols = toNumber((width/300).toFixed(0))
 
-    const result: T[][] = Array.from({ length: numSubArrays }, () => []);
+    const result: T[][] = Array.from({ length: cols }, () => []);
     for (let i = 0; i < arr.length; i++) {
-      result[i % numSubArrays].push(arr[i]);
+      result[i % cols].push(arr[i]);
     }
     return result;
   };
@@ -34,50 +30,21 @@ export const responsiveColumns = <T>(arr: T[], containerWidth: number): T[][] =>
 export const numberOrUndefine = (str?: string) =>
   isNaN(parseInt(str ?? "")) ? undefined : parseInt(str ?? "");
 
-export const toNumber = (st: string) =>
-  isNaN(parseInt(st)) ? 0 : parseInt(st);
+export const toNumber = (st?: string) =>
+  isNaN(Number(st)) ? 0 : Number(st);
 
-export function toMoney(money: string): string {
-  const [whole, decimal] = money.split(".");
+export function toMoney(money: string, currency?: Currency): string {
   if (isNaN(Number(money.replaceAll(",", "")))) return "";
+  let num: string = money;
+  if(currency){
+    num = pretifyMoney(Number(money), currency)
+  }
+  const [whole, decimal] = num.split(".");
+
   return `${whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}${
     decimal ? `.${decimal}` : ""
   }`;
 }
-
-export const displayCurrencyAndPrice = (
-  ad_currency: string,
-  currency: string,
-  price: string
-) => {
-  // console.log(ad_currency, currency, price)
-  const acceptedCurrencies = ["USD", "UGX", "KSH", "TSH"];
-  if (ad_currency?.toUpperCase() in acceptedCurrencies)
-    return "Unsupported currency";
-  const exchangeRate: any = {
-    USD: 1,
-    UGX: 3720,
-    KSH: 124,
-    TSH: 2067,
-  };
-
-  if (ad_currency === "USD")
-    return `${currency} ${toMoney(
-      (toNumber(price) * exchangeRate[currency]).toFixed(2)
-    )}`;
-
-
-  if (currency === ad_currency)
-    return `${currency.toUpperCase()} ${toMoney(toNumber(price).toFixed(0))}`;
-  
-
-  return `${currency} ${toMoney(
-    (
-      (toNumber(price) / exchangeRate[ad_currency]) *
-      exchangeRate[currency]
-    ).toFixed(2)
-  )}`;
-};
 
 export const prettyDistance = (dist_metters?: number) => {
   if(!dist_metters) return "Unknown distance"
@@ -85,9 +52,6 @@ export const prettyDistance = (dist_metters?: number) => {
   return `${(dist_metters/1000).toFixed(2)} km away`
 }
 
-/**
- * Do reverse geo-coding given the coordinates
- */
 export const geoCode = async() => {
   try {
     const res = await axios.get("http://ip-api.com/json/?fields=8450047")
@@ -138,7 +102,6 @@ export const fetchDrivingDistance = async (
   }
 };
 
-
 export const detectContactType = (input: string): ContactResult => {
   // Normalize email: lowercase + trim
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -175,3 +138,95 @@ export const getRedirectUrl = () => {
 
   return redirectTo
 }
+
+export const calcCartItemSubTotal = (pricing: Pricing<any>, quantity?: number) => {
+
+  let qty = quantity
+  if(!qty || qty===0){
+    qty = 1
+  }
+
+  const {scheme, details, currency} = pricing
+  // Scheme one of fixed - price, recurying - price, unit - price, menu - price, range - price
+
+  const schemesWithPrice = ["fixed", "recurring", "menu", "unit", "range"]
+  if(schemesWithPrice.includes(scheme)){
+    const price = details.price
+    const amount = qty * toNumber(price)
+    const amountPricing: Pricing<FixedPrice> = {
+      currency,
+      scheme: "fixed",
+      details: {price: amount.toString()}
+    }
+
+    return amountPricing
+  }else{
+    throw new Error("Unkown pricing scheme")
+  }
+
+}
+
+export const calcCartTotal = (items: CartItem[]) => {
+  const subTotals = items.map((item) =>
+    Number(item.subTotal.details.price)
+  );
+  
+  return subTotals?.reduce((t, i) => t + i, 0)
+}
+
+// Function to check if a list contains a specific object
+export function containsObject<T>(list: T[], target: T): boolean {
+  return _.some(list, (item) => _.isEqual(item, target));
+}
+
+export const forex = async (pricings: Pricing<any>[], currency: Currency) => {
+  const ad_currency = pricings[0].currency;
+  if (!ad_currency) return pricings;
+  if(ad_currency === currency){
+    return pricings
+  }
+
+  try {
+    const { data: ratesData } = await fetchCurrencyRates(
+      [ad_currency, currency].map((c) => env.currencies[c].code)
+    );
+    const fromRate =
+      (ratesData?.find((r) => r.code === env.currencies[ad_currency].code)
+        ?.rate as number) ?? 1;
+    const toRate =
+      (ratesData?.find((r) => r.code === env.currencies[currency].code)
+        ?.rate as number) ?? 1;
+
+    const convertedPricings = pricings?.map((pricing) => {
+      return {
+        ...pricing,
+        currency,
+        details: {
+          ...pricing.details,
+          price: toNumber(pricing.details.price) * (toRate / fromRate),
+        },
+      };
+    });
+
+    return convertedPricings
+  } catch (error) {
+    console.log("Failed to convert currency, ", error)
+    return pricings
+  }
+}
+
+export function groupBy<T>(array: T[], keyFn: (obj: T) => string): GroupedResult<T> {
+  return array.reduce((acc, obj) => {
+    const key = keyFn(obj);
+    acc[key] = acc[key] || [];
+    acc[key].push(obj);
+    return acc;
+  }, {} as GroupedResult<T>);
+}
+
+export const pretifyMoney = (money: number, currency: Currency) => {
+  const numDp = ["UGX", "TSH"].includes(currency) ? 0 : 2;
+
+  return money.toFixed(numDp);
+};
+

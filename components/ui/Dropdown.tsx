@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { usePathname } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 
 interface DropdownProps {
@@ -17,9 +18,14 @@ export default function Dropdown({
   align = "left",
 }: DropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const pathname = usePathname();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setIsOpen(false);
+  }, [pathname]);
 
   // Close on outside click
   useEffect(() => {
@@ -57,9 +63,9 @@ export default function Dropdown({
 
   const setPosition = () => {
     return align === "left"
-      ? "left-0"
+      ? "-left-full sm:left-0"
       : align === "right"
-      ? "right-0"
+      ? "-right-full sm:right-0"
       : "left-[50%] translate-x-[-50%]";
   };
 
