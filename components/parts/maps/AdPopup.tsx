@@ -20,7 +20,7 @@ export default function AdPopup({ ad, single }: ListingCardProps) {
   const ad_pricing =
     typeof pricing === "string" ? JSON.parse(pricing) : pricing;
   const url =
-    (typeof image === "string" ? JSON.parse(image) : image).url ??
+    (typeof image === "string" ? JSON.parse(image) : image)?.url ??
     "/placeholder.svg";
   return (
     <div className="rounded-md w-40 overflow-hidden transition-all">

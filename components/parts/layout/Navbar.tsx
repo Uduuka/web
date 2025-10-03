@@ -4,7 +4,7 @@ import Select from "@/components/ui/Select";
 import { useAppStore } from "@/lib/store";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useEffect, useRef, useState } from "react";
+import React, { use, useEffect, useRef, useState, useTransition } from "react";
 import env from "@/lib/env";
 import Dropdown from "@/components/ui/Dropdown";
 import {
@@ -20,26 +20,29 @@ import SearchBar from "../forms/SearchBar";
 import { cn } from "@/lib/utils";
 import Button from "@/components/ui/Button";
 import Popup from "@/components/ui/Popup";
-import { BiBell, BiEnvelope, BiLock, BiPlus, BiUser } from "react-icons/bi";
+import { BiBell, BiEnvelope, BiLock, BiPlus } from "react-icons/bi";
 import { RxDashboard } from "react-icons/rx";
-import { signout } from "@/lib/actions";
+import { getProfile, getUser, signout } from "@/lib/actions";
 import { redirect, useParams, usePathname } from "next/navigation";
 import { DashboardNav, DefaultNav, StoreNav } from "./SideBar";
 import ScrollArea from "./ScrollArea";
 import { Currency } from "@/lib/types";
+import CartButton from "../buttons/CartButton";
 
-export default function Navbar({ fetchingUser }: { fetchingUser?: boolean }) {
+export default function Navbar() {
   const {
     currency,
     setCurrency,
     location,
     user,
     profile,
+    setProfile,
     setUser,
     deviceWidth,
   } = useAppStore();
 
   const [showMobileNav, setShowMobileNav] = useState(false);
+  const [fetchingUser, startFetchingUser] = useTransition();
   const pathname = usePathname() as string;
   const storeId = useParams().storeID as string;
 
@@ -63,6 +66,27 @@ export default function Navbar({ fetchingUser }: { fetchingUser?: boolean }) {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  // Fetch the currency exchange whenever the currency changes
+  const handleCurrencyChange = async (c: Currency) => {
+    setCurrency(c as Currency);
+    localStorage.setItem("currency", c);
+  };
+
+  useEffect(() => {
+    if (!user) {
+      startFetchingUser(async () => {
+        const { data } = await getUser();
+        if (data.user) {
+          setUser(data.user);
+          const { data: profile } = await getProfile();
+          if (profile) {
+            setProfile(profile);
+          }
+        }
+      });
+    }
+  }, [user]);
 
   useEffect(() => {
     setShowMobileNav(false);
@@ -99,25 +123,30 @@ export default function Navbar({ fetchingUser }: { fetchingUser?: boolean }) {
         <div className="flex flex-1 justify-center items-center gap-2">
           <SearchBar />
         </div>
-        <div className="hidden md:flex items-center gap-4">
+        <div className="flex items-center md:gap-4">
+          {/* Change currency */}
           <Select
-            options={env.currencyOptions as { label: string; value: string }[]}
+            options={
+              env.currencyOptions as { label: string; value: Currency }[]
+            }
             className="bg-background text-primary text-xs"
-            triggerStyle="text-sm py-2 gap-1"
+            triggerStyle="text-sm py-1 gap-1 hidden md:flex"
             value={currency}
-            onChange={(c) => {
-              setCurrency(c as Currency);
-              localStorage.setItem("currency", c);
-            }}
+            onChange={handleCurrencyChange}
             placeholder="Currency"
           />
+
+          {/* Cart drop down button */}
+          <CartButton />
+
+          {/* Location button */}
           <Dropdown
             align="right"
             className=""
             trigger={
               <Button
                 className={cn(
-                  "bg-transparent p-0",
+                  "bg-transparent p-0 hidden md:flex",
                   location ? "" : "text-yellow-400 border-yellow-400"
                 )}
               >
@@ -162,12 +191,9 @@ export default function Navbar({ fetchingUser }: { fetchingUser?: boolean }) {
               </div>
             </div>
           </Dropdown>
-          <Dropdown trigger={<BiBell size={30} />} align="right">
-            <div className="bg-white shadow-lg rounded-lg h-40 w-60"></div>
-          </Dropdown>
 
           {fetchingUser ? (
-            <Button className="bg-background text-primary border-2 h-10 w-10 rounded-full p-0">
+            <Button className="bg-background text-primary border-2 h-10 w-10 hidden md:flex rounded-full p-0">
               <LoaderCircle className="animate-spin" />
             </Button>
           ) : (
@@ -175,7 +201,7 @@ export default function Navbar({ fetchingUser }: { fetchingUser?: boolean }) {
               {user ? (
                 <Popup
                   trigger={
-                    <Button className="bg-transparent border-2 h-10 w-10 rounded-full p-0">
+                    <Button className="bg-transparent hidden md:flex border-2 h-10 w-10 rounded-full p-0">
                       <Image
                         src={profile?.avatar_url ?? "/placeholder.svg"}
                         alt="avatar"

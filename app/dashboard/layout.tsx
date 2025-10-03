@@ -2,14 +2,15 @@
 
 import Button from "@/components/ui/Button";
 import { useBradcramps } from "@/lib/hooks/use_data";
-import { Plus } from "lucide-react";
+import { Plus, Store } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import React, { ReactNode } from "react";
 
 export default function StoreLayout({ children }: { children: ReactNode }) {
   const { bradcramp } = useBradcramps();
   const pathname = usePathname();
+  const storeID = useParams()["storeID"] as string;
   return (
     <>
       <div className="p-5 space-y-5">
@@ -34,24 +35,24 @@ export default function StoreLayout({ children }: { children: ReactNode }) {
             )}
           </h1>
 
-          {pathname.includes("/ads") && !pathname.includes("/create") ? (
-            <Link href="/dashboard/ads/create">
-              <Button className="bg-primary py-1 gap-1 text-xs text-background">
+          <div className="w-fit flex gap-2">
+            <Link
+              href={`/dashboard/ads/create${
+                storeID ? `?store=${storeID}` : ""
+              }`}
+            >
+              <Button className="bg-transparent text-primary py-1 gap-1 text-xs border border-primary">
                 <Plus size={15} />
                 Post new ad
               </Button>
             </Link>
-          ) : pathname.startsWith("/dashboard/stores") &&
-            !pathname.startsWith("/dashboard/create") ? (
             <Link href="/dashboard/stores/create">
-              <Button className="bg-primary py-1 text-xs text-background">
-                <Plus size={15} />
+              <Button className="bg-transparent text-primary py-1 gap-2 text-xs border border-primary">
+                <Store size={15} />
                 Create a store
               </Button>
             </Link>
-          ) : (
-            <></>
-          )}
+          </div>
         </div>
         {children}
       </div>

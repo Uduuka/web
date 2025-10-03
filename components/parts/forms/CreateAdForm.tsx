@@ -1,7 +1,7 @@
 "use client";
 
 import Button from "@/components/ui/Button";
-import { Listing, Pricing } from "@/lib/types";
+import { Category, Listing, Pricing, Unit } from "@/lib/types";
 import React, { useState, useTransition } from "react";
 
 import AdForm from "./AdForm";
@@ -19,13 +19,23 @@ import {
 } from "@/lib/actions";
 import { redirect, useSearchParams } from "next/navigation";
 
-export default function CreateAdForm({ className }: { className?: string }) {
+interface FormProps extends React.HTMLAttributes<HTMLDivElement> {
+  className?: string;
+  categories: Category[];
+  units: Unit[];
+}
+
+export default function CreateAdForm({
+  className,
+  categories,
+  units,
+}: FormProps) {
   const [ad, setAd] = useState<Listing>();
   const [pricings, setPricings] = useState<Pricing<any>[]>([]);
   const [currentStep, setCurrentStep] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [submitting, startSubmitting] = useTransition();
-  const store_id = useSearchParams().get("store_id");
+  const store_id = useSearchParams().get("store");
   const [location, setLocation] = useState<{
     locationString: string;
     address: string;
@@ -217,6 +227,8 @@ export default function CreateAdForm({ className }: { className?: string }) {
                 </h1>
                 <AdForm
                   setter={setAd}
+                  categories={categories}
+                  units={units}
                   initailData={ad}
                   handleNext={next}
                   actionText="Save and continue"

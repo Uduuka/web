@@ -32,7 +32,8 @@ interface DataTableProps<TData, TValue> {
   data: TData[];
   errorMessage?: ReactNode;
   emptyMessage?: ReactNode;
-  onRowSelect?: (seletedRows: TData[]) => void;
+  onRowsSelect?: (seletedRows: TData[]) => void;
+  onRowClicked?: (row: TData) => void;
 }
 
 export function DataTable<TData, TValue>({
@@ -40,7 +41,8 @@ export function DataTable<TData, TValue>({
   data,
   errorMessage,
   emptyMessage = "No results.",
-  onRowSelect,
+  onRowsSelect,
+  onRowClicked,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -65,8 +67,8 @@ export function DataTable<TData, TValue>({
   });
 
   useEffect(() => {
-    if (onRowSelect) {
-      onRowSelect(table.getSelectedRowModel().rows.map((r) => r.original));
+    if (onRowsSelect) {
+      onRowsSelect(table.getSelectedRowModel().rows.map((r) => r.original));
     }
   }, [table.getSelectedRowModel().rows]);
 
@@ -74,7 +76,7 @@ export function DataTable<TData, TValue>({
     <div className="flex flex-col gap-5 min-h-[80vh]">
       <div className="flex items-center justify-between gap-5">
         <FormInput
-          placeholder="Filter by ad name..."
+          placeholder="Filter by ad title..."
           value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             table.getColumn("title")?.setFilterValue(event.target.value)
@@ -142,13 +144,15 @@ export function DataTable<TData, TValue>({
                       key={row.id}
                       onClick={() => {
                         row.toggleSelected(!isSelected);
+                        onRowClicked?.(row.original);
                       }}
+                      className="cursor-pointer"
                       data-state={row.getIsSelected() && "selected"}
                     >
                       {row.getVisibleCells().map((cell) => (
                         <TableCell
                           key={cell.id}
-                          className={`first:max-w-40 ${
+                          className={`first:max-w-60 ${
                             isSelected ? "bg-orange-100" : ""
                           }`}
                         >

@@ -22,7 +22,6 @@ export const UnitPricingForm = ({
   ad: Listing;
   onChange: (p: Pricing<UnitPrice>[]) => void;
 }) => {
-  const [discounted, setDiscounted] = useState(false);
   const [newValue, setNewValue] = useState<UnitPrice>({} as UnitPrice);
   const [conversionRatio, setConversionRatio] =
     useState<Record<string, string>>();
@@ -43,11 +42,14 @@ export const UnitPricingForm = ({
   useEffect(() => {
     startFetchingUnits(async () => {
       const { data } = await fetchUnits();
-      const unit = data?.find(
-        (u) =>
-          u.abbr === ad.units ||
-          u.sub_units.map((s) => s.abbr).includes(ad.units)
-      );
+      const unit = data?.find((u) => {
+        return (
+          u.name === ad.units ||
+          u.sub_units.map((s) => s.name).includes(ad.units)
+        );
+      });
+
+      // console.log({ unit, adUnits: ad.units });
 
       if (!unit) {
         setFilteredUnit(undefined);
@@ -70,13 +72,6 @@ export const UnitPricingForm = ({
       return;
     }
     setNewValue({ ...newValue, price: e.target.value });
-  };
-
-  const setInitialPrice = (e: ChangeEvent<HTMLInputElement>) => {
-    if (isNaN(Number(e.target.value.replaceAll(",", "")))) {
-      return;
-    }
-    setNewValue({ ...newValue, initialPrice: e.target.value });
   };
 
   const handleSave = () => {
@@ -198,10 +193,10 @@ export const UnitPricingForm = ({
                     });
                   }}
                   options={[
-                    { label: filteredUnit.plural, value: filteredUnit?.abbr },
+                    { label: filteredUnit.name, value: filteredUnit?.name },
                     ...(filteredUnit?.sub_units?.map((sub) => ({
                       label: sub.name + "s",
-                      value: sub.abbr,
+                      value: sub.name,
                     })) ?? []),
                   ]}
                 />
@@ -216,14 +211,14 @@ export const UnitPricingForm = ({
           <p className="text-amber-600 text-center p-5">
             Oops! there is no relationship between the two units used. Please
             provide a valid relationship between{" "}
-            {ad.units === filteredUnit?.abbr
-              ? filteredUnit.plural
-              : filteredUnit?.sub_units?.find((u) => u.abbr === ad.units)
+            {ad.units === filteredUnit?.name
+              ? filteredUnit.name
+              : filteredUnit?.sub_units?.find((u) => u.name === ad.units)
                   ?.name + "s"}{" "}
             and{" "}
-            {newValue.units === filteredUnit?.abbr
-              ? filteredUnit.plural
-              : filteredUnit?.sub_units?.find((u) => u.abbr === newValue.units)
+            {newValue.units === filteredUnit?.name
+              ? filteredUnit.name
+              : filteredUnit?.sub_units?.find((u) => u.name === newValue.units)
                   ?.name + "s"}
           </p>
           <div className="flex gap-3 justify-around p-5 pt-0">
@@ -231,9 +226,9 @@ export const UnitPricingForm = ({
               className="w-full max-w-24"
               id="ad-units"
               label={
-                ad.units === filteredUnit?.abbr
-                  ? filteredUnit.plural
-                  : filteredUnit?.sub_units?.find((u) => u.abbr === ad.units)
+                ad.units === filteredUnit?.name
+                  ? filteredUnit.name
+                  : filteredUnit?.sub_units?.find((u) => u.name === ad.units)
                       ?.name + "s"
               }
             >
@@ -257,10 +252,10 @@ export const UnitPricingForm = ({
               className="w-full max-w-24"
               id="new-units"
               label={
-                newValue.units === filteredUnit?.abbr
-                  ? filteredUnit.plural
+                newValue.units === filteredUnit?.name
+                  ? filteredUnit.name
                   : filteredUnit?.sub_units?.find(
-                      (u) => u.abbr === newValue.units
+                      (u) => u.name === newValue.units
                     )?.name + "s"
               }
             >
@@ -286,62 +281,6 @@ export const UnitPricingForm = ({
         </div>
       )}
 
-      <FormGroup
-        label="Is this price discounted?"
-        required
-        className="w-full  text-left"
-      >
-        <div className="px-5 py-1.5 rounded-lg border hover:border-primary focus-within:border-primary flex gap-10 justify-center items-center">
-          <FormGroup
-            label="Yes"
-            htmlFor="yes"
-            className="flex-row-reverse gap-0 w-fit"
-            labelStyle="pl-2"
-          >
-            <input
-              checked={discounted}
-              onChange={(e) => {
-                setDiscounted(e.target.checked);
-              }}
-              type="radio"
-              id="yes"
-              className="bg-primary border-primary checked:border-primary checked:bg-primary checked:text-primary"
-            />
-          </FormGroup>
-          <FormGroup
-            label="No"
-            htmlFor="no"
-            className="flex-row-reverse gap-0 w-fit"
-            labelStyle="pl-2"
-          >
-            <input
-              checked={!discounted}
-              onChange={(e) => {
-                setDiscounted(!e.target.checked);
-              }}
-              type="radio"
-              id="no"
-              className="bg-primary border-primary checked:border-primary checked:bg-primary checked:text-primary"
-            />
-          </FormGroup>
-        </div>
-      </FormGroup>
-      {discounted && (
-        <FormGroup
-          label="What was the initial price?"
-          required
-          className="w-full  text-left"
-        >
-          <FormInput
-            type="text"
-            value={newValue?.initialPrice ?? ""}
-            onChange={setInitialPrice}
-            icon={<span className="px-2">{curr}</span>}
-            min={0}
-            className="px-3 py-1.5"
-          />
-        </FormGroup>
-      )}
       <Button
         type="button"
         disabled={!(Boolean(newValue.units) && toNumber(newValue.price) > 0)}

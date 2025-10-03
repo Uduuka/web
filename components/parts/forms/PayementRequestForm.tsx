@@ -5,7 +5,6 @@ import FormGroup from "@/components/ui/FormGroup";
 import FormInput from "@/components/ui/Input";
 import { requestToPay } from "@/lib/actions";
 import { toMoney } from "@/lib/utils";
-import { error } from "console";
 import { Minus, Plus } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -33,12 +32,7 @@ export default function PayementRequestForm() {
   };
 
   const handleSubmit = async () => {
-    if (
-      !plan ||
-      !["pro", "entrprise"].includes(plan) ||
-      !method ||
-      !["mtn", "airtel"].includes(method)
-    ) {
+    if (!method || !["mtn", "airtel"].includes(method)) {
       setPayementError("Insuficient details");
       console.log("Insuficient details");
       return;
@@ -54,7 +48,7 @@ export default function PayementRequestForm() {
     console.log({ data });
   };
 
-  if (!plan || !method) {
+  if (!method) {
     return null;
   }
 

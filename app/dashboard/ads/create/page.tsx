@@ -1,7 +1,7 @@
 import SubscribeDialog from "@/components/parts/dialogs/SubscribeDialog";
 import CreateAdForm from "@/components/parts/forms/CreateAdForm";
 import Button from "@/components/ui/Button";
-import { getProfile } from "@/lib/actions";
+import { fetchCategories, fetchUnits, getProfile } from "@/lib/actions";
 import env from "@/lib/env";
 import { toNumber } from "@/lib/utils";
 import Link from "next/link";
@@ -10,6 +10,8 @@ import React from "react";
 
 export default async function CreateAdPage() {
   const { data, error } = await getProfile();
+  const { data: categories } = await fetchCategories();
+  const { data: units } = await fetchUnits();
 
   if (error) {
     return (
@@ -44,7 +46,11 @@ export default async function CreateAdPage() {
         <SubscribeDialog message="Oops!, you have reached your free ads limit. Upgrade to pro create more ads." />
       )}
       <div className="w-full max-w-md mx-auto rounded-lg h-full overflow-hidden">
-        <CreateAdForm className="bg-white shadow-lg text-foreground" />
+        <CreateAdForm
+          categories={categories ?? []}
+          units={units ?? []}
+          className="bg-white shadow-lg text-foreground"
+        />
       </div>
     </div>
   );

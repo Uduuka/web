@@ -84,9 +84,7 @@ export default function Model({
                 <X size={20} />
               </Button>
             </div>
-            <div className="flex-1 rounded-b-lg flex flex-col overflow-hidden">
-              {children}
-            </div>
+            <div className="flex-1 rounded-b-lg flex flex-col">{children}</div>
           </div>
         </div>
       )}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useContext, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Listing } from "@/lib/types";
 import { cn, responsiveColumns } from "@/lib/utils";
 import AdCard from "../cards/AdCard";
@@ -8,7 +8,7 @@ import { useFilteredAds } from "@/lib/hooks/use_filtered_ads";
 import AdCardSkelton from "@/components/skeltons/AdCardSkelton";
 import Button from "@/components/ui/Button";
 import { Info } from "lucide-react";
-import { StoreContext } from "@/contexts/store-context/StoreContext";
+import { useParams } from "next/navigation";
 
 export default function AdsList({
   className,
@@ -20,13 +20,12 @@ export default function AdsList({
   emptyMessage?: string;
 }) {
   const [columns, setColumns] = useState<Listing[][] | null>(null);
-  const { store } = useContext(StoreContext);
-  const { ads, fetching, error } = useFilteredAds(store?.id);
-  console.log(ads);
-
+  const store_id = useParams()["storeID"] as string;
+  const { ads, fetching, error } = useFilteredAds(store_id);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    console.log("ads changed");
     if (!ads) {
       return;
     }
@@ -107,7 +106,7 @@ export default function AdsList({
   }
 
   return (
-    <div className={cn("px-5", className)}>
+    <div className={cn("px-5 pb-5", className)}>
       <div className="flex gap-5" ref={containerRef}>
         {columns?.map((items, index) => (
           <div

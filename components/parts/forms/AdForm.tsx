@@ -22,6 +22,8 @@ interface AdFormProps extends ComponentProps<"form"> {
   handleNext?: () => void;
   title?: string;
   actionText?: string;
+  categories: Category[];
+  units: Unit[];
 }
 
 export default function AdForm({
@@ -31,30 +33,28 @@ export default function AdForm({
   actionText,
   handleNext,
   className,
+  categories,
+  units,
   ...props
 }: AdFormProps) {
   const storeID = useParams().storeID as string;
-
   const [ad, setAd] = useState(
     initailData ?? ({ store_id: storeID ?? null } as Listing)
   );
-  const [categories, setCategories] = useState<Category[]>([]);
   const [spects, setSpects] = useState<string[]>([]);
   const [adSpects, setAdSpects] = useState<any>(initailData?.specs);
-  const [units, setUnits] = useState<Unit[]>([]);
   const [unitSearchTerm, setUnitSearchTerm] = useState(ad?.units ?? "");
   const [filteredUnits, setFilteredUnits] = useState<Unit[]>(units);
-  const [fetchingCategories, startFetchingCategories] = useTransition();
 
   useEffect(() => {
-    startFetchingCategories(async () => {
-      const cates = await fetchCategories();
-      const units = await fetchUnits();
+    const saved = localStorage.getItem("adData");
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      setAd(parsed);
+      setUnitSearchTerm(parsed?.units);
 
-      setUnits((units.data as Unit[]) ?? []);
-      setFilteredUnits((units.data as Unit[]) ?? []);
-      setCategories(cates.data ?? []);
-    });
+      setAdSpects(parsed?.specs ?? {});
+    }
   }, []);
 
   useEffect(() => {
@@ -70,7 +70,7 @@ export default function AdForm({
 
     const specs =
       category.default_specs ?? "".concat(subCategory.default_specs ?? "");
-    setAdSpects(initailData?.specs ?? {});
+    setAdSpects(ad?.specs ?? {});
     setSpects(specs.split(",").map((s) => s.trim()));
   }, [categories, ad?.category_id, ad?.sub_category_id, initailData]);
 
@@ -81,6 +81,7 @@ export default function AdForm({
   const handleSubmit = () => {
     if (!ad) return;
     setter({ ...ad, specs: adSpects });
+    localStorage.setItem("adData", JSON.stringify({ ...ad, specs: adSpects }));
     if (handleNext) {
       handleNext();
     }
@@ -125,22 +126,6 @@ export default function AdForm({
 
     setFilteredUnits(filtered);
   };
-
-  // Add a loading skelton for the form while fetching categories.
-  if (fetchingCategories) {
-    return (
-      <div className="flex flex-col gap-4 animate-pulse p-5">
-        <div className="h-6 bg-background/70 rounded w-1/3" />
-        <div className="h-8 bg-background/70 rounded w-full" />
-        <div className="h-6 bg-background/70 rounded w-1/3" />
-        <div className="h-8 bg-background/70 rounded w-full" />
-        <div className="h-6 bg-background/70 rounded w-1/3" />
-        <div className="h-8 bg-background/70 rounded w-full" />
-        <div className="h-6 bg-background/70 rounded w-1/3" />
-        <div className="h-8 bg-background/70 rounded w-full" />
-      </div>
-    );
-  }
 
   return (
     <form
@@ -265,9 +250,9 @@ export default function AdForm({
                           onClick={() => {
                             setAd({
                               ...(ad ?? ({} as Listing)),
-                              units: unit.abbr,
+                              units: unit.name,
                             });
-                            setUnitSearchTerm(unit.plural);
+                            setUnitSearchTerm(unit.name);
                           }}
                           className="text-accent border-b rounded-b-none hover:bg-secondary/50 bg-transparent w-full text-left justify-start"
                         >
@@ -279,9 +264,10 @@ export default function AdForm({
                               <Button
                                 key={ind}
                                 onClick={() => {
+                                  console.log(sub_unit, sub_unit.name);
                                   setAd({
                                     ...(ad ?? ({} as Listing)),
-                                    units: sub_unit.abbr,
+                                    units: sub_unit.name,
                                   });
                                   setUnitSearchTerm(`${sub_unit.name}`);
                                 }}

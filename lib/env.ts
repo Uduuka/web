@@ -54,6 +54,12 @@ const env: Environment = {
     pay: "/dashboard/billing/pay",
     "create-ad": "/dashboard/ads/create",
     "create-store": "/dashboard/stores/create"
+  },
+  currencies: {
+    USD: { symbol: "$", name: "US Dollar", decimal_digits: 2, rounding: 0, code: "USD", name_plural: "US dollars" },
+    UGX: { symbol: "USh", name: "Ugandan Shilling", decimal_digits: 0, rounding: 0, code: "UGX", name_plural: "Ugandan shillings" },
+    KSH: { symbol: "KSh", name: "Kenyan Shilling", decimal_digits: 2, rounding: 0, code: "KES", name_plural: "Kenyan shillings" },
+    TSH: { symbol: "TSh", name: "Tanzanian Shilling", decimal_digits: 0, rounding: 0, code: "TZS", name_plural: "Tanzanian shillings" },
   }
 };
 

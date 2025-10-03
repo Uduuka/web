@@ -7,10 +7,9 @@ import Badge from "@/components/ui/Badge";
 import PriceTag from "./PriceTag";
 import { Listing } from "@/lib/types";
 import { prettyDistance, toNumber } from "@/lib/utils";
-import { usePathname } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import Button from "@/components/ui/Button";
-import { useContext } from "react";
-import { StoreContext } from "@/contexts/store-context/StoreContext";
+import { AddToCartButton } from "../buttons/AddToCartButton";
 
 interface ListingCardProps {
   ad: Listing;
@@ -32,9 +31,8 @@ export default function AdCard({ ad }: ListingCardProps) {
   } = ad;
 
   const pathname = usePathname();
+  const storeID = useParams()["storeID"];
   const url = image?.url ?? "/placeholder.svg";
-
-  const { store: storeContext, loading } = useContext(StoreContext);
 
   return (
     <div className="bg-white border border-gray-300 rounded-md overflow-hidden transition-all hover:shadow-lg">
@@ -49,7 +47,7 @@ export default function AdCard({ ad }: ListingCardProps) {
               alt={title}
               height={100}
               width={100}
-              className="w-full h-auto transition-transform hover:scale-105"
+              className="w-full h-auto object-cover transition-transform hover:scale-105"
             />
 
             {isNew && <Badge className="absolute left-2 top-2">New</Badge>}
@@ -70,22 +68,7 @@ export default function AdCard({ ad }: ListingCardProps) {
           </div>
           <div className="pt-2 px-3">
             {pricings && pricings.length > 1 ? (
-              <div className="flex flex-wrap items-center space-x-4">
-                <PriceTag
-                  pricing={pricings[0]}
-                  className="w-fit hover:underline"
-                />
-
-                <PriceTag
-                  pricing={pricings[1]}
-                  className="w-fit hover:underline"
-                />
-                {pricings.length > 2 && (
-                  <Button className="p-1 text-xs px-2 ml-auto bg-primary text-background w-fit">
-                    + {pricings.length - 2} more
-                  </Button>
-                )}
-              </div>
+              <RenderPricings pricings={pricings} />
             ) : (
               <PriceTag pricing={pricing} />
             )}
@@ -104,33 +87,13 @@ export default function AdCard({ ad }: ListingCardProps) {
               </Link>
             )}
 
-            {storeContext ? (
+            {store && (
               <>
-                {loading ? (
-                  <div className="flex gap-1 animate-pulse">
-                    <div className="w-full bg-gray-500"></div>
-                    <div className="w-full bg-gray-500"></div>
-                  </div>
+                {storeID ? (
+                  <AddToCartButton ad={ad} />
                 ) : (
-                  <>
-                    {storeContext.is_member && (
-                      <div className="flex space-x-1 w-full pt-3">
-                        <Button className="bg-primary hover:bg-primary/80 text-xs px-1 line-clamp-1 py-1 w-full text-background">
-                          Place oreder
-                        </Button>
-                        <Button className="bg-transparent border border-primary text-xs px-1 line-clamp-1 py-1 w-full text-primary hover:bg-primary hover:text-background">
-                          Add to cart
-                        </Button>
-                      </div>
-                    )}
-                  </>
-                )}
-              </>
-            ) : (
-              <>
-                {store && (
                   <Link
-                    href={`/stores/${store.id}`}
+                    href={`/stores/${store?.id}`}
                     className="w-fit"
                     onClick={(e) => e.stopPropagation()}
                   >
@@ -147,3 +110,21 @@ export default function AdCard({ ad }: ListingCardProps) {
     </div>
   );
 }
+
+const RenderPricings = ({ pricings }: { pricings: Listing["pricings"] }) => {
+  if (!pricings || pricings.length === 0) return null;
+  if (pricings.length === 1)
+    return <PriceTag pricing={pricings[0]} className="w-fit" />;
+
+  const minPrice = Math.min(...pricings.map((p) => toNumber(p.details.price)));
+
+  return (
+    <div className="flex flex-wrap items-center space-x-1">
+      <span className="text-xs text-primary">From</span>
+      <PriceTag
+        pricing={pricings.find((p) => toNumber(p.details.price) === minPrice)!}
+        className="w-fit"
+      />
+    </div>
+  );
+};

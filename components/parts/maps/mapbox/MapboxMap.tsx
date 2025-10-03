@@ -56,7 +56,7 @@ export default function MapboxMap() {
         max_lon: boundings.getSouthEast().lng,
       };
 
-      const { data } = await fetchAdsInView({
+      const { data, error } = await fetchAdsInView({
         bounds,
         search,
         category: catSlug,
@@ -64,6 +64,7 @@ export default function MapboxMap() {
       });
 
       if (!data) {
+        console.log(error);
         return {
           type: "FeatureCollection",
           features: [],

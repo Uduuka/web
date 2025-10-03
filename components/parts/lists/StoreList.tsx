@@ -1,10 +1,10 @@
 
 import ScrollArea from "@/components/parts/layout/ScrollArea";
 import { ComponentProps} from "react";
-import { Error, Listing, Store } from "@/lib/types";
+import { Store } from "@/lib/types";
 import Link from "next/link";
 import Button from "@/components/ui/Button";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import StoreCard from "../cards/StoreCard";
 
 interface ListProps extends ComponentProps<"div"> {

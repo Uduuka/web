@@ -1,14 +1,12 @@
 "use client";
 
-import { Suspense, useEffect, useTransition } from "react";
+import "./globals.css";
+import { Suspense, useEffect } from "react";
 import Navbar from "@/components/parts/layout/Navbar";
 import Footer from "@/components/parts/layout/Footer";
-import "./globals.css";
 import { useAppStore } from "@/lib/store";
 import Sidebar from "@/components/parts/layout/SideBar";
-import { getProfile, getUser } from "@/lib/actions";
-import { Currency } from "@/lib/types";
-import { geoCode } from "@/lib/utils";
+import { CartItem, Currency } from "@/lib/types";
 import ActiveChats from "@/components/parts/buttons/ActiveChats";
 
 export default function RootLayout({
@@ -16,28 +14,9 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [fetching, startFetching] = useTransition();
-  const { setLocation, setCurrency, setUser, setProfile, setDeviceWidth } =
-    useAppStore();
+  const { setLocation, setCurrency, setCart, cart } = useAppStore();
 
   useEffect(() => {
-    startFetching(async () => {
-      const { error, data } = await getUser();
-      // Get the window width and set the search text accordingly
-      if (typeof window !== "undefined") {
-        const width = window.innerWidth;
-        setDeviceWidth(width);
-      }
-      if (data.user) {
-        setUser(data.user);
-        const prof = await getProfile();
-        setProfile(prof.data);
-      }
-    });
-  }, []);
-
-  useEffect(() => {
-    setCurrency((localStorage.getItem("currency") as Currency) ?? "UGX");
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -47,38 +26,22 @@ export default function RootLayout({
             coordinates: [position.coords.longitude, position.coords.latitude],
           });
         },
-        async (error) => {
+        (error) => {
           console.log("Geolocation error:", error);
-          try {
-            const { lat, lon, currency } = await geoCode();
-            setLocation({
-              latitude: lat,
-              longitude: lon,
-              coordinates: [lon, lat],
-            });
-            setCurrency(currency);
-          } catch (error) {
-            console.log(error);
-          }
         }
       );
     } else {
       console.log("Geolocation not supported");
-      (async () => {
-        try {
-          const { lat, lon, currency } = await geoCode();
-          setLocation({
-            latitude: lat,
-            longitude: lon,
-            coordinates: [lon, lat],
-          });
-          setCurrency(currency);
-        } catch (error) {
-          console.log(error);
-        }
-      })();
     }
-  }, [setLocation, setCurrency]);
+    const currency = localStorage.getItem("currency") as Currency;
+    const cartItems = localStorage.getItem("cart_items");
+
+    setCurrency(currency ?? "UGX");
+    if (cartItems) {
+      const items: CartItem[] = JSON.parse(cartItems) ?? [];
+      setCart?.({ ...cart, items, store: items[0]?.store });
+    }
+  }, []);
 
   return (
     <html lang="en">
@@ -96,7 +59,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen flex flex-col bg-background font-inter font-light text-sm">
         <Suspense>
-          <Navbar fetchingUser={fetching} />
+          <Navbar />
           <div className="flex flex-1">
             <Sidebar />
             <main className="flex-1 md:ml-64 overflow-auto">

@@ -2,7 +2,7 @@
 import { AuthError } from "@supabase/supabase-js";
 import env from "./env";
 import { createClient } from "./supabase/server";
-import { ChatHead, Filters, Pricing, Profile } from "./types";
+import { ChatHead, Currency, Filters, Order, Pricing, Profile } from "./types";
 
 export const signup = async({email, password, profile} : {email: string, password: string, profile?: object}) => {
    return (await createClient()).auth.signUp({email, password, options: {data: profile ?? {}}})
@@ -82,14 +82,14 @@ export const fetchCategories = async(filters?: {catSlug?: string, subCateSlug?: 
    return (await createClient()).from('categories').select("*, sub_categories(*)")
 }
 
-export const fetchAds = async(filters: any) => {
+export const fetchAds = async(filters: any, currency: Currency) => {
    const supabase = createClient()
    
    const {location} = filters
 
    let query
    if(location){
-      query = (await supabase).rpc('fetch_nearby_ads', {lat: location.latitude, lon: location.longitude})
+      query = (await supabase).rpc('fetch_ads_by_currency', {lat: location.latitude, lon: location.longitude, desired_currency: currency})
    }else{
       query = (await supabase).from("ads_list_view").select("*")
    }
@@ -133,7 +133,7 @@ export const fetchPersonalAds = async({store_id}: any)=>{
 }
 
 export const fetchAd = async(id: string) => {
-   return(await createClient()).from("ads").select("*, seller:profiles(*), pricings(*), images:ad_images(*)").eq('id', id).single()
+   return(await createClient()).from("ads").select("*, seller:profiles(*), pricings(*), images:ad_images(*), store:stores(*)").eq('id', id).single()
 }
 
 export const fetchFlashsales = async(filters: Filters) => {
@@ -184,8 +184,6 @@ export const fetchAdsInView = async(filters: any) => {
    if(filters.subCategory){
       query = query.eq('sub_category_id', filters.subCategory)
    }
-
-   console.log(await query)
    return await query
 }
 
@@ -392,5 +390,16 @@ export const fetchStoreAds = async(storeID: string) => {
 export const fetchStores = async() => {
    return (await createClient()).from("store_data").select("*")
 }
+
+export const getExcahngeRate = async() => {
+   return (await createClient()).from("currency_rates").select("rate, code").in('code', [...env.currencyOptions.map(co => co.value)])
+}
  
+export const fetchCurrencyRates = async(rates: Currency[]) => {
+   return (await createClient()).from("currency_rates").select("code,rate").in('code', rates)
+}
+
+export const placeOrder = async(order: Order) => {
+   return (await createClient()).rpc('place_order', order)
+}
 
