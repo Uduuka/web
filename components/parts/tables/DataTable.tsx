@@ -26,19 +26,24 @@ import Button from "@/components/ui/Button";
 import FormInput from "@/components/ui/Input";
 import Popup from "@/components/ui/Popup";
 import { Check } from "lucide-react";
+import Select from "@/components/ui/Select";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  filterBy?: string;
   errorMessage?: ReactNode;
   emptyMessage?: ReactNode;
   onRowsSelect?: (seletedRows: TData[]) => void;
   onRowClicked?: (row: TData) => void;
+  viewOptions?: string[];
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  viewOptions,
+  filterBy,
   errorMessage,
   emptyMessage = "No results.",
   onRowsSelect,
@@ -47,9 +52,11 @@ export function DataTable<TData, TValue>({
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [viewOnly, setViewOnly] = useState<string>();
+  const [rows, setRows] = useState<TData[]>([]);
 
   const table = useReactTable({
-    data,
+    data: rows,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -67,25 +74,57 @@ export function DataTable<TData, TValue>({
   });
 
   useEffect(() => {
+    setRows(data);
+  }, [data]);
+
+  useEffect(() => {
     if (onRowsSelect) {
       onRowsSelect(table.getSelectedRowModel().rows.map((r) => r.original));
     }
   }, [table.getSelectedRowModel().rows]);
 
+  const handleViewOptionChanged = (option: string) => {
+    if (option === "all") {
+      setRows(data);
+      setViewOnly(undefined);
+      return;
+    }
+
+    setViewOnly(option);
+    setRows(data.filter((d: any) => d["status"] === option));
+  };
+
   return (
-    <div className="flex flex-col gap-5 min-h-[80vh]">
-      <div className="flex items-center justify-between gap-5">
-        <FormInput
-          placeholder="Filter by ad title..."
-          value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("title")?.setFilterValue(event.target.value)
-          }
-          className="bg-white text-base"
-          wrapperStyle="w-full max-w-80"
-        />
+    <div className="flex flex-col space-y-2 min-h-[80vh]">
+      <div className="flex items-center justify-end gap-5">
+        {filterBy && (
+          <FormInput
+            placeholder={`Filter by ${filterBy}...`}
+            value={
+              (table.getColumn(filterBy)?.getFilterValue() as string) ?? ""
+            }
+            onChange={(event) =>
+              table.getColumn(filterBy)?.setFilterValue(event.target.value)
+            }
+            className="bg-white text-base"
+            wrapperStyle="w-full max-w-80"
+          />
+        )}
+        {viewOptions?.length && (
+          <div className="w-fit text-base flex gap-2 items-center">
+            <span>View</span>
+            <Select
+              onChange={handleViewOptionChanged}
+              triggerStyle="bg-white shadow-none w-40 px-5 text-base capitalize"
+              value={viewOnly ?? "all"}
+              className="w-full"
+              optionsStyle="text-sm capitalize py-0 hover:bg-gray-200 py-1"
+              options={viewOptions.map((v) => ({ label: v, value: v }))}
+            />
+          </div>
+        )}
         <Popup
-          className="w-full max-w-60"
+          className="w-full max-w-60 self-end"
           contentStyle="w-full mt-2"
           trigger={
             <Button className="w-full bg-white text-base">Columns</Button>
@@ -143,7 +182,7 @@ export function DataTable<TData, TValue>({
                     <TableRow
                       key={row.id}
                       onClick={() => {
-                        row.toggleSelected(!isSelected);
+                        // row.toggleSelected(!isSelected);
                         onRowClicked?.(row.original);
                       }}
                       className="cursor-pointer"

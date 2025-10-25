@@ -48,12 +48,12 @@ export default function Modal({
       </Button>
       <dialog
         ref={modalRef}
-        className="backdrop:bg-black/75 w-fit p-5 bg-transparent mx-auto my-auto"
+        className="backdrop:bg-black/30 box-border w-full p-5 bg-transparent mx-auto my-20"
         {...props}
       >
         <div
           className={cn(
-            "w-full bg-white shadow rounded-lg space-y-2 h-fit min-h-40",
+            "w-full max-w-sm mx-auto box-border bg-white shadow rounded-lg space-y-2 h-fit min-h-40",
             className
           )}
         >
@@ -66,9 +66,9 @@ export default function Modal({
               <X />
             </Button>
           </div>
-          <ScrollArea maxHeight="80vh" className="">
-            {children}
-          </ScrollArea>
+          {/* <ScrollArea maxHeight="80vh" maxWidth="100%" className=""> */}
+          {children}
+          {/* </ScrollArea> */}
         </div>
       </dialog>
     </>

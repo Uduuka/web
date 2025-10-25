@@ -8,23 +8,26 @@ import { useAppStore } from "@/lib/store";
 import Sidebar from "@/components/parts/layout/SideBar";
 import { CartItem, Currency } from "@/lib/types";
 import ActiveChats from "@/components/parts/buttons/ActiveChats";
+import { setCookie } from "@/lib/actions";
 
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { setLocation, setCurrency, setCart, cart } = useAppStore();
+  const { setCart, cart } = useAppStore();
 
   useEffect(() => {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          setLocation({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-            coordinates: [position.coords.longitude, position.coords.latitude],
-          });
+          setCookie(
+            "location",
+            JSON.stringify({
+              lat: position.coords.latitude,
+              lon: position.coords.longitude,
+            })
+          );
         },
         (error) => {
           console.log("Geolocation error:", error);
@@ -36,7 +39,7 @@ export default function RootLayout({
     const currency = localStorage.getItem("currency") as Currency;
     const cartItems = localStorage.getItem("cart_items");
 
-    setCurrency(currency ?? "UGX");
+    setCookie("currency", currency ?? "UGX");
     if (cartItems) {
       const items: CartItem[] = JSON.parse(cartItems) ?? [];
       setCart?.({ ...cart, items, store: items[0]?.store });

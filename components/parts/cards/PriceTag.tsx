@@ -64,9 +64,7 @@ export const Money = ({
         <span className="w-24 h-4 bg-gray-300 animate-pulse rounded-lg"></span>
       ) : (
         toMoney(
-          toNumber(price)
-            .toFixed(env.currencies[currency].decimal_digits)
-            .toString()
+          toNumber(price).toFixed(env.currencies[currency].decimal_digits)
         )
       )}
     </span>

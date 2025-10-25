@@ -2,9 +2,13 @@ import AdsList from "@/components/parts/lists/AdsList";
 import FlashSales from "@/components/parts/lists/FlashSales";
 import StoreList from "@/components/parts/lists/StoreList";
 import { fetchStores } from "@/lib/actions";
+import { createClient } from "@/lib/supabase/server";
 
 export default async function Home() {
   const { data: stores } = await fetchStores();
+  // const token = (await (await createClient()).auth.getSession()).data.session
+  //   ?.access_token;
+  // console.log(token);
   return (
     <div className="w-full">
       <FlashSales orientation="horizontal" className="grid gap-5 grid-cols-3" />

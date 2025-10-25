@@ -12,6 +12,8 @@ import {
   MapPin,
   StoreIcon,
   Settings,
+  Captions,
+  ListOrdered,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Button from "@/components/ui/Button";
@@ -21,10 +23,13 @@ import FilterCard from "../cards/FiltersCard";
 import { IoMdFlash } from "react-icons/io";
 import { FiFilter } from "react-icons/fi";
 import { RxDashboard } from "react-icons/rx";
-import { useAppStore } from "@/lib/store";
 import { BsCashCoin, BsChatRightText, BsMegaphone } from "react-icons/bs";
 import { SlBell } from "react-icons/sl";
-import { PiStorefront, PiTrashSimpleLight } from "react-icons/pi";
+import {
+  PiInvoiceLight,
+  PiStorefront,
+  PiTrashSimpleLight,
+} from "react-icons/pi";
 import { Category } from "@/lib/types";
 import { fetchCategories } from "@/lib/actions";
 import { BiMoney } from "react-icons/bi";
@@ -205,8 +210,7 @@ export const DefaultNav = ({ className, ...props }: ComponentProps<"nav">) => {
 
 export const DashboardNav = () => {
   const pathname = usePathname();
-
-  const { user } = useAppStore();
+  const [openActivity, setOpenActivity] = useState(false);
   return (
     <ScrollArea maxHeight="100%" className="h-full pr-3">
       <nav className="flex-1 px-2 py-4 flex flex-col gap-2">
@@ -263,6 +267,51 @@ export const DashboardNav = () => {
               My ads
             </Button>
           </Link>
+          <div className="w-full h-fit">
+            <Button
+              onClick={() => {
+                setOpenActivity(!openActivity);
+              }}
+              className={cn(
+                "w-full justify-start text-sm bg-transparent",
+                pathname.startsWith("/dashboard/orders") || openActivity
+                  ? "bg-primary text-background"
+                  : "bg-transparent hover:bg-secondary/50"
+              )}
+            >
+              <Captions className="mr-2 h-4 w-4" /> Activity
+            </Button>
+            {openActivity && (
+              <div className="w-full pl-4 py-2 space-y-5">
+                <Link href="/dashboard/orders">
+                  <Button
+                    className={cn(
+                      "w-full justify-start text-sm bg-transparent",
+                      pathname.startsWith("/dashboard/orders")
+                        ? "bg-primary text-background"
+                        : "bg-transparent hover:bg-secondary/50"
+                    )}
+                  >
+                    <ListOrdered className="mr-2 h-4 w-4" />
+                    Orders
+                  </Button>
+                </Link>
+                <Link href="/dashboard/invoices">
+                  <Button
+                    className={cn(
+                      "w-full justify-start text-sm bg-transparent",
+                      pathname.startsWith("/dashboard/invoices")
+                        ? "bg-primary text-background"
+                        : "bg-transparent hover:bg-secondary/50"
+                    )}
+                  >
+                    <PiInvoiceLight className="mr-2 h-4 w-4" />
+                    Invoices
+                  </Button>
+                </Link>
+              </div>
+            )}
+          </div>
           <Link href="/dashboard/chat">
             <Button
               className={cn(

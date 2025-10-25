@@ -6,7 +6,7 @@ import React from "react";
 export default async function page() {
   const { error, data } = await getUser();
 
-  if (data.user) {
+  if (data.session?.user) {
     return (
       <div className="p-5 min-h-96 flex flex-col gap-5 justify-center items-center">
         <h1 className="text-base font-thin">You'r already signed in.</h1>

@@ -6,7 +6,13 @@ import { useAppStore } from "@/lib/store";
 import { calcCartItemSubTotal, forex, toNumber } from "@/lib/utils";
 import { CartItem } from "@/lib/types";
 
-export default function CartItemCard({ item }: { item: CartItem }) {
+export default function CartItemCard({
+  item,
+  hideControls,
+}: {
+  item: CartItem;
+  hideControls?: boolean;
+}) {
   const {
     cart: { deleteItem, updateItem },
     currency,
@@ -65,7 +71,7 @@ export default function CartItemCard({ item }: { item: CartItem }) {
     });
   };
   return (
-    <div className="hover:bg-gray-50 p-3 group rounded-lg cursor-pointer">
+    <div className="hover:bg-gray-50 p-3 group cursor-pointer">
       <div className="flex">
         <div className="px-2 w-full">
           <p className="font-bold text-gray-500">{item.ad.title}</p>
@@ -77,17 +83,7 @@ export default function CartItemCard({ item }: { item: CartItem }) {
               className="font-normal text-xs text-gray-500 pr-0"
               pricing={item.pricing}
             />
-            <div className="flex gap-2 text-xs">
-              |<span className="text-xs">shipping:</span>
-              <PriceTag
-                className="text-xs text-gray-500 font-normal"
-                pricing={{
-                  currency: "UGX",
-                  details: { price: 4500 },
-                  scheme: "fixed",
-                }}
-              />
-            </div>
+
             <div className="flex gap-2 items-center">
               {item.qty ? (
                 <>
@@ -136,30 +132,32 @@ export default function CartItemCard({ item }: { item: CartItem }) {
           </div>
           <div className="flex flex-wrap gap-2"></div>
         </div>
-        <div className="w-8 border-l border-gray-200 justify-center items-center opacity-0 group-hover:opacity-100 flex flex-col">
-          <Button
-            disabled={!item.qty}
-            onClick={increamentItemQuantity}
-            className="p-1 bg-transparent hover:bg-primary hover:text-background text-primary"
-          >
-            <Plus size={15} />
-          </Button>
-          <Button
-            disabled={!item.qty}
-            onClick={decreamentItemQuantity}
-            className="p-1 bg-transparent hover:bg-primary hover:text-background text-primary"
-          >
-            <Minus size={15} />
-          </Button>
-          <Button
-            onClick={() => {
-              deleteItem?.(item);
-            }}
-            className="p-1 bg-transparent hover:bg-red-500 text-error hover:text-background"
-          >
-            <Trash size={15} />
-          </Button>
-        </div>
+        {!hideControls && (
+          <div className="w-8 border-l border-gray-200 justify-center items-center opacity-0 group-hover:opacity-100 flex flex-col">
+            <Button
+              disabled={!item.qty}
+              onClick={increamentItemQuantity}
+              className="p-1 bg-transparent hover:bg-primary hover:text-background text-primary"
+            >
+              <Plus size={15} />
+            </Button>
+            <Button
+              disabled={!item.qty}
+              onClick={decreamentItemQuantity}
+              className="p-1 bg-transparent hover:bg-primary hover:text-background text-primary"
+            >
+              <Minus size={15} />
+            </Button>
+            <Button
+              onClick={() => {
+                deleteItem?.(item);
+              }}
+              className="p-1 bg-transparent hover:bg-red-500 text-error hover:text-background"
+            >
+              <Trash size={15} />
+            </Button>
+          </div>
+        )}
       </div>
 
       <div className="w-full flex gap-2 items-center justify-end px-2 pt-1 text-gray-500 border-t mt-2 border-gray-200">

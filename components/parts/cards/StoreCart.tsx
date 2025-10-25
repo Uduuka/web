@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useTransition } from "react";
 import ScrollArea from "../layout/ScrollArea";
 import CartItemCard from "./CartItemCard";
 import Button from "@/components/ui/Button";
@@ -10,16 +10,18 @@ import FormGroup from "@/components/ui/FormGroup";
 import FormInput from "@/components/ui/Input";
 import { Order } from "@/lib/types";
 import { placeOrder } from "@/lib/actions";
+import { LoaderCircle } from "lucide-react";
 
 export default function StoreCart() {
   const {
-    cart: { items, total, store },
+    cart: { items, total, store, clearCart },
     currency,
-    user,
   } = useAppStore();
 
   const [received, setReceived] = useState(0);
   const [change, setChange] = useState(0);
+  const [error, setError] = useState("");
+  const [submitting, startSubmitting] = useTransition();
 
   useEffect(() => {
     if (received > total) {
@@ -27,39 +29,60 @@ export default function StoreCart() {
     }
   }, [total, received]);
 
-  const handleSubmit = async () => {
-    const order: Order = {
-      p_desired_currency: currency,
-      p_method: "cash",
-      p_received: received,
-      p_order_items: items.map((o) => ({
-        pricing_id: o.pricing.id!,
-        quantity: Number(o.qty),
-        units: o.units,
-      })),
-      p_store_id: store?.id!,
-      p_amount: Number(pretifyMoney(total, currency)),
-      p_type: "local",
-    };
+  const handleSubmit = () => {
+    startSubmitting(async () => {
+      if (!store) {
+        setError("The store is undefined.");
+        return;
+      }
+      const order: Order = {
+        p_desired_currency: currency,
+        p_method: "cash",
+        p_received: received,
+        p_order_items: items.map((o) => ({
+          pricing_id: o.pricing.id!,
+          quantity: Number(o.qty),
+          units: o.units,
+          specs: o.specs,
+        })),
+        p_status: "completed",
+        p_store_id: store.id,
+        p_amount: Number(pretifyMoney(total, currency)),
+        p_type: "local",
+      };
 
-    const { data, error } = await placeOrder(order);
-
-    console.log({ data, error });
+      const { error } = await placeOrder(order);
+      if (error) {
+        setError(error.message);
+        return;
+      }
+      clearCart?.();
+      setError("");
+      setReceived(0);
+      setChange(0);
+    });
   };
 
   return (
     <>
       <ScrollArea maxHeight="100%" className="!pb-0 flex-1">
+        {error && (
+          // <div className="px-5 pt-2">
+          <div className="p-5 w-full bg-red-50 text-error text-center">
+            {error}
+          </div>
+          // </div>
+        )}
         {items.map((item, i) => (
           <CartItemCard item={item} key={i} />
         ))}
       </ScrollArea>
 
       <div className="bg-orange-50">
-        <div className="flex justify-end px-5 py-2 gap-5 items-center text-primary">
-          <span className="text-2xl font-bold">Total:</span>
+        <div className="flex justify-end px-2 py-1 gap-5 items-center text-primary border-b">
+          <span className="text-xl font-bold">Total:</span>
           <PriceTag
-            className="text-2xl"
+            className="text-xl font-bold"
             pricing={{
               currency,
               details: { price: total },
@@ -68,8 +91,8 @@ export default function StoreCart() {
           />
         </div>
 
-        <div className="space-y-5">
-          <div className="flex gap-5 px-5">
+        <div className="space-y-4 pt-2">
+          <div className="flex gap-5 px-2">
             <FormGroup label="Amount received" className="text-primary">
               <FormInput
                 wrapperStyle="border-primary bg-white"
@@ -90,12 +113,16 @@ export default function StoreCart() {
               />
             </FormGroup>
           </div>
-          <div className="flex gap-5 justify-between py-3 px-5 border-t border-primary ">
+          <div className="flex gap-5 justify-between pb-5 px-2">
             <Button
               onClick={handleSubmit}
               className="bg-primary text-lg font-bold w-full text-background hover:bg-orange-400"
             >
-              Make a sale
+              {submitting ? (
+                <LoaderCircle className="animate-spin" />
+              ) : (
+                "Make a sale"
+              )}
             </Button>
           </div>
         </div>

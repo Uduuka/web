@@ -4,8 +4,8 @@ const env: Environment = {
   currencyOptions: [
     { value: "USD" as const, label: "USD" },
     { value: "UGX" as const, label: "UGX" },
-    { value: "KSH" as const, label: "KSH" },
-    { value: "TSH" as const, label: "TSH" },
+    { value: "KES" as const, label: "KSH" },
+    { value: "TZS" as const, label: "TSH" },
   ],
   pricingSchemes: [
     { value: "fixed", label: "Fixed price" },

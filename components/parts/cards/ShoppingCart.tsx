@@ -12,19 +12,18 @@ import { CartItem } from "@/lib/types";
 
 export default function ShoppingCart({
   mode = "dropdown",
+  successMessage,
 }: {
   mode?: "dropdown" | "page";
+  successMessage?: string;
 }) {
   const {
     cart: { items, clearCart, store },
     currency,
   } = useAppStore();
   const [cartTotal, setCartTotal] = useState(0);
-  const [orders, setOrders] = useState<Record<string, CartItem[]>>();
 
   useEffect(() => {
-    const grouped = groupBy(items, (obj) => obj.store.name ?? "unknown");
-    setOrders(grouped);
     const subTotals = items.map((item) =>
       toNumber(item.subTotal.details.price)
     );
@@ -46,9 +45,18 @@ export default function ShoppingCart({
         </div>
       )}
       <ScrollArea maxHeight="100%" className="!pb-0 flex-1">
-        {items.map((item, i) => (
-          <CartItemCard item={item} key={i} />
-        ))}
+        {items.length > 0 ? (
+          items.map((item, i) => <CartItemCard item={item} key={i} />)
+        ) : successMessage ? (
+          <div className="w-full text-center">
+            <p className="text-center text-gray-400 p-5">{successMessage}</p>
+          </div>
+        ) : (
+          <p className="text-center text-gray-400 p-5">
+            Your cart is empty. Continue shopping to addd items and later
+            proceed to pay.
+          </p>
+        )}
       </ScrollArea>
       {items.length > 0 && (
         <div className="bg-orange-50">

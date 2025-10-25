@@ -96,10 +96,5 @@ export default function LocationMap({
       ?.setHTML(`<h1 class="text-primary">${address}</h1>`);
   }, [address]);
 
-  return (
-    <div
-      ref={mapContainerRef}
-      className="w-full h-full rounded-lg overflow-hidden"
-    />
-  );
+  return <div ref={mapContainerRef} className="w-full rounded-lg h-full" />;
 }

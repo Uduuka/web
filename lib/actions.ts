@@ -1,8 +1,10 @@
 "use server";
 import { AuthError } from "@supabase/supabase-js";
 import env from "./env";
+import axios from "axios";
 import { createClient } from "./supabase/server";
-import { ChatHead, Currency, Filters, Order, Pricing, Profile } from "./types";
+import { ChatHead, Currency, Filters, Order, Pricing, Profile, StoreOrder } from "./types";
+import { cookies } from "next/headers";
 
 export const signup = async({email, password, profile} : {email: string, password: string, profile?: object}) => {
    return (await createClient()).auth.signUp({email, password, options: {data: profile ?? {}}})
@@ -35,7 +37,7 @@ export const updateUserPassword = async(newPassword: string) => {
 }
 
 export const getUser = async() =>{
-   return (await createClient()).auth.getUser()
+   return (await createClient()).auth.getSession()
 }
 
 export const createOrUpdateProfile = async(data: Profile) => {
@@ -45,7 +47,8 @@ export const createOrUpdateProfile = async(data: Profile) => {
 export const getProfile = async(uid?: string) => {
    let userID = uid
 
-   const {data: {user}, error: userError} = await getUser()
+   const {data: {session}, error: userError} = await getUser()
+   const user = session?.user
    if(!userID){
       userID = user?.id
       
@@ -84,20 +87,28 @@ export const fetchCategories = async(filters?: {catSlug?: string, subCateSlug?: 
 
 export const fetchAds = async(filters: any, currency: Currency) => {
    const supabase = createClient()
-   
-   const {location} = filters
+   const cookieStore = await cookies()
+   const {lat, lon} = cookieStore.get('location') ? JSON.parse(cookieStore.get('location')?.value ?? '') : {}
 
    let query
-   if(location){
-      query = (await supabase).rpc('fetch_ads_by_currency', {lat: location.latitude, lon: location.longitude, desired_currency: currency})
-   }else{
-      query = (await supabase).from("ads_list_view").select("*")
-   }
+   let embedding
 
-   // Filter by search
    if(filters.search){
-      query = query.or(`title.ilike.%${filters.search}%, description.ilike.%${filters.search}%, category_id.ilike.%${filters.search}%, sub_category_id.ilike.%${filters.search}%`)
+      embedding = await getEmbedding(filters.search)
    }
+   
+   query = (await supabase).rpc('fetch_ads_by_currency', 
+      {
+         desired_currency: currency, 
+         lat: lat ?? null, 
+         lon: lon ?? null, 
+         q_embedding: embedding?.[0] ?? null
+      })
+   
+   // Filter by search
+   // if(filters.search){
+   //    query = query.or(`title.ilike.%${filters.search}%, description.ilike.%${filters.search}%, category_id.ilike.%${filters.search}%, sub_category_id.ilike.%${filters.search}%`)
+   // }
 
    // Filter by store id
    if(filters.storeID){
@@ -207,7 +218,7 @@ export const createChatThread = async(thread: {buyer_id: string, seller_id: stri
    return (await createClient()).from("chat_threads").insert(thread).select()
 }
 
-export const sendMessage = async(message: {text: string, sender_id: string, thread_id: string}) => {
+export const sendMessage = async(message: {text: string, sender_id: string, receiver_id: string}) => {
    return (await createClient()).from("chat_messages").insert(message).select()
 }
 
@@ -303,10 +314,10 @@ export const batchUploadFiles = async ({
      failedFiles,
      results
    }
- }
+}
 
 export const createAdImages = async(images: {url: string, ad_id: string, is_default: boolean}[]) => {
-return ((await createClient()).from("ad_images").insert(images).select())
+   return ((await createClient()).from("ad_images").insert(images).select())
 }
 
 export const updateAd = async(id: string, fields: object) => {
@@ -402,4 +413,105 @@ export const fetchCurrencyRates = async(rates: Currency[]) => {
 export const placeOrder = async(order: Order) => {
    return (await createClient()).rpc('place_order', order)
 }
+
+export const fetchOrders = async(storeID?: string)=>{
+   let query = (await createClient()).from("orders_view")
+      .select("*,date:created_at, items:ads, store:stores(*)")
+      .order('created_at', { ascending: false})
+   if(storeID){
+      return query.eq('store_id', storeID)
+   }else{
+      const {data: {user}} = await (await createClient()).auth.getUser()
+      if(user){
+         query = query.eq('buyer_id', user.id)
+      }
+   }
+   return query
+}
+
+export const updateOrder = async(order: StoreOrder, action: string) => {
+   switch (action) {
+      case 'deleted':
+         return (await createClient()).rpc("delete_order", {p_order_id: order.id});
+      
+      default:
+         return (await createClient()).rpc("update_order_status", {p_order_id: order.id, p_target_status: action});
+   }
+}
+
+export const sendInvoice = async(data: {order_id: string}) => {
+   return (await createClient()).from("invoices").insert(data).select()
+}
+
+export const settlePayement = async(orderID: string, accountProviderName: string) => {
+   return (await createClient()).rpc('settle_order_payment', {p_order_id: orderID, p_account_provider_name: accountProviderName})
+}
+
+export const deliverOrder = async(order_id: string) => {
+   return (await createClient()).rpc('deliver_order', {p_order_id: order_id})
+}
+
+export const payForOrder = async(data: {order_id: string, phone: string, method: "airtel"| "mtn"}) => {
+   return (await createClient()).rpc('pay', {p_pay_for: 'order', p_details: {order_id: data.order_id, account_number: data.phone, provide_name: data.method}})
+}
+
+export const fetchAccount = async() => {
+   const supabase = await createClient()
+   const {data: {user}} = await supabase.auth.getUser()
+
+   return await supabase.from("remittance_accounts").select("*").eq("user_id", user?.id)
+}
+
+export const createRemittanceAccount = async(data: {providers: {account_names: string, account_number: string, provider_name: string, account_currency: string}[]}) => {
+   return (await createClient()).from('remittance_accounts').insert(data).select().single()
+}
+
+async function getEmbedding(text?: string) {
+   if(!text) return;
+
+   const COHERE_URL = process.env.COHERE_API_URL
+   const COHERE_API_KEY = process.env.COHERE_API_KEY
+
+   if(!COHERE_API_KEY || !COHERE_URL){
+      console.log("Failed to get embedding credentials.")
+      return
+   }
+
+  const response = await axios.post(
+   COHERE_URL,
+   {
+      model: 'embed-english-v3.0',
+      input_type: 'search_query',
+      truncate: "END",
+      texts: [
+         text
+      ]
+   },
+   {
+      headers: {
+         Authorization: `Bearer ${COHERE_API_KEY}`,
+         'Content-Type': 'application/json',
+      },
+   }
+  );
+
+  const {data: {embeddings} } = response
+  
+  return embeddings; // Returns a vector (e.g., 1536 dimensions)
+}
+
+export const setCookie = async(name: string, value: string) => {
+   const cookieStore = await cookies()
+   cookieStore.set(name, value)
+}
+
+export const deleteCookie = async(name: string) => {
+   const cookieStore = await cookies()
+   cookieStore.delete(name)
+}
+
+
+
+
+
 

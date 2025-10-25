@@ -15,6 +15,32 @@ import { toNumber } from "@/lib/utils";
 
 export const columns: ColumnDef<Listing>[] = [
   {
+    id: "select",
+    header: ({ table }) => (
+      <input
+        type="checkbox"
+        checked={Boolean(
+          table.getIsAllPageRowsSelected() ||
+            (table.getIsSomePageRowsSelected() && "indeterminate")
+        )}
+        onChange={(value) =>
+          table.toggleAllPageRowsSelected(!!value.target.checked)
+        }
+        aria-label="Select all"
+      />
+    ),
+    cell: ({ row }) => (
+      <input
+        type="checkbox"
+        checked={row.getIsSelected()}
+        onChange={(value) => row.toggleSelected(!!value.target.checked)}
+        aria-label="Select row"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
+  {
     accessorKey: "title",
     id: "title",
     header: () => <h1 className="font-semibold">Title</h1>,
@@ -157,9 +183,7 @@ export default function AdsTable({
   onRowSelect?: (ad: Listing) => void;
 }) {
   const storeID = useParams()["storeID"] as string;
-  const handleRowSelect = (selectedRows: Listing[]) => {
-    
-  };
+  const handleRowSelect = (selectedRows: Listing[]) => {};
   return (
     <DataTable
       columns={
@@ -167,6 +191,7 @@ export default function AdsTable({
           ? columns.filter((c) => displayColumns.includes(c.id ?? ""))
           : columns
       }
+      filterBy="title"
       data={data ?? []}
       onRowsSelect={handleRowSelect}
       onRowClicked={onRowSelect}

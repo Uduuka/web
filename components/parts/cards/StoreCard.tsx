@@ -1,6 +1,7 @@
 import { Store } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { ShoppingBag, Star } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import React, { ComponentProps } from "react";
 
@@ -25,7 +26,15 @@ export default function StoreCard({
         {...props}
       >
         <div className="flex gap-2 flex-1 px-3 py-2 items-center">
-          <div className="rounded-full h-20 w-20 bg-secondary"></div>
+          <div className="rounded-full h-20 w-20 bg-secondary overflow-hidden border-2 border-secondary flex items-center justify-center">
+            <Image
+              src={store.logo ?? "/placeholder.svg"}
+              alt="Store logo"
+              height={1000}
+              width={1000}
+              className="w-full h-auto object-contain"
+            />
+          </div>
           <div className="flex-1 flex flex-col justify-center">
             <div className="">
               <h1 className="text-gray-600 font-semibold line-clamp-1">
