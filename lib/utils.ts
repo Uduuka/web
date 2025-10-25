@@ -12,8 +12,8 @@ export function cn(...inputs: ClassValue[]) {
 
 export const responsiveColumns = <T>(arr: T[], containerWidth: number): T[][] => {
   const splitSequentiallyBasedOnWidth = (width: number): T[][] => {
-    const cols = toNumber((width/300).toFixed(0))
-
+    let cols = toNumber((width/300).toFixed(0))
+    cols = cols > 2 ? cols : 2;
     const result: T[][] = Array.from({ length: cols }, () => []);
     for (let i = 0; i < arr.length; i++) {
       result[i % cols].push(arr[i]);

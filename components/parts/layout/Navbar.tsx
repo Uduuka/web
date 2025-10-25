@@ -4,7 +4,7 @@ import Select from "@/components/ui/Select";
 import { useAppStore } from "@/lib/store";
 import Image from "next/image";
 import Link from "next/link";
-import React, { use, useEffect, useRef, useState, useTransition } from "react";
+import React, { useEffect, useRef, useState, useTransition } from "react";
 import env from "@/lib/env";
 import Dropdown from "@/components/ui/Dropdown";
 import {
@@ -22,7 +22,7 @@ import Button from "@/components/ui/Button";
 import Popup from "@/components/ui/Popup";
 import { BiBell, BiEnvelope, BiLock, BiPlus } from "react-icons/bi";
 import { RxDashboard } from "react-icons/rx";
-import { getProfile, getUser, signout } from "@/lib/actions";
+import { getProfile, getUser, setCookie, signout } from "@/lib/actions";
 import { redirect, useParams, usePathname } from "next/navigation";
 import { DashboardNav, DefaultNav, StoreNav } from "./SideBar";
 import ScrollArea from "./ScrollArea";
@@ -34,6 +34,7 @@ export default function Navbar() {
     currency,
     setCurrency,
     location,
+    setLocation,
     user,
     profile,
     setProfile,
@@ -70,6 +71,7 @@ export default function Navbar() {
   // Fetch the currency exchange whenever the currency changes
   const handleCurrencyChange = async (c: Currency) => {
     setCurrency(c as Currency);
+    setCookie("currency", c);
     localStorage.setItem("currency", c);
   };
 
@@ -77,10 +79,10 @@ export default function Navbar() {
     if (!user) {
       startFetchingUser(async () => {
         const { data } = await getUser();
-        if (data.user) {
-          setUser(data.user);
+        if (data.session?.user) {
           const { data: profile } = await getProfile();
           if (profile) {
+            setUser(data.session?.user);
             setProfile(profile);
           }
         }
@@ -100,6 +102,7 @@ export default function Navbar() {
       return;
     }
     setUser(null);
+    setProfile(null);
     redirect("/");
   };
 
@@ -145,6 +148,20 @@ export default function Navbar() {
             className=""
             trigger={
               <Button
+                onClick={() => {
+                  if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition((loc) => {
+                      setLocation({
+                        coordinates: [
+                          loc.coords.latitude,
+                          loc.coords.longitude,
+                        ],
+                        latitude: loc.coords.latitude,
+                        longitude: loc.coords.longitude,
+                      });
+                    });
+                  }
+                }}
                 className={cn(
                   "bg-transparent p-0 hidden md:flex",
                   location ? "" : "text-yellow-400 border-yellow-400"
@@ -313,6 +330,7 @@ export default function Navbar() {
               value={currency}
               onChange={(c) => {
                 setCurrency(c as Currency);
+                setCookie("currency", c);
                 localStorage.setItem("currency", c);
               }}
               placeholder="Currency"

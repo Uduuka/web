@@ -15,7 +15,6 @@ import { FaRegImage } from "react-icons/fa";
 import { ImAttachment } from "react-icons/im";
 import { HiOutlineEmojiHappy, HiOutlineMicrophone } from "react-icons/hi";
 import { MdSend } from "react-icons/md";
-import { createChatThread, sendMessage } from "@/lib/actions";
 import { useChatThread } from "@/lib/hooks/use_chat_threads";
 import { BsExclamationCircle } from "react-icons/bs";
 import { Info } from "lucide-react";
@@ -45,45 +44,7 @@ export default function ChatForm({ thread }: FormProps) {
   }, [messages]);
 
   const handleSend = () => {
-    startSending(async () => {
-      // Initialise a message body
-      const newMessage: Message = {
-        text: message,
-        sender_id: profile?.user_id!,
-      };
-      if (thread.id) {
-        // If the thread is already created on th database, it will have an id, so we set the thread_id of the message
-        newMessage.thread_id = thread.id;
-      } else {
-        // Else we create the thread on the database then set the thread_id of the message.
-        const { data, error } = await createChatThread({
-          buyer_id: thread.buyer_id,
-          seller_id: thread.seller_id,
-        });
-        if (!data?.length) {
-          setSendError(
-            `Failed to send. \n ${error?.message && error.message}.`
-          );
-          setMessages([...messages, { ...newMessage, status: "error" }]);
-          setMessage("");
-          return;
-        } else {
-          setSendError(undefined);
-          newMessage.thread_id = data[0].id;
-        }
-      }
-      if (!newMessage.thread_id) {
-        return;
-      }
-      const { text, sender_id, thread_id } = newMessage;
-      const { error } = await sendMessage({ text, sender_id, thread_id });
-      if (error) {
-        setSendError(`Failed to send. \n ${error?.message && error.message}.`);
-        setMessages([...messages, { ...newMessage, status: "error" }]);
-        setMessage("");
-      }
-      setMessage("");
-    });
+    startSending(async () => {});
   };
   return (
     <div className="w-full h-full flex flex-col gap-3">

@@ -19,12 +19,14 @@ interface SelectProps<T> {
   placeholder?: string;
   className?: string;
   disabled?: boolean;
+  optionsStyle?: string;
 }
 
 export default function Select<T>({
   options,
   value,
   onChange,
+  optionsStyle,
   placeholder = "Select",
   className,
   triggerStyle,
@@ -135,21 +137,24 @@ export default function Select<T>({
       {isOpen && (
         <div
           ref={menuRef}
-          className="absolute z-10 mt-1 w-full bg-background shadow-md rounded-md text-uduuka-gray text-sm"
+          className="absolute z-10 py-3 mt-1 w-full bg-background shadow-md rounded-md text-uduuka-gray text-sm"
           role="listbox"
           aria-activedescendant={
             focusedIndex >= 0 ? `option-${focusedIndex}` : undefined
           }
         >
-          <ScrollArea maxHeight="20rem" className="max-h-96">
+          <ScrollArea maxHeight="20rem" className="max-h-96 pb-0">
             <ul>
               {options.map((option, index) => (
                 <li
                   key={`${option.value}`}
                   id={`option-${index}`}
-                  className={`px-3 cursor-pointer hover:bg-secondary/10 text-xs py-2 items-center flex justify-between gap-1 ${
-                    index === focusedIndex ? "bg-secondary" : ""
-                  }`}
+                  className={cn(
+                    `px-3 cursor-pointer hover:bg-secondary/10 text-xs py-2 items-center flex justify-between gap-1 ${
+                      index === focusedIndex ? "bg-secondary" : ""
+                    }`,
+                    optionsStyle
+                  )}
                   onClick={() => {
                     onChange(option.value);
                     setIsOpen(false);

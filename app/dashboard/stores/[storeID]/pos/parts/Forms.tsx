@@ -3,8 +3,6 @@
 import { MenuItem } from "@/app/ads/[adID]/(pricing)/Pricing";
 import PriceTag from "@/components/parts/cards/PriceTag";
 import ScrollArea from "@/components/parts/layout/ScrollArea";
-// "fixed" | "recurring" | "range" | "menu" | "unit";
-
 import Button from "@/components/ui/Button";
 import FormGroup from "@/components/ui/FormGroup";
 import FormInput from "@/components/ui/Input";
@@ -54,10 +52,6 @@ const FixedPriceForm = ({ ad }: { ad: Listing }) => {
       alert("The ad does not belong to any specified store.");
       return;
     }
-    if (Boolean(items.find((i) => i.sn === cartItem.sn))) {
-      updateItem?.(cartItem);
-      return;
-    }
 
     if ((cartItem.qty as number) > (ad.quantity ?? 1)) {
       alert(
@@ -69,7 +63,24 @@ const FixedPriceForm = ({ ad }: { ad: Listing }) => {
       alert(`Quantity must be greater than 0.`);
       return;
     }
-    addItem?.({ ...cartItem, pricing, store: ad.store, id: items.length + 1 });
+
+    const old = items.find((i) => i.sn === cartItem.sn);
+    const subTotal = calcCartItemSubTotal(
+      cartItem.pricing,
+      Number(cartItem.qty)
+    );
+
+    if (Boolean(old)) {
+      updateItem?.({ ...old, ...{ ...cartItem }, subTotal });
+      return;
+    }
+    addItem?.({
+      ...cartItem,
+      pricing,
+      subTotal,
+      store: ad.store,
+      id: items.length + 1,
+    });
   };
 
   return (
@@ -171,10 +182,6 @@ const RecurringPriceForm = ({ ad }: { ad: Listing }) => {
       alert("The ad does not belong to any specified store.");
       return;
     }
-    if (Boolean(items.find((i) => i.sn === cartItem.sn))) {
-      updateItem?.(cartItem);
-      return;
-    }
 
     if ((cartItem.qty as number) > (pricing.details.max_perios ?? 12)) {
       alert(
@@ -186,6 +193,18 @@ const RecurringPriceForm = ({ ad }: { ad: Listing }) => {
 
     if (Number(cartItem.qty as number) <= 0) {
       alert(`Quantity must be greater than 0.`);
+      return;
+    }
+    const old = items.find((i) => i.sn === cartItem.sn);
+    if (Boolean(old)) {
+      updateItem?.({
+        ...old,
+        ...{
+          ...cartItem,
+          pricing,
+          subTotal: calcCartItemSubTotal(pricing, Number(cartItem.qty)),
+        },
+      });
       return;
     }
     addItem?.({ ...cartItem, pricing, store: ad.store, id: items.length + 1 });
@@ -357,7 +376,7 @@ const RangePriceForm = ({ ad }: { ad: Listing }) => {
       return;
     }
 
-    const subTotal = calcCartItemSubTotal(pricing, 1);
+    const subTotal = calcCartItemSubTotal(pricing, Number(cartItem.qty));
     if (!subTotal) {
       return;
     }
@@ -400,7 +419,7 @@ const RangePriceForm = ({ ad }: { ad: Listing }) => {
             <PriceTag className="text-lg font-bold" pricing={pricing} />
 
             <FormInput
-              type="text"
+              type="number"
               className="border border-secondary text-lg font-bold text-primary w-10"
               wrapperStyle=""
               value={(cartItem.qty as number) ?? "1"}
@@ -573,7 +592,10 @@ const MenuPriceForm = ({ ad }: { ad: Listing }) => {
       return;
     }
 
-    const subTotal = calcCartItemSubTotal(cartItem.pricing, 1);
+    const subTotal = calcCartItemSubTotal(
+      cartItem.pricing,
+      Number(cartItem.qty)
+    );
     if (!subTotal) {
       return;
     }
@@ -729,7 +751,11 @@ const UnitPriceForm = ({ ad }: { ad: Listing }) => {
     }
     const ratio = rt.cr;
     if (!ratio) {
-      return 1;
+      const cf = rt.cf;
+      if (!cf) {
+        return 1;
+      }
+      return toNumber(`${ad.quantity}`) * cf;
     }
     return toNumber(`${ad.quantity}`) * toNumber(ratio[u] ?? 1);
   };
@@ -760,6 +786,8 @@ const UnitPriceForm = ({ ad }: { ad: Listing }) => {
       specs: {},
       sn: ad.id,
       qty: 1.0,
+      units: units[0].u,
+      pricing: pricings.find((p) => (p.details.units = units[0].u)),
     } as CartItem;
   });
 
@@ -818,7 +846,10 @@ const UnitPriceForm = ({ ad }: { ad: Listing }) => {
       return;
     }
 
-    const subTotal = calcCartItemSubTotal(cartItem.pricing, 1);
+    const subTotal = calcCartItemSubTotal(
+      cartItem.pricing,
+      Number(cartItem.qty)
+    );
     if (!subTotal) {
       return;
     }
@@ -828,6 +859,7 @@ const UnitPriceForm = ({ ad }: { ad: Listing }) => {
         ...old,
         ...cartItem,
         subTotal,
+        aqty: maxQuantity(cartItem.units),
         store: ad.store,
       });
       return;
@@ -836,6 +868,7 @@ const UnitPriceForm = ({ ad }: { ad: Listing }) => {
       ...cartItem,
       subTotal,
       store: ad.store,
+      aqty: maxQuantity(cartItem.units),
       id: items.length + 1,
     });
   };

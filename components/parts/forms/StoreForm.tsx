@@ -3,21 +3,35 @@
 import Button from "@/components/ui/Button";
 import FormGroup from "@/components/ui/FormGroup";
 import FormInput from "@/components/ui/Input";
-import { createStore } from "@/lib/actions";
+import { createStore, uploadFiles } from "@/lib/actions";
 import { Store } from "@/lib/types";
 import { Camera } from "lucide-react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
 export default function StoreForm({ oldStore }: { oldStore?: Store }) {
   const router = useRouter();
 
-  const [store, setStore] = useState(oldStore);
+  const [store, setStore] = useState<Store>(oldStore ?? ({} as Store));
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const reader = new FileReader();
+    if (logoFile) {
+      const reader = new FileReader();
+
+      reader.onload = (e: ProgressEvent<FileReader>) => {
+        const dataURL = e.target?.result as string;
+        setStore({ ...store, logo: dataURL });
+      };
+
+      reader.onerror = (e: ProgressEvent<FileReader>) => {
+        console.error("Error reading file:", e.target?.error);
+      };
+
+      reader.readAsDataURL(logoFile);
+    }
   }, [logoFile]);
 
   const handleSubmit = async () => {
@@ -25,13 +39,28 @@ export default function StoreForm({ oldStore }: { oldStore?: Store }) {
       setError("Fill out all requred fields before submiting.");
       return;
     }
-    const { error, data } = await createStore(store);
+
+    let logo: string | null;
+
+    if (logoFile && store.name) {
+      const res = await uploadFiles([logoFile], "stores", store.name);
+
+      if (res[0].url) {
+        logo = res[0].url;
+      } else {
+        logo = null;
+      }
+    } else {
+      logo = null;
+    }
+    const { error } = await createStore({ ...store, logo });
     if (error) {
       setError(error.message);
       return;
     }
     router.push("/dashboard/stores");
   };
+  
   return (
     <form
       action={handleSubmit}
@@ -48,7 +77,17 @@ export default function StoreForm({ oldStore }: { oldStore?: Store }) {
           }}
           id="logo-change"
         />
-        {!store?.logo && <p className="text-gray-500">Store logo or burner </p>}
+        {store?.logo ? (
+          <Image
+            src={store.logo}
+            alt="Store logo"
+            height={1000}
+            width={1000}
+            className="w-full h-auto object-cover"
+          />
+        ) : (
+          <p className="text-gray-500">Store logo or burner </p>
+        )}
         <Button
           type="button"
           className="absolute bg-white bottom-1 right-1 text-primary border  rounded-full p-1"

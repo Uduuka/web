@@ -22,7 +22,7 @@ export default function CartButton() {
       align="right"
     >
       <div className="w-[80vw] max-w-sm max-h-[80vh] flex flex-col overflow-hidden bg-white shadow-lg rounded-lg">
-        <ShoppingCart />
+        <ShoppingCart mode="dropdown" />
       </div>
     </Dropdown>
   );

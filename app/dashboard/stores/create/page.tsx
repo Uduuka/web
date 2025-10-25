@@ -1,7 +1,7 @@
 import SubscribeDialog from "@/components/parts/dialogs/SubscribeDialog";
 import StoreForm from "@/components/parts/forms/StoreForm";
 import Button from "@/components/ui/Button";
-import { getProfile } from "@/lib/actions";
+import { fetchPersonalStores, fetchStores, getProfile } from "@/lib/actions";
 import env from "@/lib/env";
 import { toNumber } from "@/lib/utils";
 import Link from "next/link";
@@ -34,6 +34,7 @@ export default async function StoreCreatePage() {
   if (!data) {
     return redirect("/dashboard/profile?next=create-store");
   }
+  const { data: stores } = await fetchPersonalStores();
   const { subscription } = data;
 
   const planName = subscription?.plan ?? "hobby";
@@ -41,11 +42,9 @@ export default async function StoreCreatePage() {
   return (
     <div className="bg-white rounded-lg p-5 space-y-5 max-w-md mx-auto shadow relative">
       <h1 className="text-center">Create a store</h1>
-
       <StoreForm />
-
       {planName === "hobby" &&
-        toNumber(`${subscription?.usage?.stores ?? 0}`) >=
+        toNumber(`${stores?.length ?? 0}`) >=
           toNumber(`${plan.limits?.stores}`) && (
           <SubscribeDialog
             message={`You can only create ${

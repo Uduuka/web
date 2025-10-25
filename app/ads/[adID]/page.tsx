@@ -30,7 +30,7 @@ export default async function AdDetailsPage({
 
   const userData = await getUser();
   const sellerProfile = await getProfile(ad.seller_id);
-  const isSeller = userData.data?.user?.id === seller_id;
+  const isSeller = userData.data.session?.user?.id === seller_id;
 
   if (error || !pricings || !ad) {
     return notFound();
@@ -108,7 +108,7 @@ export default async function AdDetailsPage({
               {sellerProfile.data.full_name}
             </h1>
             <p className="text-accent/60 text-xs">{sellerProfile.data.about}</p>
-            {!isSeller && userData.data.user && (
+            {!isSeller && userData.data.session?.user && (
               <div className="flex gap-5 py-4">
                 <Button
                   disabled={isSeller}
@@ -119,7 +119,7 @@ export default async function AdDetailsPage({
                 <OpenChat
                   ad={{ ...ad, seller: sellerProfile.data }}
                   seller={ad.seller_id}
-                  buyer={userData.data.user?.id}
+                  buyer={userData.data.session?.user?.id}
                   isSeller={isSeller}
                 />
               </div>

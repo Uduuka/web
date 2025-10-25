@@ -42,7 +42,8 @@ export const useAppStore = create<AppState>((set) => ({
      addItem: (item: CartItem)=>{
       set(prev => {
         
-        if(prev.cart.store && !_.isEqual(prev.cart.store, item.store)){
+        if(prev.cart.store && (prev.cart.store?.id !== item.store.id)){
+          console.log(`Different carts, cart store id: ${prev.cart.store.id}, item cart id: ${item.store.id}`)
           return prev
         }
         localStorage.setItem('cart_items', JSON.stringify([...prev.cart.items, item]))
@@ -78,7 +79,7 @@ export const useAppStore = create<AppState>((set) => ({
      },
      clearCart: () => {
       localStorage.removeItem('cart_items')
-      set(prev => ({...prev, cart: {...prev.cart, items: [], total: 0}}))
+      set(prev => ({...prev, cart: {...prev.cart, items: [], total: 0, store: undefined}}))
      },
   },
   setChatHeads: (chatHeads) => set({ chatHeads }),

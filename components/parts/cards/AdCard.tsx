@@ -29,7 +29,6 @@ export default function AdCard({ ad }: ListingCardProps) {
     isNew,
     isFeatured,
   } = ad;
-
   const pathname = usePathname();
   const storeID = useParams()["storeID"];
   const url = image?.url ?? "/placeholder.svg";

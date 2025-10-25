@@ -106,6 +106,9 @@ export type Store = {
   location?: Location
   slug?: string
   is_member?: boolean
+  keeper_id: string;
+  keeper?: Profile
+  phone?: string;
   rating?: number;
   ratings?: number;
   description?: string;
@@ -326,4 +329,41 @@ export interface Order {
   p_order_items: OrderItem[]
   p_amount: number
   p_type: "local" | "remote"
+  p_status: "pending" | "inquiry" | "completed"
+  p_message?: string
+  p_deliver_to?: any
+}
+
+export interface StoreOrder {
+  id?: string
+  store: Store
+  received: number
+  currency: Currency
+  buyer_id: string
+  buyer: Profile
+  phone?: string
+  method: 'cash' | 'mtn' | 'airtel'
+  items: any[]
+  amount: number
+  type: "local" | "remote"
+  date: string
+  status: string
+  message?: string
+  delivery_address?: string
+}
+
+export interface AccountProvider{
+    account_number: string
+    provider_name: string
+    account_name: string
+    currency: Currency
+  }
+
+export interface Account {
+  id: string
+  user_id: string
+  created_at?: string
+  updated_at?: string
+  user?: Profile
+  providers: AccountProvider[]
 }

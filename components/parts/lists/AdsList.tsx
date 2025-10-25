@@ -25,7 +25,6 @@ export default function AdsList({
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    console.log("ads changed");
     if (!ads) {
       return;
     }

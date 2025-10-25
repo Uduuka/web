@@ -7,8 +7,7 @@ interface PageProps {
 }
 
 export default async function OrdersPage({ params }: PageProps) {
-  const { storeID } = await params;
-  const { data, error } = await fetchOrders(storeID);
+  const { data, error } = await fetchOrders();
   const orders: StoreOrder[] = data ?? [];
 
   return <OrdersTable data={orders} />;
