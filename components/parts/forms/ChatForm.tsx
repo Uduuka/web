@@ -1,9 +1,10 @@
 "use client";
 
 import { useAppStore } from "@/lib/store";
-import { ChatHead, Message } from "@/lib/types";
+import { ChatHead, Message, Profile } from "@/lib/types";
 import React, {
   ComponentProps,
+  use,
   useEffect,
   useRef,
   useState,
@@ -21,6 +22,7 @@ import { Info } from "lucide-react";
 
 interface FormProps extends ComponentProps<"div"> {
   thread: ChatHead;
+  // profilePromise: Promise<{ data: Profile | null }>;
 }
 
 export default function ChatForm({ thread }: FormProps) {
@@ -29,7 +31,7 @@ export default function ChatForm({ thread }: FormProps) {
   const [sendError, setSendError] = useState<string>();
 
   const [sending, startSending] = useTransition();
-  const { profile } = useAppStore();
+  // const { data: profile } = use(profilePromise);
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
@@ -54,13 +56,13 @@ export default function ChatForm({ thread }: FormProps) {
         className="w-full flex-1 overflow-y-scroll"
       >
         <div className="flex-1 flex flex-col gap-3 p-5">
-          {messages.map((message, index) => (
+          {/* {messages.map((message, index) => (
             <MessageBody
               message={message}
               key={index}
               isSender={message.sender_id === profile?.user_id}
             />
-          ))}
+          ))} */}
         </div>
       </ScrollArea>
       <form action={handleSend} className="px-4 space-y-3">

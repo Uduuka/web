@@ -13,23 +13,6 @@ import Image from "next/image";
 import { Info } from "lucide-react";
 
 export default function page() {
-  const [threads, setThreads] = useState<ChatHead[]>();
-  const [activeThread, setActiveThread] = useState<ChatHead>();
-
-  const [fetchingThreads, startFetchingThreads] = useTransition();
-
-  useEffect(() => {
-    startFetchingThreads(async () => {
-      const { data } = await fetchThreads();
-
-      if (data) {
-        setThreads(data as ChatHead[]);
-      }
-    });
-  }, []);
-
-  const { profile } = useAppStore();
-
   return (
     <div className="space-y-5">
       <div className="flex gap-5 flex-col sm:flex-row">
@@ -41,7 +24,7 @@ export default function page() {
           />
 
           <ScrollArea maxHeight="100%" maxWidth="100%" className="flex-1 pb-0">
-            <div className="w-fit sm:w-full h-fit flex sm:flex-col gap-2">
+            {/* <div className="w-fit sm:w-full h-fit flex sm:flex-col gap-2">
               {(threads?.length ?? 0) > 0 ? (
                 threads?.map((t, i) => {
                   const isSeller = t.seller_id === profile?.user_id;
@@ -67,18 +50,19 @@ export default function page() {
                   </span>
                 </p>
               )}
-            </div>
+            </div> */}
+            <></>
           </ScrollArea>
         </div>
         <div className="bg-white w-full rounded-lg h-[77vh] pt-5 flex flex-col justify-center items-center">
-          {activeThread ? (
+          {/* {activeThread ? (
             <ChatForm thread={activeThread} />
           ) : (
             <p className="text-gray-400 flex items-start justify-start gap-1 p-5">
               <Info size={20} />
               <span>Select a chat head to start chating.</span>
             </p>
-          )}
+          )} */}
         </div>
       </div>
     </div>
@@ -97,18 +81,10 @@ const ThreadButton = ({
   activate: (t: ChatHead) => void;
 }) => {
   const { messages } = useChatThread(thread);
-  const { profile } = useAppStore();
 
   const [unread, setUnread] = useState(0);
   const [lastMessage, setLastMessage] = useState<Message>();
 
-  useEffect(() => {
-    const ur = messages.filter(
-      (m) => m.sender_id !== profile?.user_id && m.status !== "read"
-    );
-    setUnread(ur.length);
-    setLastMessage(messages[messages.length - 1]);
-  }, [messages]);
   return (
     <Button
       className={`flex gap-2 w-fit sm:w-full min-w-40 relative justify-start bg-gray-100 hover:bg-gray-200  relative${

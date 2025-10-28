@@ -67,7 +67,7 @@ export const AddToCartDialogBody = ({ ad }: { ad: Listing }) => {
 };
 
 const renderAddToCartForm = (ad: Listing) => {
-  const scheme = ad.pricings![0].scheme;
+  const scheme = ad.pricings?.[0].scheme;
   switch (scheme) {
     case "fixed":
       return <Forms.FixedPriceForm ad={ad} />;

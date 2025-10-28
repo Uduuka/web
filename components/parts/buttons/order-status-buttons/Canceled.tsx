@@ -1,23 +1,24 @@
 import Popup from "@/components/ui/Popup";
-import { StoreOrder } from "@/lib/types";
-import React from "react";
+import { Profile, StoreOrder } from "@/lib/types";
+import React, { use } from "react";
 import Button from "@/components/ui/Button";
 import { DeleteOrderDialog, MessageDialog } from "./dialogs";
 import { Row } from "@tanstack/react-table";
-import { useAppStore } from "@/lib/store";
 
 export default function Canceled({
   row,
   rows,
   setRows,
+  profilePromise
 }: {
   row: Row<StoreOrder>;
   rows: StoreOrder[];
   setRows: (rows: StoreOrder[]) => void;
+  profilePromise: Promise<{data: Profile | null, error: {message: string} | null}>
 }) {
   const order = row.original;
-  const { user } = useAppStore();
-  const isBuyer = user?.id === order.buyer_id;
+  const {data: profile} = use(profilePromise)
+  const isBuyer = profile?.user_id === order.buyer_id;
   const handleReOrder = () => {
     // Logic to handle re-ordering
     console.log("Re-ordering", order.id);
@@ -35,7 +36,7 @@ export default function Canceled({
       }
     >
       <div className="w-full space-y-3">
-        <MessageDialog order={order} />
+        <MessageDialog profilePromise={profilePromise} order={order} />
         <DeleteOrderDialog order={order} rows={rows} setRows={setRows} />
         {
           // Re-order option only for buyers

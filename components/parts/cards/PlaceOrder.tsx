@@ -9,24 +9,23 @@ import { redirect, useSearchParams } from "next/navigation";
 import FormGroup from "@/components/ui/FormGroup";
 import FormInput from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
-import { Order, Store } from "@/lib/types";
+import { Order, Profile, Store } from "@/lib/types";
 import { placeOrder } from "@/lib/actions";
 import { Check, LoaderCircle, X } from "lucide-react";
 import Modal from "../models/Modal";
 import LocationMap from "../maps/mapbox/LocationMap";
-import LocationForm from "../forms/LocationForm";
 import ScrollArea from "../layout/ScrollArea";
 
 export function PlaceOrder({
   setSuccess,
+  profile
 }: {
   setSuccess: (m: { message: string; store: Store }) => void;
+  profile: Profile | null
 }) {
   const {
     cart: { items, store, total, clearCart },
     currency,
-    user,
-    profile,
   } = useAppStore();
 
   const [payementError, setPayementError] = useState("");
@@ -47,7 +46,7 @@ export function PlaceOrder({
 
   const handleSubmit = () => {
     startSubmitting(async () => {
-      if (!user) {
+      if (!profile) {
         return redirect(`/signin?next=/order`);
       }
 
@@ -93,7 +92,7 @@ export function PlaceOrder({
           units: o.units,
         })),
         p_store_id: store.id,
-        p_buyer_id: user.id,
+        p_buyer_id: profile.user_id,
         p_phone: number,
         p_message: pMessage,
         p_deliver_to: deliverTo,

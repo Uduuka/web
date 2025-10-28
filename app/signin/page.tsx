@@ -1,5 +1,5 @@
 import SigninForm from "@/components/parts/forms/SigninForm";
-import { getUser } from "@/lib/actions";
+import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import React from "react";
 
@@ -8,10 +8,10 @@ export default async function page({
 }: {
   searchParams: Promise<{ next: string }>;
 }) {
-  const { data } = await getUser();
+  const { data } = await (await createClient()).auth.getUser();
   const { next } = await searchParams;
 
-  if (data.session?.user) {
+  if (data.user) {
     if (next) {
       return redirect(next);
     }

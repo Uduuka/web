@@ -1,12 +1,19 @@
 import AdsList from "@/components/parts/lists/AdsList";
-import { fetchCategories } from "@/lib/actions";
+import { fetchAds, fetchCategories } from "@/lib/actions";
 import { SubCategory } from "@/lib/types";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import React from "react";
 
-export default async function SubCategoryPage({ params }: { params: any }) {
-  const subCatSlug = (await params)["subCatSlug"];
+export default async function SubCategoryPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ catSlug: string; subCatSlug: string }>;
+  searchParams: Promise<{ search?: string }>;
+}) {
+  const { subCatSlug } = await params;
+  const { search } = await searchParams;
 
   const subCategory = (
     (await fetchCategories({ subCateSlug: subCatSlug })).data as SubCategory[]
@@ -19,6 +26,8 @@ export default async function SubCategoryPage({ params }: { params: any }) {
   if (!category) {
     return notFound();
   }
+
+  const fetchPromise = fetchAds({ search, subCategory: subCatSlug });
   return (
     <div className="flex flex-col">
       <h1 className="pb-2 text-base w-fit font-bold px-5 pt-5">
@@ -29,7 +38,7 @@ export default async function SubCategoryPage({ params }: { params: any }) {
         {" >> "}
         <span className="pl-5">{subCategory?.name}</span>
       </h1>
-      <AdsList />
+      <AdsList fetchPromise={fetchPromise} />
     </div>
   );
 }

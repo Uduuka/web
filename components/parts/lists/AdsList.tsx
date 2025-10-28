@@ -1,27 +1,26 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import { Listing } from "@/lib/types";
 import { cn, responsiveColumns } from "@/lib/utils";
 import AdCard from "../cards/AdCard";
-import { useFilteredAds } from "@/lib/hooks/use_filtered_ads";
-import AdCardSkelton from "@/components/skeltons/AdCardSkelton";
 import Button from "@/components/ui/Button";
 import { Info } from "lucide-react";
-import { useParams } from "next/navigation";
 
 export default function AdsList({
   className,
   errorMessage,
   emptyMessage,
+  fetchPromise
 }: {
   className?: string;
   errorMessage?: string;
   emptyMessage?: string;
+  fetchPromise: Promise<{data: Listing[] | null, error: {message: string} | null}> 
 }) {
+  const {data: ads, error} = use(fetchPromise)
+
   const [columns, setColumns] = useState<Listing[][] | null>(null);
-  const store_id = useParams()["storeID"] as string;
-  const { ads, fetching, error } = useFilteredAds(store_id);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -41,30 +40,7 @@ export default function AdsList({
     };
   }, [ads]);
 
-  if (fetching) {
-    const loadingColumns = responsiveColumns(
-      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-      containerRef.current?.clientWidth || window.innerWidth
-    );
-    return (
-      <div className={cn("px-5 py-3", className)}>
-        <div className="flex gap-5" ref={containerRef}>
-          {loadingColumns?.map((items, index) => (
-            <div
-              key={index}
-              className="flex flex-col gap-5 w-full"
-              style={{ minWidth: `${(1 / loadingColumns.length) * 90}%` }}
-            >
-              {items.map((item, i) => (
-                <AdCardSkelton key={item} />
-              ))}
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
+  
   if (error) {
     return (
       <div className={cn("px-5 py-3", className)}>
@@ -72,7 +48,7 @@ export default function AdsList({
           <div className="flex gap-2">
             <Info />
             <p className="text-sm">
-              Error: {errorMessage} {error}
+              Error: {errorMessage} {error.message}
             </p>
           </div>
           <Button

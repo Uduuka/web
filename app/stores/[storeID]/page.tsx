@@ -1,16 +1,24 @@
 import AdsList from "@/components/parts/lists/AdsList";
-import { fetchStoreData } from "@/lib/actions";
+import { fetchAds, fetchStoreData } from "@/lib/actions";
 import { notFound } from "next/navigation";
 import React from "react";
 
-export default async function StorePage({ params }: { params: any }) {
-  const storeID = (await params)["storeID"];
+export default async function StorePage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ storeID: string }>;
+  searchParams: Promise<{ search?: string }>;
+}) {
+  const { storeID } = await params;
+  const { search } = await searchParams;
   const { data: store } = await fetchStoreData(storeID);
 
   if (!store) {
     return notFound();
   }
 
+  const fetchPromise = fetchAds({ search, storeID });
   return (
     <div className="">
       <div className="p-5">
@@ -21,6 +29,7 @@ export default async function StorePage({ params }: { params: any }) {
         </div>
       </div>
       <AdsList
+        fetchPromise={fetchPromise}
         errorMessage={`Failed to fetch ads in ${store.name}. Please try again later.`}
         emptyMessage={`No ads found in ${store.name} that match the applied filters. Try adjusting your filters and try again.`}
       />

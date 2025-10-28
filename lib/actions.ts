@@ -37,7 +37,7 @@ export const updateUserPassword = async(newPassword: string) => {
 }
 
 export const getUser = async() =>{
-   return (await createClient()).auth.getSession()
+   return (await createClient()).auth.getUser()
 }
 
 export const createOrUpdateProfile = async(data: Profile) => {
@@ -46,9 +46,7 @@ export const createOrUpdateProfile = async(data: Profile) => {
 
 export const getProfile = async(uid?: string) => {
    let userID = uid
-
-   const {data: {session}, error: userError} = await getUser()
-   const user = session?.user
+   const {data: {user}} = await getUser()
    if(!userID){
       userID = user?.id
       
@@ -85,11 +83,11 @@ export const fetchCategories = async(filters?: {catSlug?: string, subCateSlug?: 
    return (await createClient()).from('categories').select("*, sub_categories(*)")
 }
 
-export const fetchAds = async(filters: any, currency: Currency) => {
+export const fetchAds = async(filters: {search?: string, storeID?: string, category?: string, subCategory?: string}) => {
    const supabase = createClient()
    const cookieStore = await cookies()
    const {lat, lon} = cookieStore.get('location') ? JSON.parse(cookieStore.get('location')?.value ?? '') : {}
-
+   const currency = cookieStore.get('currency')?.value ?? 'UGX'
    let query
    let embedding
 
@@ -147,29 +145,20 @@ export const fetchAd = async(id: string) => {
    return(await createClient()).from("ads").select("*, seller:profiles(*), pricings(*), images:ad_images(*), store:stores(*)").eq('id', id).single()
 }
 
-export const fetchFlashsales = async(filters: Filters) => {
+export const fetchFlashsales = async(search?: string) => {
    const supabase = createClient()
-   let query = (await supabase).from("flash_sales").select("id, start:started_at, duration, flash_price, ad:ads(*,pricing:pricings(*), images:ad_images(*))")
+   const cookieStore = await cookies()
+   const currency = cookieStore.get('currency')?.value ?? 'UGX'
+   const location = cookieStore.get('location') ? JSON.parse(cookieStore.get('location')?.value ?? '') : {}
+   const lat = location.lat ?? null
+   const lon = location.lon ?? null
+   let embedding = null;
 
-    // Filter by search
-    if(filters){
-      if(filters.search){
-         query = query.or(`ad.title.ilike.%${filters.search}%, ad.description.ilike.%${filters.search}%, ad.category_id.ilike.%${filters.search}%, ad.sub_category_id.ilike.%${filters.search}%`)
-      }
+   if(search){
+      embedding = await getEmbedding(search)
    }
+   return (await supabase).rpc("get_flash_sales", {q_lat: lat, q_lon: lon, q_currency: currency, q_embedding: embedding})
 
-   // Filter by category slug
-   if(filters.category){
-      query = query.eq('ad.category_id', filters.category)
-   }
-
-   // Filter by sub_category slug
-   if(filters.subCategory){
-      query = query.eq('ad.sub_category_id', filters.subCategory)
-   }
-
-   const res = await query
-   return res
 }
 
 export const fetchAdsInView = async(filters: any) => {

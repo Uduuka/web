@@ -1,12 +1,24 @@
+"use client";
+
 import Dropdown from "@/components/ui/Dropdown";
 import { useAppStore } from "@/lib/store";
 import { ShoppingCart as CartIcon } from "lucide-react";
 import ShoppingCart from "../cards/ShoppingCart";
+import { CartItem } from "@/lib/types";
+import { useEffect } from "react";
 
 export default function CartButton() {
-  const {
-    cart: { items },
-  } = useAppStore();
+  const { cart, setCart } = useAppStore();
+
+  useEffect(() => {
+    const cartItems = localStorage.getItem("cart_items");
+    if (cartItems) {
+      const items: CartItem[] = JSON.parse(cartItems) ?? [];
+      setCart?.({ ...cart, items, store: items[0]?.store });
+    }
+  }, []);
+
+  const { items } = cart;
   return (
     <Dropdown
       trigger={
