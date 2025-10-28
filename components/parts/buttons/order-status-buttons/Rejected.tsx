@@ -1,5 +1,5 @@
 import Popup from "@/components/ui/Popup";
-import { StoreOrder } from "@/lib/types";
+import { Profile, StoreOrder } from "@/lib/types";
 import React from "react";
 import Button from "@/components/ui/Button";
 import { DeleteOrderDialog, MessageDialog } from "./dialogs";
@@ -9,10 +9,15 @@ export default function Rejected({
   row,
   rows,
   setRows,
+  profilePromise,
 }: {
   row: Row<StoreOrder>;
   rows: StoreOrder[];
   setRows: (rows: StoreOrder[]) => void;
+  profilePromise: Promise<{
+    data: Profile | null;
+    error: { message: string } | null;
+  }>;
 }) {
   const order = row.original;
   return (
@@ -28,7 +33,7 @@ export default function Rejected({
       }
     >
       <div className="w-full space-y-3">
-        <MessageDialog order={order} />
+        <MessageDialog profilePromise={profilePromise} order={order} />
         <DeleteOrderDialog order={order} rows={rows} setRows={setRows} />
       </div>
     </Popup>

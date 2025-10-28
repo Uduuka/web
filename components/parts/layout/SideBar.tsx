@@ -19,9 +19,7 @@ import { cn } from "@/lib/utils";
 import Button from "@/components/ui/Button";
 import ScrollArea from "./ScrollArea";
 import CategoryButton from "../buttons/CategoryButton";
-import FilterCard from "../cards/FiltersCard";
 import { IoMdFlash } from "react-icons/io";
-import { FiFilter } from "react-icons/fi";
 import { RxDashboard } from "react-icons/rx";
 import { BsCashCoin, BsChatRightText, BsMegaphone } from "react-icons/bs";
 import { SlBell } from "react-icons/sl";
@@ -59,7 +57,6 @@ export const DefaultNav = ({ className, ...props }: ComponentProps<"nav">) => {
   const pathname = usePathname();
 
   const [expandedCategories, setExpandedCategories] = useState(false);
-  const [expandedFilters, setExpandedFilters] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
 
   const [fetchingCategories, startFetchingCategories] = useTransition();
@@ -67,11 +64,9 @@ export const DefaultNav = ({ className, ...props }: ComponentProps<"nav">) => {
   useEffect(() => {
     startFetchingCategories(async () => {
       const { data } = await fetchCategories();
-
       if (!data) {
         return;
       }
-
       setCategories(data);
     });
   }, []);
@@ -176,31 +171,6 @@ export const DefaultNav = ({ className, ...props }: ComponentProps<"nav">) => {
                 <CategoryButton category={category} key={category.slug} />
               ))}
             </div>
-          )}
-        </div>
-
-        <div className="">
-          <Button
-            className={`w-full justify-between px-2 py-1 text-sm ${
-              expandedFilters
-                ? "bg-secondary text-foreground rounded-b-none"
-                : "bg-transparent hover:bg-secondary/50"
-            }`}
-            onClick={() => setExpandedFilters(!expandedFilters)}
-          >
-            <span className="flex items-center">
-              <FiFilter className="mr-2 h-4 w-4" />
-              Filters
-            </span>
-            {expandedFilters ? (
-              <ChevronDown className="h-4 w-4" />
-            ) : (
-              <ChevronRight className="h-4 w-4" />
-            )}
-          </Button>
-
-          {expandedFilters && (
-            <FilterCard className="p-3 bg-secondary text-accent rounded-b-lg" />
           )}
         </div>
       </nav>

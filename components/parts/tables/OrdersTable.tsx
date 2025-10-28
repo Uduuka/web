@@ -1,8 +1,8 @@
 "use client";
 
-import { CartItem, StoreOrder } from "@/lib/types";
+import { CartItem, Profile, StoreOrder } from "@/lib/types";
 import { ColumnDef } from "@tanstack/react-table";
-import React, { useEffect, useRef, useState } from "react";
+import React, { use, useRef, useState } from "react";
 import { DataTable } from "./DataTable";
 import { Info, X } from "lucide-react";
 import Image from "next/image";
@@ -24,18 +24,27 @@ import Shipping from "../buttons/order-status-buttons/Shipping";
 import Received from "../buttons/order-status-buttons/Received";
 
 export default function OrdersTable({
-  data,
   empty,
   error,
   displayColumns,
   onRowSelect,
+  profilePromise,
+  ordersPromise,
 }: {
-  data?: StoreOrder[];
   error?: string;
   empty?: string;
   displayColumns?: string[];
   onRowSelect?: (order: StoreOrder) => void;
+  profilePromise: Promise<{
+    data: Profile | null;
+    error: { message: string } | null;
+  }>;
+  ordersPromise: Promise<{
+    data: StoreOrder[] | null;
+    error: { message: string } | null;
+  }>;
 }) {
+  const { data } = use(ordersPromise);
   const [rows, setRows] = useState(data || []);
 
   const columns: ColumnDef<StoreOrder>[] = [
@@ -168,37 +177,114 @@ export default function OrdersTable({
         const Component = () => {
           switch (order.status) {
             case "pending":
-              return <Pending row={row} rows={rows} setRows={setRows} />;
+              return (
+                <Pending
+                  profilePromise={profilePromise}
+                  row={row}
+                  rows={rows}
+                  setRows={setRows}
+                />
+              );
 
             case "completed":
-              return <Completed row={row} rows={rows} setRows={setRows} />;
+              return (
+                <Completed
+                  profilePromise={profilePromise}
+                  row={row}
+                  rows={rows}
+                  setRows={setRows}
+                />
+              );
 
             case "declined":
-              return <Declined row={row} rows={rows} setRows={setRows} />;
+              return (
+                <Declined
+                  profilePromise={profilePromise}
+                  row={row}
+                  rows={rows}
+                  setRows={setRows}
+                />
+              );
 
             case "canceled":
-              return <Canceled row={row} rows={rows} setRows={setRows} />;
+              return (
+                <Canceled
+                  profilePromise={profilePromise}
+                  row={row}
+                  rows={rows}
+                  setRows={setRows}
+                />
+              );
 
             case "inquiry":
-              return <Inquiry row={row} rows={rows} setRows={setRows} />;
+              return (
+                <Inquiry
+                  profilePromise={profilePromise}
+                  row={row}
+                  rows={rows}
+                  setRows={setRows}
+                />
+              );
 
             case "shipping":
-              return <Shipping row={row} rows={rows} setRows={setRows} />;
+              return (
+                <Shipping
+                  profilePromise={profilePromise}
+                  row={row}
+                  rows={rows}
+                  setRows={setRows}
+                />
+              );
 
             case "failed":
-              return <Failed row={row} rows={rows} setRows={setRows} />;
+              return (
+                <Failed
+                  profilePromise={profilePromise}
+                  row={row}
+                  rows={rows}
+                  setRows={setRows}
+                />
+              );
 
             case "delivered":
-              return <Delivered row={row} rows={rows} setRows={setRows} />;
+              return (
+                <Delivered
+                  profilePromise={profilePromise}
+                  row={row}
+                  rows={rows}
+                  setRows={setRows}
+                />
+              );
 
             case "paid":
-              return <Paid row={row} rows={rows} setRows={setRows} />;
+              return (
+                <Paid
+                  profilePromise={profilePromise}
+                  row={row}
+                  rows={rows}
+                  setRows={setRows}
+                />
+              );
 
             case "rejected":
-              return <Rejected row={row} rows={rows} setRows={setRows} />;
+              return (
+                <Rejected
+                  profilePromise={profilePromise}
+                  row={row}
+                  rows={rows}
+                  setRows={setRows}
+                />
+              );
 
             case "received":
-              return <Received row={row} rows={rows} setRows={setRows} />;
+              return (
+                <Received
+                  profilePromise={profilePromise}
+                  row={row}
+                  rows={rows}
+                  setRows={setRows}
+                />
+              );
 
             default:
               return null;

@@ -63,9 +63,9 @@ export default function Dropdown({
 
   const setPosition = () => {
     return align === "left"
-      ? "-left-full sm:left-0"
+      ? "left-0"
       : align === "right"
-      ? "-right-full sm:right-0"
+      ? "right-0"
       : "left-[50%] translate-x-[-50%]";
   };
 
@@ -90,7 +90,7 @@ export default function Dropdown({
         <div
           id="dropdown-content"
           ref={contentRef}
-          className={cn("absolute z-10 top-full p-2", setPosition())}
+          className={cn("absolute z-10 top-full pt-2", setPosition())}
           role="menu"
           aria-labelledby="dropdown-trigger"
         >

@@ -1,22 +1,31 @@
 "use client";
 
 import ScrollArea from "@/components/parts/layout/ScrollArea";
-import { Filters, FlashSale } from "@/lib/types";
+import { FlashSale } from "@/lib/types";
 import Link from "next/link";
 import Button from "@/components/ui/Button";
 import { ArrowRight } from "lucide-react";
 import FlashSaleCard from "../cards/FlashSaleCard";
 import { IoMdFlash } from "react-icons/io";
-import { useFilteredFlashSales } from "@/lib/hooks/use_filtered_flash_sales";
+import { use, useEffect } from "react";
+import { PostgrestSingleResponse } from "@supabase/supabase-js";
 
 export default function FlashSales({
   orientation = "vertical",
   className,
+  fetchPromise,
 }: {
   className?: string;
+  ads?: FlashSale[];
+  fetchPromise: Promise<PostgrestSingleResponse<FlashSale[]>>;
   orientation?: "vertical" | "horizontal";
 }) {
-  const { flashSales, error, fetching } = useFilteredFlashSales();
+  const { data: ads, error } = use(fetchPromise);
+
+  if (!ads || ads.length < 1) {
+    return null;
+  }
+
   return (
     <div className="px-5 pt-3">
       <div className="pb-2 text-base font-bold w-full flex justify-between">
@@ -33,18 +42,17 @@ export default function FlashSales({
           </Button>
         </Link>
       </div>
-      {fetching && <p className="text-uduuka-gray">Loading...</p>}
-      {error && <p className="text-uduuka-red">Error: {error}</p>}
       <ScrollArea
         maxHeight={orientation === "vertical" ? "100%" : "fit-content"}
         ariaLabel="Listings scroll area"
+        className="p-0"
       >
         <div
           className={
             orientation === "horizontal" ? "flex w-max gap-5" : className
           }
         >
-          {flashSales.map((item: FlashSale) => (
+          {ads?.map((item: FlashSale) => (
             <FlashSaleCard key={item.id} item={item} />
           ))}
         </div>

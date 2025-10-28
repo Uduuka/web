@@ -1,6 +1,5 @@
 import OrdersTable from "@/components/parts/tables/OrdersTable";
-import { fetchOrders } from "@/lib/actions";
-import { StoreOrder } from "@/lib/types";
+import { fetchOrders, getProfile } from "@/lib/actions";
 import React from "react";
 interface PageProps {
   params: Promise<{ storeID: string }>;
@@ -8,8 +7,13 @@ interface PageProps {
 
 export default async function OrdersPage({ params }: PageProps) {
   const { storeID } = await params;
-  const { data, error } = await fetchOrders(storeID);
-  const orders: StoreOrder[] = data ?? [];
+  const ordersPromise = fetchOrders(storeID);
+  const profilePromise = getProfile();
 
-  return <OrdersTable data={orders} />;
+  return (
+    <OrdersTable
+      profilePromise={profilePromise}
+      ordersPromise={ordersPromise}
+    />
+  );
 }

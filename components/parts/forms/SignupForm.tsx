@@ -2,7 +2,8 @@
 
 import Button from "@/components/ui/Button";
 import FormInput from "@/components/ui/Input";
-import { signup } from "@/lib/actions";
+import { getProfile, signup } from "@/lib/actions";
+import { useAppStore } from "@/lib/store";
 import { createClient } from "@/lib/supabase/client";
 import { Profile } from "@/lib/types";
 import { getRedirectUrl } from "@/lib/utils";
@@ -43,7 +44,6 @@ export default function SignupForm() {
         setError(error.message);
         return;
       }
-
       redirect(`/verify-email?email=${email}`);
     });
   };

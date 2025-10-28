@@ -89,7 +89,9 @@ export default function AdCard({ ad }: ListingCardProps) {
             {store && (
               <>
                 {storeID ? (
-                  <AddToCartButton ad={ad} />
+                  pricings?.[0] ? (
+                    <AddToCartButton ad={ad} />
+                  ) : null
                 ) : (
                   <Link
                     href={`/stores/${store?.id}`}
@@ -110,7 +112,7 @@ export default function AdCard({ ad }: ListingCardProps) {
   );
 }
 
-const RenderPricings = ({ pricings }: { pricings: Listing["pricings"] }) => {
+export const RenderPricings = ({ pricings }: { pricings: Listing["pricings"] }) => {
   if (!pricings || pricings.length === 0) return null;
   if (pricings.length === 1)
     return <PriceTag pricing={pricings[0]} className="w-fit" />;

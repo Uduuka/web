@@ -1,6 +1,6 @@
 import { Check, LoaderCircle, Mail, Trash, X } from "lucide-react";
 import Modal from "../../models/Modal";
-import { Account, AccountProvider, StoreOrder } from "@/lib/types";
+import { Account, AccountProvider, Profile, StoreOrder } from "@/lib/types";
 import { PiInvoice } from "react-icons/pi";
 import { GiPositionMarker } from "react-icons/gi";
 import { BiMoney } from "react-icons/bi";
@@ -18,7 +18,14 @@ import {
 import PriceTag from "../../cards/PriceTag";
 import { calcCartItemSubTotal, toMoney } from "@/lib/utils";
 import FormInput from "@/components/ui/Input";
-import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import {
+  use,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
 import {
   createRemittanceAccount,
   deliverOrder,
@@ -178,13 +185,15 @@ export const DeclineOrderDialog = ({
   order,
   rows,
   setRows,
+  profilePromise
 }: {
   order: StoreOrder;
   rows: StoreOrder[];
   setRows: (rows: StoreOrder[]) => void;
+  profilePromise: Promise<{data: Profile | null, error: {message: string} | null}>
 }) => {
-  const { user } = useAppStore();
-  const isBuyer = user?.id === order.buyer_id;
+  const {data: profile} = use(profilePromise)
+  const isBuyer = profile?.user_id === order.buyer_id;
 
   const [declining, startdeclining] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -251,24 +260,24 @@ export const DeclineOrderDialog = ({
   );
 };
 
-export const MessageDialog = ({ order }: { order: StoreOrder }) => {
+export const MessageDialog = ({ order, profilePromise }: { order: StoreOrder, profilePromise: Promise<{data: Profile | null, error: {message: string} | null}> }) => {
   const [message, setMessage] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [sending, startSending] = useTransition();
-  const { user } = useAppStore();
-  const isBuyer = user?.id === order.buyer_id;
+  const {data: profile} = use(profilePromise)
+  const isBuyer = profile?.user_id === order.buyer_id;
 
   const formRef = useRef<HTMLFormElement>(null);
 
   const handleSendMessage = () => {
     startSending(async () => {
-      if (message.trim().length < 1) {
+      if (message.trim().length < 1 || !profile?.user_id) {
         setError("Message cannot be empty.");
         return;
       }
       const { error } = await sendMessage({
         text: message.trim(),
-        sender_id: user?.id!,
+        sender_id: profile.user_id,
         receiver_id: isBuyer ? order.store.keeper_id : order.buyer_id,
       });
 
@@ -343,13 +352,15 @@ export const InvoiceDialog = ({
   order,
   rows,
   setRows,
+  profilePromise
 }: {
   order: StoreOrder;
   rows: StoreOrder[];
   setRows: (rows: StoreOrder[]) => void;
+  profilePromise: Promise<{data: Profile | null, error: {message: string} | null}>
 }) => {
-  const { user } = useAppStore();
-  const isBuyer = user?.id === order.buyer_id;
+  const { data: profile } = use(profilePromise);
+  const isBuyer = profile?.user_id === order.buyer_id;
 
   const [sending, startSending] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -781,7 +792,7 @@ export const DeliverOrderDialog = ({
         setError(error.message);
         return;
       }
-      
+
       // Update order state here if needed
       const newOrder = { ...order, status };
       setRows(rows.map((o) => (o.id === order.id ? newOrder : o)));
@@ -860,13 +871,15 @@ export const ReceiveOrderDialog = ({
   order,
   rows,
   setRows,
+  profilePromise
 }: {
   order: StoreOrder;
   rows: StoreOrder[];
   setRows: (rows: StoreOrder[]) => void;
+  profilePromise: Promise<{data: Profile | null, error: {message: string} | null}>
 }) => {
-  const { user } = useAppStore();
-  const isBuyer = user?.id === order.buyer_id;
+  const { data: profile } = use(profilePromise);
+  const isBuyer = profile?.user_id === order.buyer_id;
   const [receiving, startReceiving] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -942,13 +955,18 @@ export const PayOrderDialog = ({
   order,
   rows,
   setRows,
+  profilePromise,
 }: {
   order: StoreOrder;
   rows: StoreOrder[];
   setRows: (rows: StoreOrder[]) => void;
+  profilePromise: Promise<{
+    data: Profile | null;
+    error: { message: string } | null;
+  }>;
 }) => {
-  const { user } = useAppStore();
-  const isBuyer = user?.id === order.buyer_id;
+  const { data: profile } = use(profilePromise);
+  const isBuyer = profile?.user_id === order.buyer_id;
 
   const [paying, startPaying] = useTransition();
   const [method, setMethod] = useState<"mtn" | "airtel" | null>(null);

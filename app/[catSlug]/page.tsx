@@ -1,15 +1,24 @@
 import ScrollArea from "@/components/parts/layout/ScrollArea";
 import AdsList from "@/components/parts/lists/AdsList";
-import { fetchCategories } from "@/lib/actions";
+import { fetchAds, fetchCategories } from "@/lib/actions";
 import { Category } from "@/lib/types";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import React from "react";
 
-export default async function CategoryPage({ params }: { params: any }) {
+export default async function CategoryPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ catSlug: string }>;
+  searchParams: Promise<{ search?: string }>;
+}) {
   const { catSlug } = await params;
+  const { search } = await searchParams;
   const { data } = await fetchCategories({ catSlug });
   const category = (data as Category[])[0];
+
+  const fetchPromise = fetchAds({ category: catSlug, search });
 
   if (!category) {
     return notFound();
@@ -29,11 +38,11 @@ export default async function CategoryPage({ params }: { params: any }) {
                   key={index}
                   href={`/${category.slug}/${subCategory.slug}`}
                 >
-                  <div className="bg-white rounded-lg p-5 w-64">
-                    <h1 className="text-accent pb-1">
+                  <div className="bg-white text-xs py-2 text-gray-500 rounded-lg px-5 w-fit">
+                    <h1 className="text-accent">
                       {index + 1}. {subCategory.name}
                     </h1>
-                    <p className="text-xs pl-4">
+                    <p className="text-xs text-right text-gray-400">
                       {subCategory.adsCount ?? (Math.random() * 100).toFixed(0)}{" "}
                       ads
                     </p>
@@ -44,7 +53,7 @@ export default async function CategoryPage({ params }: { params: any }) {
           </ScrollArea>
         </div>
       )}
-      <AdsList className="" />
+      <AdsList fetchPromise={fetchPromise} />
     </div>
   );
 }

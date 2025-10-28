@@ -2,8 +2,7 @@
 
 import Button from "@/components/ui/Button";
 import FormInput from "@/components/ui/Input";
-import { getProfile, signin } from "@/lib/actions";
-import { useAppStore } from "@/lib/store";
+import { signin } from "@/lib/actions";
 import { createClient } from "@/lib/supabase/client";
 import { Eye, EyeOff, LoaderCircle, Lock, Mail } from "lucide-react";
 import Link from "next/link";
@@ -12,7 +11,6 @@ import React, { useState, useTransition } from "react";
 import { GrGoogle } from "react-icons/gr";
 
 export default function SigninForm() {
-  const { setUser, setProfile } = useAppStore();
   const next = useSearchParams().get("next");
 
   const [email, setEmail] = useState("");
@@ -31,9 +29,6 @@ export default function SigninForm() {
       }
 
       if (data.user) {
-        const profile = await getProfile(data.user.id);
-        setUser(data.user);
-        setProfile(profile.data);
         redirect(next ?? "/");
       }
     });
@@ -52,7 +47,6 @@ export default function SigninForm() {
       ? `${redirectTo}auth`
       : `${redirectTo}/auth`;
 
-    console.log({ redirectTo });
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {

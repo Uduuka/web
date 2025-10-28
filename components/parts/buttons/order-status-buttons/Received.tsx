@@ -1,5 +1,5 @@
 import Popup from "@/components/ui/Popup";
-import { StoreOrder } from "@/lib/types";
+import { Profile, StoreOrder } from "@/lib/types";
 import Button from "@/components/ui/Button";
 import {
   CancelOrderDialog,
@@ -10,19 +10,22 @@ import {
 } from "./dialogs";
 import { Row } from "@tanstack/react-table";
 import { useAppStore } from "@/lib/store";
+import { use } from "react";
 
 export default function Received({
   row,
   rows,
   setRows,
+  profilePromise
 }: {
   row: Row<StoreOrder>;
   rows: StoreOrder[];
   setRows: (rows: StoreOrder[]) => void;
+  profilePromise: Promise<{data: Profile | null, error: {message: string} | null}>
 }) {
   const order = row.original;
-  const { user } = useAppStore();
-  const isBuyer = user?.id === order.buyer_id;
+  const { data: profile } =  use(profilePromise);
+  const isBuyer = profile?.user_id === order.buyer_id;
   return (
     <Popup
       className="w-full"
@@ -36,14 +39,14 @@ export default function Received({
       }
     >
       <div className="w-full space-y-3">
-        <MessageDialog order={order} />
+        <MessageDialog profilePromise={profilePromise} order={order} />
         {isBuyer ? (
             <>
-            <PayOrderDialog order={order} rows={rows} setRows={setRows} />
+            <PayOrderDialog profilePromise={profilePromise} order={order} rows={rows} setRows={setRows} />
             <CancelOrderDialog order={order} rows={rows} setRows={setRows} />
             </>
         ) : (
-            <DeclineOrderDialog order={order} rows={rows} setRows={setRows} />
+            <DeclineOrderDialog profilePromise={profilePromise} order={order} rows={rows} setRows={setRows} />
         )}
         <DeleteOrderDialog order={order} rows={rows} setRows={setRows} />
       </div>

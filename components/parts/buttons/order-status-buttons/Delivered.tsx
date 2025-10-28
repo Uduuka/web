@@ -1,6 +1,6 @@
 import Popup from "@/components/ui/Popup";
-import { StoreOrder } from "@/lib/types";
-import React from "react";
+import { Profile, StoreOrder } from "@/lib/types";
+import React, { use } from "react";
 import Button from "@/components/ui/Button";
 import {
   MessageDialog,
@@ -14,14 +14,19 @@ export default function Delivered({
   row,
   rows,
   setRows,
+  profilePromise,
 }: {
   row: Row<StoreOrder>;
   rows: StoreOrder[];
   setRows: (rows: StoreOrder[]) => void;
+  profilePromise: Promise<{
+    data: Profile | null;
+    error: { message: string } | null;
+  }>;
 }) {
   const order = row.original;
-  const { user } = useAppStore();
-  const isBuyer = user?.id === order.buyer_id;
+  const { data: profile } = use(profilePromise);
+  const isBuyer = profile?.user_id === order.buyer_id;
   return (
     <Popup
       className="w-full"
@@ -35,7 +40,7 @@ export default function Delivered({
       }
     >
       <div className="w-full space-y-3">
-        <MessageDialog order={order} />
+        <MessageDialog profilePromise={profilePromise} order={order} />
         {isBuyer ? null : (
           <RequestSettlementDialog
             order={order}

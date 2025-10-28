@@ -18,8 +18,7 @@ export default function PriceTag({
   if (!pricing) {
     return null;
   }
-  const { scheme, details, discount } = pricing;
-
+  const { scheme, details, discount, amount } = pricing;
   return (
     <span className={cn("text-primary flex gap-2 items-center", className)}>
       {discount && toNumber(discount) > 0 && (
@@ -27,7 +26,9 @@ export default function PriceTag({
       )}
       <Money
         loading={loading}
-        price={`${toNumber(details.price) - toNumber(discount ?? "")}`}
+        price={`${
+          toNumber(details.price ?? amount) - toNumber(discount ?? "")
+        }`}
       />
       {scheme === "unit" && (details as UnitPrice).units ? (
         <span className="text-xs flex items-center gap-2">
@@ -64,7 +65,7 @@ export const Money = ({
         <span className="w-24 h-4 bg-gray-300 animate-pulse rounded-lg"></span>
       ) : (
         toMoney(
-          toNumber(price).toFixed(env.currencies[currency].decimal_digits)
+          toNumber(price).toFixed(env.currencies[currency]?.decimal_digits)
         )
       )}
     </span>

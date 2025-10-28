@@ -3,8 +3,8 @@
 import Button from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 import { X } from "lucide-react";
+import { usePathname } from "next/navigation";
 import React, { ComponentProps, ReactNode, useEffect, useRef } from "react";
-import ScrollArea from "../layout/ScrollArea";
 
 interface ModalProps extends ComponentProps<"dialog"> {
   header?: ReactNode;
@@ -22,28 +22,22 @@ export default function Modal({
   header,
   ...props
 }: ModalProps) {
-  const triggerRef = useRef<HTMLButtonElement>(null);
   const modalRef = useRef<HTMLDialogElement>(null);
-
-  const handleCloseModal = () => {
-    modalRef.current?.close();
-  };
+  const formRef = useRef<HTMLFormElement>(null);
+  const pathname = usePathname();
 
   useEffect(() => {
-    triggerRef.current?.addEventListener("click", (e) => {
-      e.preventDefault();
-      modalRef.current?.showModal();
-    });
-
-    return triggerRef.current?.removeEventListener("click", (e) => {
-      e.preventDefault();
-      modalRef.current?.showModal();
-    });
-  }, []);
+    formRef.current?.submit();
+  }, [pathname]);
 
   return (
     <>
-      <Button ref={triggerRef} className={cn("w-fit", triggerStyle)}>
+      <Button
+        onClick={() => {
+          modalRef.current?.showModal();
+        }}
+        className={cn("w-fit", triggerStyle)}
+      >
         {trigger ?? "Open modal"}
       </Button>
       <dialog
@@ -59,12 +53,11 @@ export default function Modal({
         >
           <div className="flex justify-between items-center px-5 py-2 border-b border-secondary">
             <h1 className="w-full text-gray-500">{header ?? "Dailog"}</h1>
-            <Button
-              className="bg-transparent text-error p-0"
-              onClick={handleCloseModal}
-            >
-              <X />
-            </Button>
+            <form method="dialog" ref={formRef}>
+              <Button type="submit" className="bg-transparent text-error p-0">
+                <X />
+              </Button>
+            </form>
           </div>
           {/* <ScrollArea maxHeight="80vh" maxWidth="100%" className=""> */}
           {children}

@@ -64,6 +64,7 @@ export interface Pricing<T> {
   currency: Currency
   details: T;
   discount?: string
+  amount?: number
 }
 
 export interface FixedPrice {
@@ -125,15 +126,14 @@ export type Time = {
   total: number;
 };
 
-export type FlashSale = {
-  id: string;
-  start: Date;
-  duration: number; // in minutes
-  ad: Listing;
-  pricing: Pricing<FixedPrice>
-  info?: string;
-  flash_price: string
+export interface FlashSale extends Listing {
+    flash_pricings: FlashPricing[]
+    expires_at: string
 };
+
+export interface FlashPricing extends Pricing<any> {
+  expires_at: string
+}
 
 export type Category = {
   id: string;

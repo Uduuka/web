@@ -1,8 +1,8 @@
 "use client";
 
 import Button from "@/components/ui/Button";
-import FormInput from "@/components/ui/Input";
-import { useAppStore } from "@/lib/store";
+import Dropdown from "@/components/ui/Dropdown";
+import { Category } from "@/lib/types";
 import { Search } from "lucide-react";
 import {
   redirect,
@@ -10,25 +10,28 @@ import {
   usePathname,
   useSearchParams,
 } from "next/navigation";
-import React, { KeyboardEvent, useEffect, useState } from "react";
+import React, { KeyboardEvent, use, useState } from "react";
+import { IoMenu } from "react-icons/io5";
+import CategoryButton from "../buttons/CategoryButton";
+import ScrollArea from "../layout/ScrollArea";
 
-export default function SearchBar() {
+export default function SearchBar({
+  categoriesPromise,
+}: {
+  categoriesPromise?: Promise<{
+    data: Category[] | null;
+    error: { message: string } | null;
+  }>;
+}) {
   const search = useSearchParams().get("search");
   const adID = useParams()["adID"] as string | undefined;
   const pathname = usePathname();
 
-  const { deviceWidth } = useAppStore();
-
   const [searchText, setSearchText] = useState(search ?? "");
-  const [isMobile, setIsMobile] = useState(false);
-  const [searching, setSearching] = useState(false);
-
-  useEffect(() => {
-    setIsMobile(deviceWidth! < 768);
-  }, [deviceWidth]);
-
+  const { data: categories } = categoriesPromise
+    ? use(categoriesPromise)
+    : { data: [] };
   const handleSearch = () => {
-    setSearching(false);
     if (!searchText) {
       redirect(pathname);
     }
@@ -46,22 +49,40 @@ export default function SearchBar() {
   };
   return (
     <div className="flex gap-2 justify-center items-center w-full relative">
-      <FormInput
-        placeholder="Search here"
-        className="bg-background text-foreground w-full py-2 px-3"
-        wrapperStyle="border-0 w-full max-w-lg"
-        value={searchText}
-        onKeyDown={handleKeyDown}
-        onChange={(e) => setSearchText(e.target.value)}
-        actionBtn={
-          <Button
-            onClick={handleSearch}
-            className="rounded-none bg-background border-2 text-primary border-background"
-          >
-            <Search />
-          </Button>
-        }
-      />
+      <div className="items-center flex w-full max-w-lg mx-auto">
+        <Dropdown
+          className="md:hidden p-0"
+          align="left"
+          trigger={
+            <Button className="bg-background h-full text-gray-500 border-r rounded-r-none">
+              <IoMenu size={24} />
+            </Button>
+          }
+        >
+          <div className="w-[90vw] max-w-60 bg-background text-gray-500 py-3 h-fit shadow-2xl rounded-lg">
+            <ScrollArea className="px-3">
+              {categories?.map((cat, i) => (
+                <CategoryButton key={i} category={cat} />
+              ))}
+            </ScrollArea>
+          </div>
+        </Dropdown>
+        <input
+          value={searchText}
+          onKeyDown={handleKeyDown}
+          placeholder="Search here"
+          onChange={(e) => {
+            setSearchText(e.target.value);
+          }}
+          className="bg-background md:rounded-l-lg text-base text-gray-600 w-full py-1 px-3 outline-none h-fit active:outline-none focus:outline-none border-none shadow-none"
+        />
+        <Button
+          onClick={handleSearch}
+          className="rounded-none bg-background rounded-r-lg text-primary border-background"
+        >
+          <Search />
+        </Button>
+      </div>
     </div>
   );
 }

@@ -1,28 +1,30 @@
+"use client";
 
 import ScrollArea from "@/components/parts/layout/ScrollArea";
-import { ComponentProps} from "react";
+import { ComponentProps, use } from "react";
 import { Store } from "@/lib/types";
 import Link from "next/link";
 import Button from "@/components/ui/Button";
 import { ArrowRight } from "lucide-react";
 import StoreCard from "../cards/StoreCard";
+import { PostgrestSingleResponse } from "@supabase/supabase-js";
 
 interface ListProps extends ComponentProps<"div"> {
   title?: string;
   className?: string;
-  stores: Store[];
   nextUrl: string;
   orientation?: "vertical" | "horizontal";
+  fetchPromise: Promise<PostgrestSingleResponse<Store[]>>;
 }
 
 export default function StoreList({
   title,
   orientation = "vertical",
   nextUrl,
-  stores,
+  fetchPromise,
   className,
 }: ListProps) {
-
+  const { data: stores, error } = use(fetchPromise);
   return (
     <div className="px-5 pt-3">
       {title && (
@@ -46,7 +48,7 @@ export default function StoreList({
             orientation === "horizontal" ? "flex w-max gap-5" : className
           }
         >
-          {stores.map((item) => (
+          {stores?.map((item) => (
             <StoreCard
               nextUrl={nextUrl}
               key={item.id}
