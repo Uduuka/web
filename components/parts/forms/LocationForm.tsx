@@ -10,7 +10,7 @@ export default function LocationForm({
   handlePrevious,
 }: {
   handleLocationChange: (locationString: string, address: string) => void;
-  initialLocation?: Location;
+  initialLocation: Location;
   handlePrevious?: () => void;
   handleNext?: () => void;
 }) {

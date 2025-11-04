@@ -6,6 +6,7 @@ import UserProfile from "./nav-parts/UserProfile";
 import LocationButton from "./nav-parts/LocationButton";
 import CurrencyButton from "./nav-parts/CurrencyButton";
 import { fetchCategories, getProfile } from "@/lib/actions";
+import MobileSearhBar from "./nav-parts/MobileSearhBar";
 
 export default async function Navbar() {
   const profilePromise = getProfile();
@@ -51,9 +52,8 @@ export default async function Navbar() {
         {/** Mobile nav */}
         {/* <MobileNav profile={data} /> */}
       </div>
-      <div className="flex md:hidden px-5 pt-5">
-        <SearchBar categoriesPromise={categoriesPromise} />
-      </div>
+      {/* Mobile search bar that shows on non-dashboard pages. */}
+      <MobileSearhBar categoriesPromise={categoriesPromise} />
     </header>
   );
 }

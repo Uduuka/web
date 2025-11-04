@@ -1,19 +1,23 @@
 import { useEffect, useState } from "react";
-import { ChatHead, Message } from "../types";
+import { ChatThread, Message } from "../types";
 import { createClient } from "../supabase/client";
+import { useAppStore } from "../store";
 
-export const useChatThread = (thread: ChatHead) => {
+export const useChatThread = () => {
+    const {activechatThread} = useAppStore()
+    const [messages, setMessages] = useState<Message[]>(activechatThread?.messages ?? [])
+    if (!activechatThread) {
+        return {messages, setMessages}
+    }
     const supabase = createClient()
-    const [messages, setMessages] = useState<Message[]>(thread.messages ?? [])
     useEffect(()=>{
-        if(!thread.id) return;
-        const channels = supabase.channel(thread.id)
+        const channels = supabase.channel('chat')
         .on(
             'postgres_changes',
-            { event: 'INSERT', schema: 'public', table: 'chat_messages' },
+            { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `receiver_id=eq.${activechatThread.me.user_id}` },
             (payload) => {
-                const { ad_id, text, sender_id, status } = payload.new
-                const msg = { ad_id, text, sender_id, status }
+                const { sender_id, receiver_id, text, id } = payload.new
+                const msg = { sender_id, receiver_id, text, id }
                 setMessages([...messages, msg])
             }
         )
@@ -22,7 +26,7 @@ export const useChatThread = (thread: ChatHead) => {
         return ()=>{
             channels.unsubscribe()
         }
-    }, [thread, messages])
+    }, [activechatThread, messages])
 
     return {messages, setMessages}
 }

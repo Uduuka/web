@@ -63,7 +63,7 @@ const Timer = ({ upto }: { upto: string }) => {
     return clearInterval(1000);
   }, []);
   return (
-    <p className="p-2 py-1 absolute top-0 left-0 bg-primary/80 rounded-tl-lg text-xs text-white font-bold">
+    <p className="p-2 w-20 py-1 absolute top-0 left-0 bg-primary/80 rounded-tl-lg text-xs text-white font-bold">
       {time?.hours ?? "00"} : {time?.minutes ?? "00"} : {time?.seconds ?? "00"}
     </p>
   );

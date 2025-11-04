@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useTransition } from "react";
-import Model from "./Model";
 import { TbExchange } from "react-icons/tb";
 import ScrollArea from "../layout/ScrollArea";
 import { Listing } from "@/lib/types";
 import { fetchPersonalAds, updateMultipleAds } from "@/lib/actions";
 import Button from "@/components/ui/Button";
 import { useParams } from "next/navigation";
+import Modal from "./Modal";
 
 export default function AdsModel() {
   const [ads, setAds] = useState<Listing[]>();
@@ -48,7 +48,7 @@ export default function AdsModel() {
   };
 
   return (
-    <Model
+    <Modal
       triggerStyle="w-fit"
       header="Add from library"
       trigger={
@@ -120,6 +120,6 @@ export default function AdsModel() {
           </div>
         </div>
       )}
-    </Model>
+    </Modal>
   );
 }

@@ -6,12 +6,14 @@ import { Profile } from "@/lib/types";
 import Image from "next/image";
 import Link from "next/link";
 import React, { use } from "react";
-import { BiBell, BiEnvelope, BiPlus } from "react-icons/bi";
-import { RxDashboard } from "react-icons/rx";
 import LogoutButton from "./LogoutButton";
 import { LiaUserLockSolid } from "react-icons/lia";
 import { User } from "lucide-react";
 import Modal from "../../models/Modal";
+import { useParams, usePathname } from "next/navigation";
+import { DashboardNav, StoreNav } from "../SideBar";
+import { RxDashboard } from "react-icons/rx";
+import { BiPlus } from "react-icons/bi";
 
 export default function UserProfile({
   profilePromise,
@@ -22,7 +24,8 @@ export default function UserProfile({
   }>;
 }) {
   const { data: profile } = use(profilePromise);
-
+  const pathName = usePathname();
+  const storeID = useParams()["storeID"] as string;
   return (
     <>
       {profile ? (
@@ -54,27 +57,24 @@ export default function UserProfile({
               <h1 className="text-center py-2">{profile.full_name}</h1>
               <p className="text-center w-full">({profile.email})</p>
             </div>
-            <div className="space-y-3 pt-5">
-              <Link href="/dashboard/messages">
-                <Button className="bg-transparent hover:bg-secondary/80 text-foreground gap-2 w-full justify-start">
-                  <BiEnvelope />
-                  Messages
-                </Button>
-              </Link>
-              <Link href="/dashboard/notifications">
-                <Button className="bg-transparent hover:bg-secondary/80 text-foreground w-full justify-start gap-2">
-                  <BiBell />
-                  Notifications
-                </Button>
-              </Link>
-              <Link href="/dashboard">
-                <Button className="bg-transparent hover:bg-secondary/80 text-foreground w-full justify-start gap-2">
-                  <RxDashboard />
-                  Dashboard
-                </Button>
-              </Link>
+            <div className="space-y-3 pt-5 md:hidden">
+              {pathName.startsWith("/dashboard") ? (
+                storeID && pathName.includes(storeID) ? (
+                  <StoreNav className="text-gray-500" />
+                ) : (
+                  <DashboardNav className="text-gray-500" />
+                )
+              ) : null}
             </div>
             <div className="pt-5 space-y-3">
+              {!pathName.startsWith("/dashboard") && (
+                <Link href="/dashboard" className="block">
+                  <Button className="bg-secondary/80 hover:bg-secondary text-foreground w-full justify-start gap-2">
+                    <RxDashboard className="" />
+                    Dashboard
+                  </Button>
+                </Link>
+              )}
               <Link href="/dashboard/ads/create" className="block">
                 <Button className="bg-primary gap-2 text-background w-full">
                   <BiPlus />

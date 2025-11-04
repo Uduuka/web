@@ -11,14 +11,17 @@ export default function AdsList({
   className,
   errorMessage,
   emptyMessage,
-  fetchPromise
+  fetchPromise,
 }: {
   className?: string;
   errorMessage?: string;
   emptyMessage?: string;
-  fetchPromise: Promise<{data: Listing[] | null, error: {message: string} | null}> 
+  fetchPromise: Promise<{
+    data: Listing[] | null;
+    error: { message: string } | null;
+  }>;
 }) {
-  const {data: ads, error} = use(fetchPromise)
+  const { data: ads, error } = use(fetchPromise);
 
   const [columns, setColumns] = useState<Listing[][] | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -40,7 +43,6 @@ export default function AdsList({
     };
   }, [ads]);
 
-  
   if (error) {
     return (
       <div className={cn("px-5 py-3", className)}>

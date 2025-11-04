@@ -3,7 +3,7 @@ import Carousel from "@/components/parts/layout/Carousel";
 import DetailsReviesTabs from "@/components/parts/layout/DetailsReviesTabs";
 import Distance from "@/components/parts/maps/Distance";
 import Button from "@/components/ui/Button";
-import { fetchAd, getProfile, getUser } from "@/lib/actions";
+import { fetchAd, fetchMessages, getProfile, getUser } from "@/lib/actions";
 import { Listing } from "@/lib/types";
 import { notFound } from "next/navigation";
 import { RxShare1 } from "react-icons/rx";
@@ -12,6 +12,7 @@ import { VscFeedback } from "react-icons/vsc";
 import PriceBoard from "./(pricing)/Pricing";
 import { Store } from "lucide-react";
 import Link from "next/link";
+import SellerCard from "./(pricing)/SellerCard";
 
 export default async function AdDetailsPage({
   params,
@@ -28,14 +29,14 @@ export default async function AdDetailsPage({
 
   const { pricings, seller_id, store } = ad;
 
-  const userData = await getUser();
-  const sellerProfile = await getProfile(ad.seller_id);
-  const isSeller = userData.data?.user?.id === seller_id;
+  const userPromise = getProfile();
+  const sellerPromise = getProfile(seller_id);
+  const messagesPromise = fetchMessages(seller_id);
 
   if (error || !pricings || !ad) {
     return notFound();
   }
-  const pricingScheme = pricings[0].scheme;
+  const pricingScheme = pricings?.[0]?.scheme;
   return (
     <div className="grid grid-cols-4 p-5 gap-5">
       <div
@@ -75,7 +76,7 @@ export default async function AdDetailsPage({
           <h1 className="text-accent font-bold text-lg pb-2 capitalize">
             Pricing: {pricingScheme} price
           </h1>
-          <PriceBoard ad={ad} />
+          {ad.pricings && ad.pricings.length > 0 && <PriceBoard ad={ad} />}
         </div>
 
         <div className="flex justify-between items-center">
@@ -100,49 +101,12 @@ export default async function AdDetailsPage({
         </div>
       </div>
 
-      <div className="bg-white flex-1 p-5 rounded-lg col-span-4 sm:col-span-2">
-        <h1 className="text-accent border-b ">Seller details</h1>
-        {sellerProfile.data && (
-          <div className="flex-1 flex flex-col h-full py-5 ">
-            <h1 className="text-accent/80 pb-2 capitalize">
-              {sellerProfile.data.full_name}
-            </h1>
-            <p className="text-accent/60 text-xs">{sellerProfile.data.about}</p>
-            {!isSeller && userData.data?.user && (
-              <div className="flex gap-5 py-4">
-                <Button
-                  disabled={isSeller}
-                  className="bg-secondary w-full hover:bg-secondary/90 text-xs"
-                >
-                  Show contacts
-                </Button>
-                <OpenChat
-                  ad={{ ...ad, seller: sellerProfile.data }}
-                  seller={ad.seller_id}
-                  buyer={userData.data?.user?.id}
-                  isSeller={isSeller}
-                />
-              </div>
-            )}
-            <div className="flex-1"></div>
-            <div className="flex gap-2 justify-end">
-              <Button className="bg-transparent hover:bg-accent/50 text-accent/80 hover:text-background  h-6 w-6 p-0 rounded-sm">
-                <RxShare1 size={18} />
-              </Button>{" "}
-              <Button className="bg-transparent hover:bg-accent/50 text-accent/80 hover:text-background  h-6 w-6 p-0 rounded-sm">
-                <SlLike size={18} />
-              </Button>{" "}
-              <Button className="bg-transparent hover:bg-accent/50 text-accent/80 hover:text-background  h-6 w-6 p-0 rounded-sm">
-                <SlDislike size={18} />
-              </Button>{" "}
-              <Button className="bg-transparent hover:bg-accent/50 text-accent/80 hover:text-background  h-6 w-6 p-0 rounded-sm">
-                <VscFeedback size={18} />
-              </Button>
-            </div>
-          </div>
-        )}
-      </div>
-
+      {/* Seller card */}
+      <SellerCard
+        userPromise={userPromise}
+        sellerPromise={sellerPromise}
+        messagesPromise={messagesPromise}
+      />
       <div className="col-span-4 bg-white p-5 rounded-lg">
         <DetailsReviesTabs specs={ad.specs} reviews={ad.reviews} />
       </div>

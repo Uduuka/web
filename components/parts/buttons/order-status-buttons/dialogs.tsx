@@ -185,14 +185,17 @@ export const DeclineOrderDialog = ({
   order,
   rows,
   setRows,
-  profilePromise
+  profilePromise,
 }: {
   order: StoreOrder;
   rows: StoreOrder[];
   setRows: (rows: StoreOrder[]) => void;
-  profilePromise: Promise<{data: Profile | null, error: {message: string} | null}>
+  profilePromise: Promise<{
+    data: Profile | null;
+    error: { message: string } | null;
+  }>;
 }) => {
-  const {data: profile} = use(profilePromise)
+  const { data: profile } = use(profilePromise);
   const isBuyer = profile?.user_id === order.buyer_id;
 
   const [declining, startdeclining] = useTransition();
@@ -260,11 +263,20 @@ export const DeclineOrderDialog = ({
   );
 };
 
-export const MessageDialog = ({ order, profilePromise }: { order: StoreOrder, profilePromise: Promise<{data: Profile | null, error: {message: string} | null}> }) => {
+export const MessageDialog = ({
+  order,
+  profilePromise,
+}: {
+  order: StoreOrder;
+  profilePromise: Promise<{
+    data: Profile | null;
+    error: { message: string } | null;
+  }>;
+}) => {
   const [message, setMessage] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [sending, startSending] = useTransition();
-  const {data: profile} = use(profilePromise)
+  const { data: profile } = use(profilePromise);
   const isBuyer = profile?.user_id === order.buyer_id;
 
   const formRef = useRef<HTMLFormElement>(null);
@@ -352,12 +364,15 @@ export const InvoiceDialog = ({
   order,
   rows,
   setRows,
-  profilePromise
+  profilePromise,
 }: {
   order: StoreOrder;
   rows: StoreOrder[];
   setRows: (rows: StoreOrder[]) => void;
-  profilePromise: Promise<{data: Profile | null, error: {message: string} | null}>
+  profilePromise: Promise<{
+    data: Profile | null;
+    error: { message: string } | null;
+  }>;
 }) => {
   const { data: profile } = use(profilePromise);
   const isBuyer = profile?.user_id === order.buyer_id;
@@ -510,7 +525,8 @@ export const InvoiceDialog = ({
                           pricing={{
                             scheme: "fixed",
                             currency: order.currency,
-                            details: { price: order.amount },
+                            amount: order.amount,
+                            details: {},
                           }}
                         />
                       </div>
@@ -871,12 +887,15 @@ export const ReceiveOrderDialog = ({
   order,
   rows,
   setRows,
-  profilePromise
+  profilePromise,
 }: {
   order: StoreOrder;
   rows: StoreOrder[];
   setRows: (rows: StoreOrder[]) => void;
-  profilePromise: Promise<{data: Profile | null, error: {message: string} | null}>
+  profilePromise: Promise<{
+    data: Profile | null;
+    error: { message: string } | null;
+  }>;
 }) => {
   const { data: profile } = use(profilePromise);
   const isBuyer = profile?.user_id === order.buyer_id;

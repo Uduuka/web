@@ -39,7 +39,7 @@ export default function Sidebar() {
   const pathname = usePathname();
   const storeId = useParams()["storeID"];
   return (
-    <aside className="fixed top-16 left-0 bottom-0 w-64 bg-white font-light text-xs z-10 hidden md:block">
+    <aside className="fixed top-16 pt-5 left-0 bottom-0 w-64 bg-white font-light text-xs z-10 hidden md:block">
       {pathname.startsWith("/dashboard") ? (
         storeId ? (
           <StoreNav />
@@ -178,13 +178,19 @@ export const DefaultNav = ({ className, ...props }: ComponentProps<"nav">) => {
   );
 };
 
-export const DashboardNav = () => {
+export const DashboardNav = ({
+  className,
+  ...props
+}: ComponentProps<"nav">) => {
   const pathname = usePathname();
   const [openActivity, setOpenActivity] = useState(false);
   return (
-    <ScrollArea maxHeight="100%" className="h-full pr-3">
-      <nav className="flex-1 px-2 py-4 flex flex-col gap-2">
-        <div className="flex flex-col gap-2 pt-5">
+    <ScrollArea maxHeight="200px" className="h-full py-0 pr-3">
+      <nav
+        {...props}
+        className={cn("flex-1 px-2 flex flex-col gap-2", className)}
+      >
+        <div className="flex flex-col gap-2">
           <Link href="/dashboard">
             <Button
               className={cn(
@@ -331,12 +337,9 @@ export const StoreNav = ({ className, ...props }: ComponentProps<"div">) => {
   const pathname = usePathname();
   const storeId = useParams()["storeID"];
   return (
-    <ScrollArea maxHeight="100%" className="h-full pr-3 flex flex-col">
-      <nav className="flex-1 px-2 py-4 flex flex-col gap-2">
-        <div
-          {...props}
-          className={cn("flex flex-1 flex-col gap-2 pt-5", className)}
-        >
+    <ScrollArea maxHeight="200px" className="pr-3 flex flex-col">
+      <nav className="flex-1 px-2 py-0 flex flex-col gap-2">
+        <div {...props} className={cn("flex flex-1 flex-col gap-2", className)}>
           <Link href={`/dashboard/stores/${storeId}`}>
             <Button
               className={cn(
@@ -441,9 +444,6 @@ export const StoreNav = ({ className, ...props }: ComponentProps<"div">) => {
               Trash bin
             </Button>
           </Link>
-        </div>
-        <div className="w-full py-5 flex flex-col justify-center items-center border-t border-secondary">
-          <div className="h-20 w-full bg-secondary mb-5 rounded-lg"></div>
         </div>
       </nav>
     </ScrollArea>

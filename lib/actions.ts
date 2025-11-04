@@ -3,7 +3,7 @@ import { AuthError } from "@supabase/supabase-js";
 import env from "./env";
 import axios from "axios";
 import { createClient } from "./supabase/server";
-import { ChatHead, Currency, Filters, Order, Pricing, Profile, StoreOrder } from "./types";
+import {  Currency, Filters, Order, Pricing, Profile, StoreOrder } from "./types";
 import { cookies } from "next/headers";
 
 export const signup = async({email, password, profile} : {email: string, password: string, profile?: object}) => {
@@ -62,7 +62,13 @@ export const getProfile = async(uid?: string) => {
    const {data, error} =  await (await createClient()).from('profiles').select("*, subscription:subscriptions(*)").eq('user_id', userID)
 
    if(data && data.length === 1){
-      return {data: {...data[0], email: user?.email, phone: user?.phone, avatar_url: data[0].avatar_url ?? user?.user_metadata.avatar_url} as Profile, error: null}
+      if(uid){
+         return {data: {...data[0]} as Profile, error: null}
+
+      }else{
+         return {data: {...data[0], email: user?.email, phone: user?.phone, avatar_url: data[0].avatar_url ?? user?.user_metadata.avatar_url} as Profile, error: null}
+         
+      }
    }
 
    return {error, data: null}
@@ -94,7 +100,7 @@ export const fetchAds = async(filters: {search?: string, storeID?: string, categ
    if(filters.search){
       embedding = await getEmbedding(filters.search)
    }
-   
+
    query = (await supabase).rpc('fetch_ads_by_currency', 
       {
          desired_currency: currency, 
@@ -102,11 +108,6 @@ export const fetchAds = async(filters: {search?: string, storeID?: string, categ
          lon: lon ?? null, 
          q_embedding: embedding?.[0] ?? null
       })
-   
-   // Filter by search
-   // if(filters.search){
-   //    query = query.or(`title.ilike.%${filters.search}%, description.ilike.%${filters.search}%, category_id.ilike.%${filters.search}%, sub_category_id.ilike.%${filters.search}%`)
-   // }
 
    // Filter by store id
    if(filters.storeID){
@@ -142,7 +143,13 @@ export const fetchPersonalAds = async({store_id}: any)=>{
 }
 
 export const fetchAd = async(id: string) => {
-   return(await createClient()).from("ads").select("*, seller:profiles(*), pricings(*), images:ad_images(*), store:stores(*)").eq('id', id).single()
+   return(await createClient())
+      .from("ads")
+      .select("*, seller:profiles(*), pricings(*,deleted_at), images:ad_images(*,deleted_at), store:stores(*)")
+      .eq('id', id)
+      .is('images.deleted_at', null)
+      .is('pricings.deleted_at', null)
+      .single()
 }
 
 export const fetchFlashsales = async(search?: string) => {
@@ -187,28 +194,20 @@ export const fetchAdsInView = async(filters: any) => {
    return await query
 }
 
-export const fetchThread = async({seller, buyer}: {seller: string, buyer: string}) => {
-   const supabase = await createClient()
-
-   const {data, error} = await supabase.from("chat_threads_view").select().eq('seller_id', seller).eq('buyer_id', buyer)
-   console.log(error)
-   if(!data){
-      return null
-   }
-
-   return data[0] as ChatHead ?? null
-}
-
-export const fetchThreads = async() => {
-   return (await createClient()).from("chat_threads_view").select()
-}
-
-export const createChatThread = async(thread: {buyer_id: string, seller_id: string}) => {
-   return (await createClient()).from("chat_threads").insert(thread).select()
-}
-
 export const sendMessage = async(message: {text: string, sender_id: string, receiver_id: string}) => {
    return (await createClient()).from("chat_messages").insert(message).select()
+}
+
+export const fetchMessages = async (you_id?: string) => {
+   let query = (await createClient()).from('chat_messages').select()
+   if(you_id){
+      query = query.or(`sender_id.eq.${you_id},receiver_id.eq.${you_id}`)
+   }
+   return query
+}
+
+export const fetchThreads = async () => {
+   return (await createClient()).from('threads').select('*')
 }
 
 export const postAd = async(ad: any) => {
@@ -217,6 +216,10 @@ export const postAd = async(ad: any) => {
 
 export const postPricing = async(pricings: Pricing<any>[]) => {
    return (await createClient()).from("pricings").insert(pricings).select()
+}
+
+export const deletePricing = async(pricing_id: string) => {
+   return (await createClient()).from('pricings').update({deleted_at: new Date()}).eq('id', pricing_id)
 }
 
 export const uploadFiles = async(files: File[], backetName: string, folderName: string) => {
@@ -323,7 +326,7 @@ export const deleteImages = async(paths: string[]) => {
 
 export const fetchUnits = async() => {
    const supabase = await createClient()
-   return await supabase.from("base_units").select("id, name, abbr, plural, sub_units(id, name, abbr, conversion_factor)")
+   return await supabase.from("base_units").select("id, name, abbr, plural, sub_units(id, name, abbr, plural, conversion_factor)")
 }
 
 export const fetchSubscriptions = async()=>{
@@ -384,7 +387,7 @@ export const createStore = async(data: object) =>{
 }
 
 export const fetchStoreAds = async(storeID: string) => {
-   return (await createClient()).from("ads_list_view").select("*, pricings(*)").eq("store_id", storeID)
+   return (await createClient()).from("ads_list_view").select("*, pricings(*, deleted_at)").eq("store_id", storeID).is('pricings.deleted_at', null)
 }
 
 export const fetchStores = async() => {
@@ -497,6 +500,18 @@ export const setCookie = async(name: string, value: string) => {
 export const deleteCookie = async(name: string) => {
    const cookieStore = await cookies()
    cookieStore.delete(name)
+}
+
+export const fetchAdImages = async(ad_id: string) => {
+   return (await createClient()).from('ad_images').select('*').eq('ad_id', ad_id).is('deleted_at', null)
+}
+
+export const deletAdImage = async (id: number) => {
+   return (await createClient()).from('ad_images').update({deleted_at: new Date()}).eq('id', id)
+}
+
+export const updatePricings = async(pricings: Pricing<any>[]) => {
+   return (await createClient()).from('pricings').upsert(pricings, {onConflict: 'id'})
 }
 
 

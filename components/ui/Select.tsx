@@ -20,6 +20,7 @@ interface SelectProps<T> {
   className?: string;
   disabled?: boolean;
   optionsStyle?: string;
+  contentStyle?: string;
 }
 
 export default function Select<T>({
@@ -31,6 +32,7 @@ export default function Select<T>({
   className,
   triggerStyle,
   disabled,
+  contentStyle,
 }: SelectProps<T>) {
   const [isOpen, setIsOpen] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState(-1);
@@ -137,13 +139,16 @@ export default function Select<T>({
       {isOpen && (
         <div
           ref={menuRef}
-          className="absolute z-10 py-3 mt-1 w-full bg-background shadow-md rounded-md text-uduuka-gray text-sm"
+          className={cn(
+            "absolute z-10 py-3 mt-1 w-full bg-background shadow-md rounded-md text-uduuka-gray text-sm",
+            contentStyle
+          )}
           role="listbox"
           aria-activedescendant={
             focusedIndex >= 0 ? `option-${focusedIndex}` : undefined
           }
         >
-          <ScrollArea maxHeight="20rem" className="max-h-96 pb-0">
+          <ScrollArea maxHeight="100%" className="max-h-96 pb-0">
             <ul>
               {options.map((option, index) => (
                 <li

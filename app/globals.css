@@ -39,6 +39,10 @@ body {
   font-family: Inter, Arial, Helvetica, sans-serif;
 }
 
+p {
+  @apply break-words text-wrap whitespace-normal m-0;
+}
+
 .on-set {
   animation: set-set 1s infinite;
 }

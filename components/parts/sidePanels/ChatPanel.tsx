@@ -8,24 +8,22 @@ import ChatForm from "../forms/ChatForm";
 
 export default function ChatPanel() {
   const router = useRouter();
-  const { activeChatHead, setActiveChatHead, chatHeads, setChatHeads } =
+  const { activechatThread, setActivechatThread, chatThreads, setChatThreads } =
     useAppStore();
 
   const closePane = () => {
-    setActiveChatHead(undefined);
+    setActivechatThread(undefined);
   };
 
   const handleMaximise = () => {
     closePane();
-    router.push(
-      `/dashboard/chat?b=${activeChatHead?.buyer_id}&s=${activeChatHead?.seller_id}`
-    );
+    router.push(`/dashboard/chat?chat=${activechatThread?.you.user_id}`);
   };
 
   const handleClose = () => {
     closePane();
-    const heads = chatHeads?.filter((head) => head !== activeChatHead);
-    setChatHeads(heads);
+    const heads = chatThreads?.filter((head) => head !== activechatThread);
+    setChatThreads(heads);
   };
 
   return (
@@ -47,7 +45,9 @@ export default function ChatPanel() {
             className="h-10 w-10 rounded-full"
           />
           <div className="w-full">
-            <h1 className="text-background">{activeChatHead?.title}</h1>
+            <h1 className="text-background">
+              {activechatThread?.you.full_name}
+            </h1>
             <p className="text-xs font-light">
               last seen {new Date().toDateString()}
             </p>
@@ -55,7 +55,7 @@ export default function ChatPanel() {
         </div>
       }
     >
-      <ChatForm thread={activeChatHead!} />
+      <ChatForm />
     </SidePane>
   );
 }

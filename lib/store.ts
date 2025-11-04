@@ -1,26 +1,29 @@
 import { create } from "zustand";
-import { Location, ChatHead, Currency, Cart, CartItem } from "./types";
+import { Location, Currency, Cart, CartItem, ChatThread } from "./types";
 import _ from "lodash";
 import { calcCartTotal } from "./utils";
 
 interface AppState {
   currency: Currency;
   location: Location | null;
-  chatHeads?: ChatHead[];
-  activeChatHead?: ChatHead
+  chatThreads?: ChatThread[];
+  threads: ChatThread[];
+  activechatThread?: ChatThread
   cart: Cart
   setCart?: (cart: Cart)=>void
   setCurrency: (currency: Currency) => void;
   setLocation: (location: Location | null) => void;
   clearLocation: () => void;
-  setChatHeads: (heads?: ChatHead[]) => void;
-  setActiveChatHead: (head?: ChatHead) => void
+  setChatThreads: (heads?: ChatThread[]) => void;
+  setThreads: (heads?: ChatThread[]) => void;
+  setActivechatThread: (head?: ChatThread) => void
 }
 
 export const useAppStore = create<AppState>((set) => ({
-  currency: "USD",
+  currency: "UGX",
   location: null,
-  chatHeads: [],
+  chatThreads: [],
+  threads: [],
   cart: {
      items: [],
      total: 0,
@@ -67,10 +70,11 @@ export const useAppStore = create<AppState>((set) => ({
       set(prev => ({...prev, cart: {...prev.cart, items: [], total: 0, store: undefined}}))
      },
   },
-  setChatHeads: (chatHeads) => set({ chatHeads }),
+  setChatThreads: (chatThreads) => set({ chatThreads }),
   setCurrency: (currency) => set({ currency }),
   setLocation: (location) => set({ location }),
   clearLocation: () => set({ location: null }),
-  setActiveChatHead: (activeChatHead) => set({activeChatHead}),
-  setCart: (cart)=>set({cart})
+  setActivechatThread: (activechatThread) => set({activechatThread}),
+  setCart: (cart)=>set({cart}),
+  setThreads: (threads) => set({ threads })
 }));
