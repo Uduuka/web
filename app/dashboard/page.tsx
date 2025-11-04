@@ -126,7 +126,8 @@ export default async function DashboardPage() {
                   pricing={{
                     currency: "UGX",
                     scheme: "fixed",
-                    details: { price: 30000 },
+                    amount: 30000,
+                    details: {},
                   }}
                 />{" "}
                 per month

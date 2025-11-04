@@ -85,7 +85,8 @@ export default function StoreCart() {
             className="text-xl font-bold"
             pricing={{
               currency,
-              details: { price: total },
+              amount: total,
+              details: {},
               scheme: "fixed",
             }}
           />

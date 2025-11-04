@@ -47,21 +47,21 @@ export default function Modal({
       >
         <div
           className={cn(
-            "w-full max-w-sm mx-auto box-border bg-white shadow rounded-lg space-y-2 h-fit min-h-40",
+            "w-full max-w-sm mx-auto box-border bg-white shadow rounded-lg space-y-2 min-h-40",
             className
           )}
         >
           <div className="flex justify-between items-center px-5 py-2 border-b border-secondary">
-            <h1 className="w-full text-gray-500">{header ?? "Dailog"}</h1>
+            <h1 className="w-full text-gray-500 line-clamp-1">
+              {header ?? "Dailog"}
+            </h1>
             <form method="dialog" ref={formRef}>
               <Button type="submit" className="bg-transparent text-error p-0">
                 <X />
               </Button>
             </form>
           </div>
-          {/* <ScrollArea maxHeight="80vh" maxWidth="100%" className=""> */}
           {children}
-          {/* </ScrollArea> */}
         </div>
       </dialog>
     </>

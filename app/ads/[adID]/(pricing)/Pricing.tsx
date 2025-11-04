@@ -21,6 +21,9 @@ const PriceBoard = ({ ad }: { ad: Listing }) => {
     });
   }, [currency, ad.pricings]);
 
+  if (!ad.pricings || ad.pricings.length === 0) {
+    return null;
+  }
   return (
     <div className="space-y-2">
       {pricings.map((pricing, index) => (

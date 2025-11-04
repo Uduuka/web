@@ -47,46 +47,41 @@ export interface Listing {
 }
 
 export interface AdImage {
-  url: string,
+  id?: number
+  url: string
   ad_id: string
 }
 
+export type Scheme = "fixed" | "range" | "menu" | "unit" | "recurring";
+
 export type Currency =  "USD" | "UGX" | "KSH" | "TSH"
-export type ContactResult =
-  | { type: "phone"; value: string }
-  | { type: "email"; value: string }
-  | { type: "unknown"; value: string };
 
 export interface Pricing<T> {
   ad_id?: string
   id?: string
-  scheme: "fixed" | "recurring" | "range" | "menu" | "unit";
+  scheme: Scheme
   currency: Currency
   details: T;
-  discount?: string
-  amount?: number
+  amount: number
+  discount?: number
 }
 
-export interface FixedPrice {
-  price: string;
-  initialPrice?: string;
+export interface FixedPrice  {
+  
 }
 
 export interface UnitPrice {
-  price: string;
   units: string;
-  conversionFactor?: number;
+  conversionFactor: number;
   conversionRatio?: Record<string, string>;
 }
 
 export interface PriceRange {
   specs?: Record<string, string>;
-  price: string
   qty: number
 }
 
 export interface RecurringPrice {
-  price: string;
   period: string;
 }
 
@@ -94,7 +89,6 @@ export interface PriceMenu {
   image?: string;
   title: string;
   description?: string;
-  price: string;
   qty?: number
 }
 
@@ -192,31 +186,20 @@ export interface ReviewReply {
   deleted_at?: string;
 }
 
-export interface ChatHead {
-  id?: string
-  ad_id: string;
-  title: string
-  seller_id: string;
-  seller: Profile
-  buyer: Profile
-  buyer_id: string;
+export interface ChatThread {
+  me: Profile
+  you: Profile
   messages?: Message[];
-  created_ad?: string;
-  updated_at?: string;
-  trashed_at?: string
-  deleted_at?: string;
 }
 
 export interface Message {
   id?: string;
   sender_id: string;
+  receiver_id: string
   text: string;
   status?: "sent" | "received" | "read" | "error"
-  thread_id?: string
   created_at?: string;
   updated_at?: string;
-  trashed_at?: string;
-  deleted_at?: string;
 }
 
 export interface BoundingBox {
@@ -262,6 +245,7 @@ export interface SubUnit {
   name: string
   base_unit?: string
   abbr: string
+  plural: string
   conversion_factor: number
 }
 

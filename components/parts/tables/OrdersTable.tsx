@@ -400,7 +400,8 @@ const OrderButton = ({ order }: { order: StoreOrder }) => {
                 className="text-xl font-bold"
                 pricing={{
                   currency: order.currency,
-                  details: { price: order.amount },
+                  details: {},
+                  amount: order.amount,
                   scheme: "fixed",
                 }}
               />

@@ -3,7 +3,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { MapPin, Star } from "lucide-react";
-import Badge from "@/components/ui/Badge";
 import PriceTag from "./PriceTag";
 import { Listing } from "@/lib/types";
 import { prettyDistance, toNumber } from "@/lib/utils";
@@ -23,7 +22,6 @@ export default function AdCard({ ad }: ListingCardProps) {
     rating,
     ratings,
     distance,
-    pricing,
     store,
     pricings,
     isNew,
@@ -44,17 +42,10 @@ export default function AdCard({ ad }: ListingCardProps) {
             <Image
               src={url}
               alt={title}
-              height={100}
-              width={100}
+              height={1000}
+              width={1000}
               className="w-full h-auto object-cover transition-transform hover:scale-105"
             />
-
-            {isNew && <Badge className="absolute left-2 top-2">New</Badge>}
-            {isFeatured && (
-              <Badge variant="secondary" className="absolute right-2 top-2">
-                Featured
-              </Badge>
-            )}
           </div>
           <div className="p-3 pb-0">
             <h3 className="line-clamp-2 text-xs font-light">{title}</h3>
@@ -66,10 +57,10 @@ export default function AdCard({ ad }: ListingCardProps) {
             </span>
           </div>
           <div className="pt-2 px-3">
-            {pricings && pricings.length > 1 ? (
+            {pricings && pricings.length > 0 ? (
               <RenderPricings pricings={pricings} />
             ) : (
-              <PriceTag pricing={pricing} />
+              <p>No pricing</p>
             )}
           </div>
         </Link>
@@ -112,20 +103,26 @@ export default function AdCard({ ad }: ListingCardProps) {
   );
 }
 
-export const RenderPricings = ({ pricings }: { pricings: Listing["pricings"] }) => {
-  if (!pricings || pricings.length === 0) return null;
-  if (pricings.length === 1)
+export const RenderPricings = ({
+  pricings,
+}: {
+  pricings: Listing["pricings"];
+}) => {
+  if (!pricings || pricings.length === 0)
+    return <p className="text-gray-400">No pricing</p>;
+  if (pricings.length === 1) {
     return <PriceTag pricing={pricings[0]} className="w-fit" />;
+  }
 
-  const minPrice = Math.min(...pricings.map((p) => toNumber(p.details.price)));
-
+  // console.log(pricings);
+  const minPrice = Math.min(...pricings.map((p) => p.amount));
+  const pricing = pricings.find((p) => {
+    return Number(p.amount) === Number(minPrice);
+  });
   return (
     <div className="flex flex-wrap items-center space-x-1">
       <span className="text-xs text-primary">From</span>
-      <PriceTag
-        pricing={pricings.find((p) => toNumber(p.details.price) === minPrice)!}
-        className="w-fit"
-      />
+      <PriceTag pricing={pricing!} className="w-fit" />
     </div>
   );
 };

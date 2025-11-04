@@ -1,10 +1,8 @@
 "use client";
 
-import { useAppStore } from "@/lib/store";
-import { ChatHead, Message, Profile } from "@/lib/types";
+import { ChatThread, Message } from "@/lib/types";
 import React, {
   ComponentProps,
-  use,
   useEffect,
   useRef,
   useState,
@@ -18,21 +16,16 @@ import { HiOutlineEmojiHappy, HiOutlineMicrophone } from "react-icons/hi";
 import { MdSend } from "react-icons/md";
 import { useChatThread } from "@/lib/hooks/use_chat_threads";
 import { BsExclamationCircle } from "react-icons/bs";
-import { Info } from "lucide-react";
+import { Info, LoaderCircle } from "lucide-react";
+import { sendMessage } from "@/lib/actions";
+import { useAppStore } from "@/lib/store";
 
-interface FormProps extends ComponentProps<"div"> {
-  thread: ChatHead;
-  // profilePromise: Promise<{ data: Profile | null }>;
-}
-
-export default function ChatForm({ thread }: FormProps) {
+export default function ChatForm() {
+  const { activechatThread } = useAppStore();
   const [message, setMessage] = useState("");
-  const { messages, setMessages } = useChatThread(thread);
+  const { messages, setMessages } = useChatThread();
   const [sendError, setSendError] = useState<string>();
-
   const [sending, startSending] = useTransition();
-  // const { data: profile } = use(profilePromise);
-
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -45,8 +38,26 @@ export default function ChatForm({ thread }: FormProps) {
     scrollToBottom();
   }, [messages]);
 
+  if (!activechatThread) {
+    return null;
+  }
+
   const handleSend = () => {
-    startSending(async () => {});
+    startSending(async () => {
+      const { data, error } = await sendMessage({
+        text: message,
+        sender_id: activechatThread.me.user_id,
+        receiver_id: activechatThread.you.user_id,
+      });
+
+      if (error) {
+        setSendError(error.message);
+        return;
+      }
+
+      setMessages([...messages, data[0]]);
+      setMessage("");
+    });
   };
   return (
     <div className="w-full h-full flex flex-col gap-3">
@@ -56,13 +67,13 @@ export default function ChatForm({ thread }: FormProps) {
         className="w-full flex-1 overflow-y-scroll"
       >
         <div className="flex-1 flex flex-col gap-3 p-5">
-          {/* {messages.map((message, index) => (
+          {messages.map((message, index) => (
             <MessageBody
               message={message}
               key={index}
-              isSender={message.sender_id === profile?.user_id}
+              isSender={message.sender_id === activechatThread.me.user_id}
             />
-          ))} */}
+          ))}
         </div>
       </ScrollArea>
       <form action={handleSend} className="px-4 space-y-3">
@@ -114,7 +125,11 @@ export default function ChatForm({ thread }: FormProps) {
               type="submit"
               className="py-1 px-2 bg-transparent text-accent hover:text-success"
             >
-              <MdSend size={30} />
+              {sending ? (
+                <LoaderCircle size={30} className="animate-spin" />
+              ) : (
+                <MdSend size={30} />
+              )}
             </Button>
           </div>
         </div>

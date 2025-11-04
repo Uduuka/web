@@ -2,7 +2,7 @@
 import env from "@/lib/env";
 import { useAppStore } from "@/lib/store";
 import { Pricing, RecurringPrice, UnitPrice } from "@/lib/types";
-import { cn, toMoney, toNumber } from "@/lib/utils";
+import { cn, toMoney } from "@/lib/utils";
 import React, { ComponentProps } from "react";
 
 type PriceTagProps<T> = ComponentProps<"div"> & {
@@ -21,19 +21,18 @@ export default function PriceTag({
   const { scheme, details, discount, amount } = pricing;
   return (
     <span className={cn("text-primary flex gap-2 items-center", className)}>
-      {discount && toNumber(discount) > 0 && (
-        <Money price={details.price} crossed loading={loading} />
+      {discount && discount > 0 && (
+        <Money amount={amount} crossed loading={loading} />
       )}
-      <Money
-        loading={loading}
-        price={`${
-          toNumber(details.price ?? amount) - toNumber(discount ?? "")
-        }`}
-      />
+      <Money loading={loading} amount={amount - (discount ?? 0)} />
       {scheme === "unit" && (details as UnitPrice).units ? (
         <span className="text-xs flex items-center gap-2">
           {" "}
-          per {(details as UnitPrice).units}
+          per{" "}
+          {(details as UnitPrice).units.slice(
+            0,
+            (details?.units?.length ?? 1) - 1
+          )}
         </span>
       ) : scheme === "recurring" && (details as RecurringPrice).period ? (
         <span className="text-xs capitalize flex flex-wrap items-center gap-2">
@@ -45,12 +44,12 @@ export default function PriceTag({
 }
 
 export const Money = ({
-  price,
+  amount,
   crossed,
   className,
   loading,
 }: {
-  price: string;
+  amount: number;
   crossed?: boolean;
   className?: string;
   loading?: boolean;
@@ -62,11 +61,9 @@ export const Money = ({
     >
       {currency}{" "}
       {loading ? (
-        <span className="w-24 h-4 bg-gray-300 animate-pulse rounded-lg"></span>
+        <span className="w-24 h-6 bg-gray-300 animate-pulse rounded-lg"></span>
       ) : (
-        toMoney(
-          toNumber(price).toFixed(env.currencies[currency]?.decimal_digits)
-        )
+        toMoney(amount.toFixed(env.currencies[currency]?.decimal_digits))
       )}
     </span>
   );

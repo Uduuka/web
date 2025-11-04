@@ -13,6 +13,7 @@ export default function CurrencyButton() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
+  
   const handleCurrencyChange = async (c: Currency) => {
     await setCookie("currency", c);
     setCurrency(c as Currency);
@@ -30,7 +31,7 @@ export default function CurrencyButton() {
   useEffect(() => {
     const c = localStorage.getItem("currency");
     if (c) {
-      setCookie("currency", c);
+      setCookie("currency", c ?? "UGX");
       setCurrency(c as Currency);
     }
   }, []);

@@ -1,16 +1,10 @@
 import { Category, Listing, Unit } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import React, {
-  ComponentProps,
-  useEffect,
-  useState,
-  useTransition,
-} from "react";
+import React, { ComponentProps, useEffect, useState } from "react";
 import ScrollArea from "../layout/ScrollArea";
 import FormGroup from "@/components/ui/FormGroup";
 import Select from "@/components/ui/Select";
 import FormInput from "@/components/ui/Input";
-import { fetchCategories, fetchUnits } from "@/lib/actions";
 import Button from "@/components/ui/Button";
 import { toNumber } from "@/lib/utils";
 import Popup from "@/components/ui/Popup";
@@ -43,15 +37,12 @@ export default function AdForm({
   );
   const [spects, setSpects] = useState<string[]>([]);
   const [adSpects, setAdSpects] = useState<any>(initailData?.specs);
-  const [unitSearchTerm, setUnitSearchTerm] = useState(ad?.units ?? "");
-  const [filteredUnits, setFilteredUnits] = useState<Unit[]>(units);
 
   useEffect(() => {
     const saved = localStorage.getItem("adData");
     if (saved) {
       const parsed = JSON.parse(saved);
       setAd(parsed);
-      setUnitSearchTerm(parsed?.units);
 
       setAdSpects(parsed?.specs ?? {});
     }
@@ -74,10 +65,6 @@ export default function AdForm({
     setSpects(specs.split(",").map((s) => s.trim()));
   }, [categories, ad?.category_id, ad?.sub_category_id, initailData]);
 
-  useEffect(() => {
-    handleUnitSearch(unitSearchTerm);
-  }, [unitSearchTerm]);
-
   const handleSubmit = () => {
     if (!ad) return;
     setter({ ...ad, specs: adSpects });
@@ -85,46 +72,6 @@ export default function AdForm({
     if (handleNext) {
       handleNext();
     }
-  };
-
-  const handleUnitSearch = (searchTerm: string) => {
-    if (!searchTerm.trim()) {
-      setFilteredUnits(units);
-      return;
-    }
-
-    const filtered = units
-      .map((unit) => {
-        const unitMatches =
-          unit.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          unit.abbr.toLowerCase().includes(searchTerm.toLowerCase());
-
-        const matchingSubUnits =
-          unit.sub_units?.filter(
-            (subUnit) =>
-              subUnit.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-              subUnit.abbr.toLowerCase().includes(searchTerm.toLowerCase())
-          ) || [];
-
-        // If the unit itself matches, show all subunits
-        if (unitMatches) {
-          return unit;
-        }
-
-        // If subunits match, show only the matching subunits
-        if (matchingSubUnits.length > 0) {
-          return {
-            ...unit,
-            sub_units: matchingSubUnits,
-          };
-        }
-
-        // If neither unit nor subunits match, exclude this unit
-        return null;
-      })
-      .filter(Boolean) as Unit[];
-
-    setFilteredUnits(filtered);
   };
 
   return (
@@ -227,63 +174,13 @@ export default function AdForm({
               />
             </FormGroup>
             <FormGroup label="Units" className="w-1/2">
-              <Popup
-                className="w-full p-0"
-                contentStyle="w-full rounded bg-secondary"
-                align="vertical"
-                trigger={
-                  <FormInput
-                    className="py-2 -mt-1"
-                    wrapperStyle="border-accent"
-                    value={unitSearchTerm}
-                    onChange={(e) => setUnitSearchTerm(e.target.value)}
-                    placeholder="Search units..."
-                  />
-                }
-              >
-                <ScrollArea maxHeight="280px" className="rounded-lg">
-                  <div className="h-max flex flex-col gap-2">
-                    {filteredUnits.map((unit, i) => (
-                      <div className="w-full" key={i}>
-                        <Button
-                          type="button"
-                          onClick={() => {
-                            setAd({
-                              ...(ad ?? ({} as Listing)),
-                              units: unit.name,
-                            });
-                            setUnitSearchTerm(unit.name);
-                          }}
-                          className="text-accent border-b rounded-b-none hover:bg-secondary/50 bg-transparent w-full text-left justify-start"
-                        >
-                          {unit.name}({unit.abbr})
-                        </Button>
-                        <div className="pl-3">
-                          <div className="border-l">
-                            {unit.sub_units?.map((sub_unit, ind) => (
-                              <Button
-                                key={ind}
-                                onClick={() => {
-                                  console.log(sub_unit, sub_unit.name);
-                                  setAd({
-                                    ...(ad ?? ({} as Listing)),
-                                    units: sub_unit.name,
-                                  });
-                                  setUnitSearchTerm(`${sub_unit.name}`);
-                                }}
-                                type="button"
-                                className="text-accent bg-transparent hover:bg-secondary/50 text-xs font-light w-full text-left justify-start"
-                              >
-                                {sub_unit.name}({sub_unit.abbr})
-                              </Button>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </ScrollArea>
-              </Popup>
+              <FormInput
+                className=""
+                value={ad.units ?? ""}
+                onChange={(e) => {
+                  setAd({ ...ad, units: e.target.value });
+                }}
+              />
             </FormGroup>
           </div>
         </FormGroup>

@@ -24,9 +24,7 @@ export default function ShoppingCart({
   const [cartTotal, setCartTotal] = useState(0);
 
   useEffect(() => {
-    const subTotals = items.map((item) =>
-      toNumber(item.subTotal.details.price)
-    );
+    const subTotals = items.map((item) => item.subTotal.amount);
 
     setCartTotal(subTotals?.reduce((t, i) => t + i, 0));
   }, [items]);
@@ -66,7 +64,8 @@ export default function ShoppingCart({
               className="text-2xl"
               pricing={{
                 currency,
-                details: { price: cartTotal },
+                details: {},
+                amount: cartTotal,
                 scheme: "fixed",
               }}
             />

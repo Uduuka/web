@@ -1,7 +1,7 @@
 import { twMerge } from "tailwind-merge";
 import { clsx, type ClassValue } from "clsx";
 import axios from "axios";
-import { CartItem, ContactResult, Currency, FixedPrice, GroupedResult, Location, Pricing } from "./types";
+import { CartItem, Currency, FixedPrice, GroupedResult, Location, Pricing } from "./types";
 import _ from "lodash";
 import env from "./env";
 import { fetchCurrencyRates } from "./actions";
@@ -34,16 +34,11 @@ export const toNumber = (st?: string) =>
   isNaN(Number(st)) ? 0 : Number(st);
 
 export function toMoney(money: string, currency?: Currency): string {
-  if (isNaN(Number(money.replaceAll(",", "")))) return "";
-  let num: string = money;
+  let num = money
   if(currency){
-    num = pretifyMoney(Number(money), currency)
+    num = pretifyMoney(Number(`${money}`), currency)
   }
-  const [whole, decimal] = num.split(".");
-
-  return `${whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}${
-    decimal ? `.${decimal}` : ""
-  }`;
+  return Number(num).toLocaleString("en-US");
 }
 
 export const prettyDistance = (dist_metters?: number) => {
@@ -102,28 +97,6 @@ export const fetchDrivingDistance = async (
   }
 };
 
-export const detectContactType = (input: string): ContactResult => {
-  // Normalize email: lowercase + trim
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const emailCandidate = input.trim().toLowerCase();
-
-  if (emailRegex.test(emailCandidate)) {
-    return { type: "email", value: emailCandidate };
-  }
-
-  // Normalize phone: remove spaces, dashes, parentheses
-  const cleaned = input.replace(/[\s\-()]/g, "");
-
-  // Phone regex (digits, optional leading +)
-  const phoneRegex = /^\+?\d{7,}$/;
-
-  if (phoneRegex.test(cleaned)) {
-    return { type: "phone", value: cleaned };
-  }
-
-  return { type: "unknown", value: input };
-}
-
 export const getRedirectUrl = () => {
   let redirectTo =
       process.env.NEXT_PUBLIC_SITE_URL ??
@@ -151,12 +124,13 @@ export const calcCartItemSubTotal = (pricing: Pricing<any>, quantity?: number) =
 
   const schemesWithPrice = ["fixed", "recurring", "menu", "unit", "range"]
   if(schemesWithPrice.includes(scheme)){
-    const price = details.price
-    const amount = qty * toNumber(price)
+    const price = pricing.amount
+    const amount = qty * price
     const amountPricing: Pricing<FixedPrice> = {
       currency,
       scheme: "fixed",
-      details: {price: amount.toString()}
+      amount,
+      details
     }
 
     return amountPricing
@@ -168,7 +142,7 @@ export const calcCartItemSubTotal = (pricing: Pricing<any>, quantity?: number) =
 
 export const calcCartTotal = (items: CartItem[]) => {
   const subTotals = items.map((item) =>
-    Number(item.subTotal.details.price)
+    Number(item.subTotal.amount)
   );
   
   return subTotals?.reduce((t, i) => t + i, 0)
@@ -190,6 +164,7 @@ export const forex = async (pricings: Pricing<any>[], currency: Currency) => {
     const { data: ratesData } = await fetchCurrencyRates(
       [ad_currency, currency].map((c) => env.currencies[c].code)
     );
+    
     const fromRate =
       (ratesData?.find((r) => r.code === env.currencies[ad_currency].code)
         ?.rate as number) ?? 1;
@@ -201,10 +176,7 @@ export const forex = async (pricings: Pricing<any>[], currency: Currency) => {
       return {
         ...pricing,
         currency,
-        details: {
-          ...pricing.details,
-          price: toNumber(pricing.details.price) * (toRate / fromRate),
-        },
+        amount: pricing.amount * (toRate / fromRate)
       };
     });
 

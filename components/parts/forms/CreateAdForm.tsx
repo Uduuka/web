@@ -3,9 +3,6 @@
 import Button from "@/components/ui/Button";
 import { Category, Listing, Pricing, Unit } from "@/lib/types";
 import React, { useState, useTransition } from "react";
-
-import AdForm from "./AdForm";
-import { PricingForm } from "./PricingForm";
 import LocationForm from "./LocationForm";
 import AdImagesUploadForm from "./AdImagesUploadForm";
 import { cn } from "@/lib/utils";
@@ -18,6 +15,9 @@ import {
   uploadFiles,
 } from "@/lib/actions";
 import { redirect, useSearchParams } from "next/navigation";
+import AdForm from "./AdForm";
+import PricingForm from "./PricingForm";
+import { useAppStore } from "@/lib/store";
 
 interface FormProps extends React.HTMLAttributes<HTMLDivElement> {
   className?: string;
@@ -41,6 +41,8 @@ export default function CreateAdForm({
     address: string;
   }>();
   const [adImages, setAdImages] = useState<File[]>([]);
+
+  const { location: initialLocation } = useAppStore();
 
   const handleLocationChange = (l: string, a: string) => {
     setLocation({ locationString: l, address: a });
@@ -66,14 +68,14 @@ export default function CreateAdForm({
     // Submit the ad to your backend or API
 
     startSubmitting(async () => {
-      if (!ad || !location || pricings.length === 0 || adImages.length === 0) {
+      if (!ad || pricings.length === 0 || adImages.length === 0) {
         setError("Please fill in all required fields before submitting.");
         return;
       }
       const adData = {
         ...ad,
-        location: location.locationString,
-        address: location.address,
+        location: location?.locationString ?? null,
+        address: location?.address ?? null,
         store_id: store_id,
       };
 
@@ -244,9 +246,9 @@ export default function CreateAdForm({
                 <h1 className="text-center">Step two: Pricing info</h1>
                 {ad && (
                   <PricingForm
-                    setter={setPricings}
                     ad={ad}
-                    initialdData={pricings}
+                    units={units}
+                    setter={setPricings}
                     handleNext={next}
                     handlePrevious={prev}
                   />
@@ -259,11 +261,14 @@ export default function CreateAdForm({
             /* Step three */
             currentStep === 2 && (
               <div className="w-full h-full text-center flex flex-col gap-5">
-                <LocationForm
-                  handleLocationChange={handleLocationChange}
-                  handleNext={next}
-                  handlePrevious={prev}
-                />
+                {initialLocation && (
+                  <LocationForm
+                    handleLocationChange={handleLocationChange}
+                    handleNext={next}
+                    handlePrevious={prev}
+                    initialLocation={initialLocation}
+                  />
+                )}
               </div>
             )
           }

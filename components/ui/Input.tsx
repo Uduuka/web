@@ -14,7 +14,7 @@ const FormInput = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div
         className={cn(
-          "border text-muted-foreground border-secondary items-center rounded-lg flex focus-within:border-primary hover:border-primary transition-colors overflow-hidden",
+          "border text-muted-foreground border-secondary items-center rounded-md flex focus-within:border-primary hover:border-primary transition-colors overflow-hidden",
           wrapperStyle
         )}
       >
