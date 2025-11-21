@@ -25,14 +25,14 @@ export default function UnitPriceForm({
   adUnits: string;
 }) {
   const [pricing, setPricing] = useState<Pricing<UnitPrice>>(
-    pricings.find((p) => p.details.units === unit) ?? {
+    pricings.find((p) => `${p.details.units}s` === unit) ?? {
       currency,
       scheme: "unit",
       amount: 0,
       details: { units: unit } as UnitPrice,
     }
   );
-  console.log(adUnits, unit);
+
   const addNewPrice = () => {
     const exists = pricings.find(
       (p) => p.details.units === pricing.details.units
@@ -53,7 +53,7 @@ export default function UnitPriceForm({
       trigger={
         <>
           {unit}{" "}
-          {pricings.map((p) => p.details.units).includes(unit) ? (
+          {pricings.map((p) => `${p.details.units}s`).includes(unit) ? (
             <Check size={15} />
           ) : (
             <></>
@@ -61,7 +61,7 @@ export default function UnitPriceForm({
         </>
       }
       triggerStyle={`rounded ${
-        pricings.map((p) => p.details.units).includes(unit)
+        pricings.map((p) => `${p.details.units}s`).includes(unit)
           ? "bg-primary hover:bg-orange-400 text-background gap-3"
           : "bg-gray-200 hover:bg-gray-100"
       }`}
@@ -99,7 +99,7 @@ export default function UnitPriceForm({
                   },
                 });
               }}
-              actionBtn={<span className="pr-5">{unit}s</span>}
+              actionBtn={<span className="pr-5">{unit} </span>}
             />
           </div>
         )}

@@ -1,6 +1,5 @@
 import { User } from "@supabase/supabase-js";
 
-
 export interface Location {
   coordinates: [number, number];
   latitude: number;
@@ -64,6 +63,9 @@ export interface Pricing<T> {
   details: T;
   amount: number
   discount?: number
+  offers?: any
+  flashSale?: FlashPricing
+  conversion_rate?: number
 }
 
 export interface FixedPrice  {
@@ -125,8 +127,10 @@ export interface FlashSale extends Listing {
     expires_at: string
 };
 
-export interface FlashPricing extends Pricing<any> {
+export interface FlashPricing {
+  amount: number
   expires_at: string
+  pricing_id: string
 }
 
 export type Category = {
@@ -286,7 +290,7 @@ export interface Cart {
   updateItem?: (item: CartItem) => void
  }
 
- export interface CartAd {
+export interface CartAd {
     id: string
     title: string,
     description: string

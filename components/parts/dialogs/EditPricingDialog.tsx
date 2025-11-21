@@ -27,6 +27,7 @@ import Dropzone from "@/components/ui/Dopzone";
 import Image from "next/image";
 import FormInput from "@/components/ui/Input";
 import { containsObject } from "@/lib/utils";
+import { IoPricetagsOutline } from "react-icons/io5";
 
 export default function EditPricingDialog({
   ad,
@@ -101,14 +102,18 @@ export default function EditPricingDialog({
 
   return (
     <Modal
-      trigger={<Pencil size={15} />}
+      trigger={
+        <>
+          <IoPricetagsOutline size={15} /> Edit pricing
+        </>
+      }
       className=""
       header={
         <span className="text-base font-bold max-w-90% line-clamp-1">
           Edit ad pricing.
         </span>
       }
-      triggerStyle="absolute top-0 rounded right-0 p-1 bg-blue-500 hover:bg-blue-600 text-white hidden group-hover:block"
+      triggerStyle="p-1 bg-primary w-full hover:bg-orange-400 gap-2 justify-start px-5 text-xs text-white"
     >
       <ScrollArea maxHeight="100%" className="w-full h-72 px-5 text-gray-500">
         <div className="flex gap-5">
@@ -393,8 +398,8 @@ export const UnitPricingForm = ({
   unit?: Unit;
   adUnits: string;
 }) => {
-  if(!unit){
-    return null
+  if (!unit) {
+    return null;
   }
   return (
     <div className="w-full space-y-3 py-5">

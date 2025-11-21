@@ -5,29 +5,33 @@ import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "./DataTable";
 import Button from "@/components/ui/Button";
 import Link from "next/link";
-import { Info, Plus } from "lucide-react";
+import { Check, Info, Plus } from "lucide-react";
 import { BiSort } from "react-icons/bi";
 import Popup from "@/components/ui/Popup";
 import { useParams } from "next/navigation";
 import AdsModel from "../models/AdsModel";
 import { toNumber } from "@/lib/utils";
 import EditAdDialog from "../dialogs/EditAdDialog";
-import { Suspense, use, useState } from "react";
+import { Suspense, use, useEffect, useState } from "react";
 import EditPricingDialog from "../dialogs/EditPricingDialog";
 import { RenderPricings } from "../cards/AdCard";
+import { CgMenuGridO } from "react-icons/cg";
+import DiscountDialog from "../dialogs/DiscountDialog";
+import FlashPriceDialog from "../dialogs/FlashPriceDialog";
 
 export default function AdsTable({
-  data,
+  dataPromise,
   empty,
-  error,
   showAdd,
   displayColumns,
   onRowSelect,
   categoriresPromise,
   unitsPromise,
 }: {
-  data?: Listing[];
-  error?: string;
+  dataPromise: Promise<{
+    data: Listing[] | null;
+    error: { message: string } | null;
+  }>;
   empty?: string;
   showAdd?: boolean;
   displayColumns?: string[];
@@ -41,13 +45,14 @@ export default function AdsTable({
     error: { message: string } | null;
   }>;
 }) {
+  const { data } = use(dataPromise);
   const storeID = useParams()["storeID"] as string;
   const handleRowSelect = (selectedRows: Listing[]) => {};
   const { data: categories } = categoriresPromise
     ? use(categoriresPromise)
     : { data: null };
   const { data: units } = unitsPromise ? use(unitsPromise) : { data: null };
-  const [ads, setAds] = useState(data ?? []);
+  const [ads, setAds] = useState<Listing[]>([]);
 
   const columns: ColumnDef<Listing>[] = [
     {
@@ -66,12 +71,32 @@ export default function AdsTable({
         />
       ),
       cell: ({ row }) => (
-        <input
-          type="checkbox"
-          checked={row.getIsSelected()}
-          onChange={(value) => row.toggleSelected(!!value.target.checked)}
-          aria-label="Select row"
-        />
+        <Popup trigger={<CgMenuGridO />}>
+          <div className="space-y-2">
+            <Button
+              onClick={() => {
+                row.toggleSelected(!row.getIsSelected());
+              }}
+              className="bg-gray-200 text-gray-500 hover:bg-gray-500 hover:text-gray-100 text-xs p-1 px-5 w-full justify-start gap-2"
+            >
+              <Check size={15} /> Select
+            </Button>
+            <EditAdDialog
+              ads={ads}
+              ad={row.original}
+              categories={categories ?? []}
+              setAds={setAds}
+            />
+            <EditPricingDialog
+              ad={row.original}
+              ads={ads}
+              setAds={setAds}
+              units={units ?? []}
+            />
+            <DiscountDialog ad={row.original} ads={ads} setAds={setAds} />
+            <FlashPriceDialog ad={row.original} ads={ads} setAds={setAds} />
+          </div>
+        </Popup>
       ),
       enableSorting: false,
       enableHiding: false,
@@ -81,17 +106,11 @@ export default function AdsTable({
       id: "title",
       header: () => <h1 className="font-semibold">Ad title and description</h1>,
       cell: ({ row }) => (
-        <div className="relative group">
+        <div className="relative">
           <p className="w-full line-clamp-1">{row.getValue("title")}</p>
           <p className="text-xs w-full  text-gray-500 line-clamp-1">
             {row.original.description}
           </p>
-          <EditAdDialog
-            ad={row.original}
-            categories={categories ?? []}
-            ads={ads}
-            setAds={setAds}
-          />
         </div>
       ),
     },
@@ -101,16 +120,18 @@ export default function AdsTable({
       header: () => <h1 className="font-semibold">Pricing</h1>,
       cell: ({ row }) => {
         const pricings = row.original.pricings as Pricing<any>[];
-
+        const onFlashSale = pricings?.some(
+          (p) =>
+            p.flashSale &&
+            p.flashSale.amount > 0 &&
+            new Date(p.flashSale.expires_at) > new Date()
+        );
         return (
-          <div className="flex gap-5 justify-between items-center relative group">
+          <div className="relative">
             <RenderPricings pricings={pricings ?? []} />
-            <EditPricingDialog
-              ad={row.original}
-              units={units ?? []}
-              ads={ads}
-              setAds={setAds}
-            />
+            {onFlashSale && (
+              <div className="absolute -top-1 -right-1 p-1 h-2 w-2 rounded-full bg-primary animate-pulse"></div>
+            )}
           </div>
         );
       },
@@ -186,8 +207,12 @@ export default function AdsTable({
     },
   ];
 
+  useEffect(() => {
+    setAds(data ?? []);
+  }, [data]);
+
   return (
-    <Suspense fallback={<>Fetching ads</>}>
+    <Suspense fallback={<>Fetching ads...</>}>
       <DataTable
         columns={
           displayColumns?.length
@@ -218,15 +243,6 @@ export default function AdsTable({
               </div>
             )}
           </div>
-        }
-        errorMessage={
-          error && (
-            <div className="text-error h-full w-full bg-red-100 p-5">
-              <h1 className="flex gap-3 items-center justify-center">
-                <Info /> {error}.
-              </h1>
-            </div>
-          )
         }
       />
     </Suspense>

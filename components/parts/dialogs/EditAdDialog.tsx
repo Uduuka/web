@@ -191,14 +191,18 @@ export default function EditAdDialog({
 
   return (
     <Modal
-      trigger={<Pencil size={15} />}
+      trigger={
+        <>
+          <Pencil size={15} /> Edit ad
+        </>
+      }
       className="min-w-md"
       header={
         <span className="text-base font-bold max-w-90% line-clamp-1">
           Edit ad details and images.
         </span>
       }
-      triggerStyle="absolute top-0 rounded right-0 p-1 bg-blue-500 hover:bg-blue-600 text-white hidden group-hover:block"
+      triggerStyle="p-1 bg-blue-500 gap-2 text-xs justify-start px-5 hover:bg-blue-600 text-white w-full"
     >
       <div className="w-full flex -mt-2">
         <Button

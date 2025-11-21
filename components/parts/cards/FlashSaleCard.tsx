@@ -3,10 +3,11 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { RenderPricings } from "./AdCard";
+import { cn } from "@/lib/utils";
 
 export default function FlashSaleCard({ item }: { item: FlashSale }) {
   return (
-    <div className="border rounded-lg relative border-orange-500 hover:shadow-lg text-gray-600 transition-all">
+    <div className="border overflow-hidden rounded-lg relative border-orange-500 hover:shadow-lg text-gray-600 transition-all">
       <Link href={`/ads/${item.id}`}>
         <div className="p-0 h-32 flex">
           <Image
@@ -22,17 +23,26 @@ export default function FlashSaleCard({ item }: { item: FlashSale }) {
               <p className="text-xs">{item.description}</p>
             </div>
             <div className="w-full">
-              <RenderPricings pricings={item.flash_pricings} />
+              <RenderPricings pricings={item.pricings} />
             </div>
           </div>
-          <Timer upto={item.flash_pricings?.[0].expires_at} />
+          <Timer
+            upto={item.pricings![0].flashSale!.expires_at}
+            className="absolute top-0 left-0"
+          />
         </div>
       </Link>
     </div>
   );
 }
 
-const Timer = ({ upto }: { upto: string }) => {
+export const Timer = ({
+  upto,
+  className,
+}: {
+  upto: string;
+  className?: string;
+}) => {
   const [time, setTime] = useState<{
     hours: string;
     minutes: string;
@@ -63,7 +73,12 @@ const Timer = ({ upto }: { upto: string }) => {
     return clearInterval(1000);
   }, []);
   return (
-    <p className="p-2 w-20 py-1 absolute top-0 left-0 bg-primary/80 rounded-tl-lg text-xs text-white font-bold">
+    <p
+      className={cn(
+        "p-2 w-20 py-1 bg-primary/80 text-xs text-white font-bold",
+        className
+      )}
+    >
       {time?.hours ?? "00"} : {time?.minutes ?? "00"} : {time?.seconds ?? "00"}
     </p>
   );

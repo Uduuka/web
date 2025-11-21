@@ -60,14 +60,14 @@ const Details = ({ specs }: { specs: any }) => {
     setDetails(l);
   }, [specs]);
   return (
-    <div className="bg-background rounded-lg p-5">
-      <div className="flex gap-x-5 flex-wrap">
+    <div className="rounded-lg">
+      <div className="flex gap-2 flex-wrap">
         {details.map((d, i) => (
-          <div key={i} className="py-3 w-fit text-xs text-center font-light">
-            <p className="border-b-2 text-accent px-2 border-accent/60">
+          <div key={i} className="w-fit text-xs text-center font-light">
+            <p className="border-b text-gray-500 px-2 border-gray-300">
               {d[1]}
             </p>
-            <p className="text-accent/80 px-2 lowercase">{d[0]}</p>
+            <p className="text-gray-400 px-2 lowercase">{d[0]}</p>
           </div>
         ))}
       </div>

@@ -119,18 +119,20 @@ export const calcCartItemSubTotal = (pricing: Pricing<any>, quantity?: number) =
     qty = 1
   }
 
-  const {scheme, details, currency} = pricing
+  const {scheme, details, currency, flashSale, discount, conversion_rate} = pricing
   // Scheme one of fixed - price, recurying - price, unit - price, menu - price, range - price
 
   const schemesWithPrice = ["fixed", "recurring", "menu", "unit", "range"]
   if(schemesWithPrice.includes(scheme)){
     const price = pricing.amount
-    const amount = qty * price
+    const discountedAmount = flashSale && flashSale.amount > 0 ? flashSale.amount : discount ?  price - discount : price
+    const amount = qty * discountedAmount
     const amountPricing: Pricing<FixedPrice> = {
       currency,
-      scheme: "fixed",
+      details,
+      scheme: 'fixed',
       amount,
-      details
+      conversion_rate
     }
 
     return amountPricing
@@ -154,29 +156,39 @@ export function containsObject<T>(list: T[], target: T): boolean {
 }
 
 export const forex = async (pricings: Pricing<any>[], currency: Currency) => {
-  const ad_currency = pricings[0].currency;
+  
+  const ad_currency = env.currencies.find((c: any) => c.code === pricings[0]?.currency || c.symbol === pricings[0]?.currency)?.code;
+  const desired_currency = env.currencies.find((c: any) => c.code === currency || c.symbol === currency)?.code;
+  
   if (!ad_currency) return pricings;
-  if(ad_currency === currency){
+  if(ad_currency === desired_currency){
     return pricings
   }
 
   try {
     const { data: ratesData } = await fetchCurrencyRates(
-      [ad_currency, currency].map((c) => env.currencies[c].code)
+      [ad_currency, desired_currency]
     );
     
     const fromRate =
-      (ratesData?.find((r) => r.code === env.currencies[ad_currency].code)
+      (ratesData?.find((r) => r.code === ad_currency)
         ?.rate as number) ?? 1;
     const toRate =
-      (ratesData?.find((r) => r.code === env.currencies[currency].code)
+      (ratesData?.find((r) => r.code === desired_currency)
         ?.rate as number) ?? 1;
 
     const convertedPricings = pricings?.map((pricing) => {
       return {
         ...pricing,
-        currency,
-        amount: pricing.amount * (toRate / fromRate)
+        desired_currency,
+        amount: pricing.amount * (toRate / fromRate),
+        discount: pricing.discount ? pricing.discount * (toRate / fromRate) : undefined,
+        flashSale: pricing.flashSale
+          ? {
+              ...pricing.flashSale,
+              amount: pricing.flashSale.amount * (toRate / fromRate),
+            }
+          : undefined,
       };
     });
 

@@ -9,10 +9,13 @@ import { useRef, useState } from "react";
 import Forms from "./Forms";
 
 export default function StoreStock({
-  data,
+  dataPromise,
   error,
 }: {
-  data: Listing[];
+  dataPromise: Promise<{
+    data: Listing[] | null;
+    error: { message: string } | null;
+  }>;
   error?: string;
 }) {
   const [ad, setAd] = useState<Listing>();
@@ -27,10 +30,9 @@ export default function StoreStock({
   return (
     <>
       <AdsTable
-        data={data ?? []}
+        dataPromise={dataPromise}
         displayColumns={["title", "price", "quantity"]}
         empty="No ads found matching the filters applied. Add or create ads"
-        error={error}
         onRowSelect={rowClicked}
       />
 
