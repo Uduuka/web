@@ -3,7 +3,7 @@ import { AuthError } from "@supabase/supabase-js";
 import env from "./env";
 import axios from "axios";
 import { createClient } from "./supabase/server";
-import {  Currency, Filters, Order, Pricing, Profile, StoreOrder } from "./types";
+import {  Currency, FlashPricing, Order, Pricing, Profile, StoreOrder } from "./types";
 import { cookies } from "next/headers";
 
 export const signup = async({email, password, profile} : {email: string, password: string, profile?: object}) => {
@@ -131,7 +131,7 @@ export const fetchPersonalAds = async({store_id}: any)=>{
    const supabase = await createClient();
    const {data} = await supabase.auth.getUser();
 
-   let query = supabase.from("ads_list_view").select("*, pricings(*), images:ad_images(url)").eq("seller_id", data.user?.id)
+   let query = supabase.from("ads_list_view").select("*, images:ad_images(url)").eq("seller_id", data.user?.id)
 
    if(store_id){
       query = query.eq('store_id', store_id)
@@ -144,11 +144,11 @@ export const fetchPersonalAds = async({store_id}: any)=>{
 
 export const fetchAd = async(id: string) => {
    return(await createClient())
-      .from("ads")
-      .select("*, seller:profiles(*), pricings(*,deleted_at), images:ad_images(*,deleted_at), store:stores(*)")
+      .from("ads_list_view")
+      .select("*, seller:profiles(*), images:ad_images(*,deleted_at), store:stores(*)")
       .eq('id', id)
       .is('images.deleted_at', null)
-      .is('pricings.deleted_at', null)
+      // .is('pricings.deleted_at', null)
       .single()
 }
 
@@ -164,8 +164,13 @@ export const fetchFlashsales = async(search?: string) => {
    if(search){
       embedding = await getEmbedding(search)
    }
-   return (await supabase).rpc("get_flash_sales", {q_lat: lat, q_lon: lon, q_currency: currency, q_embedding: embedding})
 
+//    desired_currency text,
+//   lat double precision DEFAULT NULL::double precision,
+//   lon double precision DEFAULT NULL::double precision,
+//   q_embedding vector DEFAULT NULL::vector,
+//   flash boolean DEFAULT false
+   return (await supabase).rpc("fetch_flash_ads_by_currency", {lat, lon, desired_currency: currency, q_embedding: embedding, flash: true})
 }
 
 export const fetchAdsInView = async(filters: any) => {
@@ -386,8 +391,10 @@ export const createStore = async(data: object) =>{
    return (await createClient()).from("stores").insert(data)
 }
 
-export const fetchStoreAds = async(storeID: string) => {
-   return (await createClient()).from("ads_list_view").select("*, pricings(*, deleted_at)").eq("store_id", storeID).is('pricings.deleted_at', null)
+export const fetchStoreAds = async() => {
+   const cookieStore = await cookies()
+   const currency = cookieStore.get('currency')?.value ?? 'UGX'
+   return (await createClient()).rpc('fetch_inventory', {desired_currency: currency})
 }
 
 export const fetchStores = async() => {
@@ -513,6 +520,14 @@ export const deletAdImage = async (id: number) => {
 export const updatePricings = async(pricings: Pricing<any>[]) => {
    return (await createClient()).from('pricings').upsert(pricings, {onConflict: 'id'})
 }
+
+export const createFlashPricings = async(fps: FlashPricing[]) => {
+   return (await createClient()).from('flash_pricings').insert(fps)
+}
+
+
+
+
 
 
 

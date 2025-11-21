@@ -35,18 +35,13 @@ const PriceBoard = ({ ad }: { ad: Listing }) => {
             <MenuItem item={pricing} loading={fetchingRates} />
           ) : (
             <div className="w-full">
-              <PriceTag
-                className=""
-                pricing={pricing}
-                loading={fetchingRates}
-              />
               {pricing.details.specs && (
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2 w-full text-gray-500 text-xs mb-2">
                   {Array.from(Object.entries(pricing.details.specs || {})).map(
                     ([key, value]) => (
                       <span
                         key={key}
-                        className="text-xs bg-gray-200 px-2 py-0.5 rounded-full font-thin"
+                        className="text-xs capitalize even:border-x even:px-2 last:border-r-0 font-thin"
                       >
                         {key}: {value as string}
                       </span>
@@ -54,16 +49,20 @@ const PriceBoard = ({ ad }: { ad: Listing }) => {
                   )}
                 </div>
               )}
-            </div>
-          )}
-
-          {ad.store_id && (
-            <div className="w-56">
-              <AddToCartButton ad={ad} />
+              <PriceTag
+                className=""
+                pricing={pricing}
+                loading={fetchingRates}
+              />
             </div>
           )}
         </div>
       ))}
+      {ad.store_id && (
+        <div className="w-full flex justify-end mt-2">
+          <AddToCartButton ad={ad} />
+        </div>
+      )}
     </div>
   );
 };

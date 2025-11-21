@@ -22,7 +22,7 @@ export function AddToCartButton({ ad }: AddToCartButtonProps) {
     <>
       <Button
         onClick={openDailog}
-        className="bg-primary text-white hover:bg-orange-400"
+        className="bg-primary text-white hover:bg-orange-400 w-full"
       >
         Add to cart
       </Button>

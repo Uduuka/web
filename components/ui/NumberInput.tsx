@@ -10,6 +10,7 @@ interface NumberInputProps {
   className?: string;
   min?: number;
   max?: number;
+  disabled?: boolean;
 }
 
 const NumberInput: React.FC<NumberInputProps> = ({
@@ -19,12 +20,13 @@ const NumberInput: React.FC<NumberInputProps> = ({
   className = "",
   min,
   max,
+  disabled,
 }) => {
   const [displayValue, setDisplayValue] = useState<string>("");
 
   // Format number with commas
-  const formatNumber = (num: number): string => {
-    return num.toLocaleString("en-US");
+  const formatNumber = (num?: number): string => {
+    return num?.toLocaleString("en-US") ?? "";
   };
 
   // Parse comma-separated string to number
@@ -85,6 +87,7 @@ const NumberInput: React.FC<NumberInputProps> = ({
         "rounded-md px-3 py-1 focus:outline-none focus:ring-0 border-0",
         className
       )}
+      disabled={disabled}
       min={min}
       max={max}
     />

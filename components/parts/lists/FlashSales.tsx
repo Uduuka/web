@@ -22,6 +22,8 @@ export default function FlashSales({
 }) {
   const { data: ads, error } = use(fetchPromise);
 
+  console.log({ ads, error });
+
   if (!ads || ads.length < 1) {
     return null;
   }

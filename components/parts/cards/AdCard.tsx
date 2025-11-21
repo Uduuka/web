@@ -9,6 +9,7 @@ import { prettyDistance, toNumber } from "@/lib/utils";
 import { useParams, usePathname } from "next/navigation";
 import Button from "@/components/ui/Button";
 import { AddToCartButton } from "../buttons/AddToCartButton";
+import { Timer } from "./FlashSaleCard";
 
 interface ListingCardProps {
   ad: Listing;
@@ -31,6 +32,12 @@ export default function AdCard({ ad }: ListingCardProps) {
   const storeID = useParams()["storeID"];
   const url = image?.url ?? "/placeholder.svg";
 
+  const flashPricings = pricings?.filter((p) => p.flashSale !== null) ?? [];
+  const minPrice = Math.min(...flashPricings.map((p) => p.amount));
+  const pricing = flashPricings.find((p) => {
+    return Number(p.amount) === Number(minPrice);
+  });
+
   return (
     <div className="bg-white border border-gray-300 rounded-md overflow-hidden transition-all hover:shadow-lg">
       <div className="p-0">
@@ -46,6 +53,12 @@ export default function AdCard({ ad }: ListingCardProps) {
               width={1000}
               className="w-full h-auto object-cover transition-transform hover:scale-105"
             />
+            {flashPricings.length > 0 && (
+              <Timer
+                upto={pricing?.flashSale?.expires_at ?? ""}
+                className="absolute top-0 left-0"
+              />
+            )}
           </div>
           <div className="p-3 pb-0">
             <h3 className="line-clamp-2 text-xs font-light">{title}</h3>
@@ -119,10 +132,5 @@ export const RenderPricings = ({
   const pricing = pricings.find((p) => {
     return Number(p.amount) === Number(minPrice);
   });
-  return (
-    <div className="flex flex-wrap items-center space-x-1">
-      <span className="text-xs text-primary">From</span>
-      <PriceTag pricing={pricing!} className="w-fit" />
-    </div>
-  );
+  return <PriceTag pricing={pricing!} className="w-fit" from />;
 };

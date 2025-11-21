@@ -25,7 +25,7 @@ import { ChangeEvent, useEffect, useState } from "react";
 const FixedPriceForm = ({ ad }: { ad: Listing }) => {
   const pricing = ad.pricings![0];
   const {
-    cart: { items, addItem, updateItem },
+    cart: { items, addItem, updateItem, store },
   } = useAppStore();
   const [cartItem, setCartItem] = useState<CartItem>(() => {
     return {
@@ -86,52 +86,55 @@ const FixedPriceForm = ({ ad }: { ad: Listing }) => {
   return (
     <div className="w-full">
       <ScrollArea maxHeight="65vh" className="space-y-5 px-5 pb-0 w-full">
-        <FormGroup
-          label={`Quantity (Available: ${ad.quantity ?? 1} ${
-            ad.units ?? "unit"
-          })`}
-          className="bg-white p-5 rounded-lg"
-        >
-          <div className="flex gap-3 items-center">
-            <FormInput
-              type="text"
-              className="border border-secondary text-lg font-bold text-primary w-20"
-              wrapperStyle="border-none w-fit mx-auto"
-              value={(cartItem.qty as number) ?? "1"}
-              onChange={handleChangeQuantity}
-              actionBtn={
-                <span className="flex gap-3 p-2">
-                  <Button
-                    className="text-xs p-1 hover:bg-gray-300"
-                    onClick={() => {
-                      if ((cartItem.qty as number) < (ad.quantity ?? 1)) {
-                        setCartItem({
-                          ...cartItem,
-                          qty: (cartItem.qty as number) + 1,
-                        });
-                      }
-                    }}
-                  >
-                    <Plus size={15} />
-                  </Button>
-                  <Button
-                    className="text-xs p-1 hover:bg-gray-300"
-                    onClick={() => {
-                      if ((cartItem.qty as number) > 1) {
-                        setCartItem({
-                          ...cartItem,
-                          qty: (cartItem.qty as number) - 1,
-                        });
-                      }
-                    }}
-                  >
-                    <Minus size={15} />
-                  </Button>
-                </span>
-              }
-            />
-          </div>
-        </FormGroup>
+        <PriceTag pricing={pricing} className="text-base" />
+        {ad.quantity && (
+          <FormGroup
+            label={`Quantity (Available: ${ad.quantity ?? 1} ${
+              ad.units ?? "unit"
+            })`}
+            className="bg-white rounded-lg"
+          >
+            <div className="flex gap-3 items-center">
+              <FormInput
+                type="text"
+                className="border border-secondary text-lg font-bold text-primary w-20"
+                wrapperStyle="border-none w-fit mx-auto"
+                value={(cartItem.qty as number) ?? "1"}
+                onChange={handleChangeQuantity}
+                actionBtn={
+                  <span className="flex gap-3 p-2">
+                    <Button
+                      className="text-xs p-1 hover:bg-gray-300"
+                      onClick={() => {
+                        if ((cartItem.qty as number) < (ad.quantity ?? 1)) {
+                          setCartItem({
+                            ...cartItem,
+                            qty: (cartItem.qty as number) + 1,
+                          });
+                        }
+                      }}
+                    >
+                      <Plus size={15} />
+                    </Button>
+                    <Button
+                      className="text-xs p-1 hover:bg-gray-300"
+                      onClick={() => {
+                        if ((cartItem.qty as number) > 1) {
+                          setCartItem({
+                            ...cartItem,
+                            qty: (cartItem.qty as number) - 1,
+                          });
+                        }
+                      }}
+                    >
+                      <Minus size={15} />
+                    </Button>
+                  </span>
+                }
+              />
+            </div>
+          </FormGroup>
+        )}
         <form
           method="dialog"
           className="flex gap-5 w-full justify-between items-center pt-3"
@@ -212,7 +215,8 @@ const RecurringPriceForm = ({ ad }: { ad: Listing }) => {
 
   return (
     <div className="w-full">
-      <ScrollArea maxHeight="70vh" className="space-y-5 px-5 pb-0">
+      <ScrollArea maxHeight="70vh" className="space-y-3 px-5 pb-0">
+        <PriceTag pricing={pricing} className="text-base" />
         <FormGroup
           label={`${pricing.details.period}s`}
           labelStyle="capitalize"
@@ -264,9 +268,16 @@ const RecurringPriceForm = ({ ad }: { ad: Listing }) => {
             />
           </div>
         </FormGroup>
+        <PriceTag
+          pricing={calcCartItemSubTotal(
+            cartItem.pricing,
+            cartItem.qty as number
+          )}
+          className="text-base border px-5 py-1 rounded"
+        />
         <form
           method="dialog"
-          className="flex gap-5 w-full justify-between items-center pt-3"
+          className="flex gap-5 w-full justify-between items-center pt-2"
         >
           <Button className="w-full bg-transparent border border-red-500 text-red-500 hover:bg-red-500 hover:text-background">
             Cancel
@@ -288,7 +299,6 @@ const RangePriceForm = ({ ad }: { ad: Listing }) => {
     cart: { items, addItem, updateItem },
   } = useAppStore();
   const pricings: Pricing<PriceRange>[] = ad.pricings ?? [];
-  const [pricing, setPricing] = useState<Pricing<PriceRange>>();
   const price_determinats = Array.from(
     Object.keys(pricings[0].details.specs ?? {})
   );
@@ -310,22 +320,6 @@ const RangePriceForm = ({ ad }: { ad: Listing }) => {
       qty: 1.0,
     } as CartItem;
   });
-
-  useEffect(() => {
-    let p_specs: Record<string, string> = {};
-    price_determinats.forEach((pd) => {
-      if (!cartItem.specs[pd]) {
-        return;
-      }
-      p_specs = {
-        ...p_specs,
-        [pd]: cartItem.specs[pd][0],
-      };
-    });
-
-    const prc = pricings.find((p) => _.isEqual(p.details.specs, p_specs));
-    setPricing(prc);
-  }, [cartItem.specs]);
 
   const handleOptionChange = (key: string, value: string) => {
     // If the spec already exists, delete it
@@ -369,167 +363,165 @@ const RangePriceForm = ({ ad }: { ad: Listing }) => {
       alert(`Quantity must be greater than 0.`);
       return;
     }
-    if (!pricing) {
+    if (!cartItem.pricing) {
       alert(
-        "Failed to determine the apropriate pricing based on the specifications"
+        "Select one of the available pricing options based on the specifications."
       );
       return;
     }
-
-    const subTotal = calcCartItemSubTotal(pricing, Number(cartItem.qty));
-    if (!subTotal) {
-      return;
-    }
-    const old = items.find((i) => i.sn === `${ad.id}-${pricing.id}`);
+    const old = items.find((i) => i.sn === `${ad.id}-${cartItem.pricing.id}`);
     if (Boolean(old)) {
       updateItem?.({
         ...cartItem,
-        pricing,
-        subTotal,
         store: ad.store,
         id: old?.id!,
         sn: old?.sn,
-        aqty: pricing.details.qty,
+        aqty: cartItem.pricing.details.qty,
       });
       return;
     }
     addItem?.({
       ...cartItem,
-      pricing,
-      subTotal,
       store: ad.store,
       id: items.length + 1,
-      sn: `${ad.id}-${pricing.id}`,
-      aqty: pricing.details.qty,
+      sn: `${ad.id}-${cartItem.pricing.id}`,
+      aqty: cartItem.pricing.details.qty,
     });
   };
 
   const handleChangeQuantity = (e: ChangeEvent<HTMLInputElement>) => {
     const value = Number(e.target.value);
-    if (value <= Number(`${pricing?.details.qty ?? 1}`)) {
+    if (value <= Number(`${cartItem.pricing?.details.qty ?? 1}`)) {
       setCartItem({ ...cartItem, qty: Number(e.target.value) });
     }
   };
 
   return (
     <div className="w-full">
-      <div className="px-5 pb-5">
-        {pricing ? (
-          <div className="text-gray-500 p-5 rounded-lg gap-5 flex flex-wrap shadow">
-            <PriceTag className="text-lg font-bold" pricing={pricing} />
-
-            <FormInput
-              type="number"
-              className="border border-secondary text-lg font-bold text-primary w-10"
-              wrapperStyle=""
-              value={(cartItem.qty as number) ?? "1"}
-              onChange={handleChangeQuantity}
-              icon={<span className="px-2">QTY</span>}
-              actionBtn={
-                <span className="flex gap-3 px-2">
-                  <Button
-                    className="text-xs p-1 hover:bg-gray-300"
-                    onClick={() => {
-                      if (
-                        (cartItem.qty as number) < (pricing?.details.qty ?? 1)
-                      ) {
-                        setCartItem({
-                          ...cartItem,
-                          qty: (cartItem.qty as number) + 1,
-                        });
-                      }
-                    }}
-                  >
-                    <Plus size={15} />
-                  </Button>
-                  <Button
-                    className="text-xs p-1 hover:bg-gray-300"
-                    onClick={() => {
-                      if ((cartItem.qty as number) > 1) {
-                        setCartItem({
-                          ...cartItem,
-                          qty: (cartItem.qty as number) - 1,
-                        });
-                      }
-                    }}
-                  >
-                    <Minus size={15} />
-                  </Button>
-                </span>
-              }
-            />
-          </div>
-        ) : (
-          <div className="text-gray-500 p-5 rounded-lg shadow">
-            Specify the specifications ({price_determinats.join(", ")}) to
-            reveal the price
-          </div>
-        )}
+      <div className="px-5 pb-5 space-y-3">
+        {ad.pricings?.map((pricing, index) => (
+          <Button
+            className="w-full"
+            key={index}
+            onClick={() => {
+              setCartItem({
+                ...cartItem,
+                pricing,
+                subTotal: calcCartItemSubTotal(pricing, Number(cartItem.qty)),
+              });
+            }}
+          >
+            <PriceTag className="" pricing={pricing} />
+          </Button>
+        ))}
       </div>
       <ScrollArea maxHeight="50vh" className="space-y-5 px-5">
-        {specs.map((s, i) => {
-          return (
-            <FormGroup
-              label={s.key}
-              labelStyle="capitalize"
-              className="bg-white p-5 rounded-lg shadow"
-              key={i}
-            >
-              <div className="flex gap-2 flex-wrap py-3">
-                {error[s.key] && (
-                  <p className="p-2 w-full bg-amber-100 text-amber-500 rounded-lg flex items-center gap-1 text-xs">
-                    <Info className="h-5 w-5" />
-                    <span>{error[s.key]}</span>
-                  </p>
-                )}
-                {s.options.map((op, k) => {
-                  const exists = (
-                    cartItem.specs[s.key] ?? ([] as any[])
-                  ).includes(op);
+        <FormInput
+          type="number"
+          className="border border-secondary text-lg font-bold text-primary w-full"
+          wrapperStyle=""
+          value={(cartItem.qty as number) ?? "1"}
+          onChange={handleChangeQuantity}
+          icon={<span className="px-2">QTY</span>}
+          actionBtn={
+            <span className="flex gap-3 px-2">
+              <Button
+                className="text-xs p-1 hover:bg-gray-300"
+                onClick={() => {
+                  if (
+                    (cartItem.qty as number) <
+                    (cartItem.pricing?.details.qty ?? 1)
+                  ) {
+                    setCartItem({
+                      ...cartItem,
+                      qty: (cartItem.qty as number) + 1,
+                    });
+                  }
+                }}
+              >
+                <Plus size={15} />
+              </Button>
+              <Button
+                className="text-xs p-1 hover:bg-gray-300"
+                onClick={() => {
+                  if ((cartItem.qty as number) > 1) {
+                    setCartItem({
+                      ...cartItem,
+                      qty: (cartItem.qty as number) - 1,
+                    });
+                  }
+                }}
+              >
+                <Minus size={15} />
+              </Button>
+            </span>
+          }
+        />
+        {specs
+          .filter((s) => !price_determinats.includes(s.key))
+          .map((s, i) => {
+            return (
+              <FormGroup
+                label={s.key}
+                labelStyle="capitalize"
+                className="bg-white p-5 rounded-lg shadow"
+                key={i}
+              >
+                <div className="flex gap-2 flex-wrap py-3">
+                  {error[s.key] && (
+                    <p className="p-2 w-full bg-amber-100 text-amber-500 rounded-lg flex items-center gap-1 text-xs">
+                      <Info className="h-5 w-5" />
+                      <span>{error[s.key]}</span>
+                    </p>
+                  )}
+                  {s.options.map((op, k) => {
+                    const exists = (
+                      cartItem.specs[s.key] ?? ([] as any[])
+                    ).includes(op);
 
-                  const clickable = () => {
-                    const is_clickable = price_determinats.includes(s.key)
-                      ? Boolean(price_choices.find((b) => b![s.key] === op))
-                      : true;
-                    const is_determinant = price_determinats.includes(s.key);
-                    if (is_determinant) {
-                      if (is_clickable) {
-                        console.log();
-                        if (cartItem?.specs[s.key]?.length == 1) {
-                          return cartItem?.specs[s.key][0] !== op;
+                    const clickable = () => {
+                      const is_clickable = price_determinats.includes(s.key)
+                        ? Boolean(price_choices.find((b) => b![s.key] === op))
+                        : true;
+                      const is_determinant = price_determinats.includes(s.key);
+                      if (is_determinant) {
+                        if (is_clickable) {
+                          console.log();
+                          if (cartItem?.specs[s.key]?.length == 1) {
+                            return cartItem?.specs[s.key][0] !== op;
+                          } else {
+                            return false;
+                          }
                         } else {
-                          return false;
+                          return true;
                         }
                       } else {
-                        return true;
+                        return exists
+                          ? false
+                          : !is_clickable ||
+                              (cartItem.specs[s.key] ?? []).length >=
+                                (cartItem.qty as number);
                       }
-                    } else {
-                      return exists
-                        ? false
-                        : !is_clickable ||
-                            (cartItem.specs[s.key] ?? []).length >=
-                              (cartItem.qty as number);
-                    }
-                  };
-                  return (
-                    <Button
-                      onClick={() => {
-                        handleOptionChange(s.key, op);
-                      }}
-                      disabled={clickable()}
-                      key={k}
-                      className={`rounded hover:shadow disabled:opacity-30 ${
-                        exists ? "bg-primary text-background" : ""
-                      }`}
-                    >
-                      {op}
-                    </Button>
-                  );
-                })}
-              </div>
-            </FormGroup>
-          );
-        })}
+                    };
+                    return (
+                      <Button
+                        onClick={() => {
+                          handleOptionChange(s.key, op);
+                        }}
+                        disabled={clickable()}
+                        key={k}
+                        className={`rounded hover:shadow disabled:opacity-30 ${
+                          exists ? "bg-primary text-background" : ""
+                        }`}
+                      >
+                        {op}
+                      </Button>
+                    );
+                  })}
+                </div>
+              </FormGroup>
+            );
+          })}
       </ScrollArea>
       <form
         method="dialog"
@@ -540,7 +532,8 @@ const RangePriceForm = ({ ad }: { ad: Listing }) => {
         </Button>
         <Button
           onClick={handleAddToCart}
-          className="w-full bg-transparent border border-green-500 text-green-500 hover:bg-green-500 hover:text-background"
+          disabled={!cartItem.pricing || !cartItem.subTotal}
+          className="w-full bg-transparent border border-green-500 text-green-500 hover:bg-green-500 hover:text-background disabled:opacity-40"
         >
           Add to cart
         </Button>

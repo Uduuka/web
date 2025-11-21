@@ -337,7 +337,7 @@ export const StoreNav = ({ className, ...props }: ComponentProps<"div">) => {
   const pathname = usePathname();
   const storeId = useParams()["storeID"];
   return (
-    <ScrollArea maxHeight="200px" className="pr-3 flex flex-col">
+    <ScrollArea className="pr-3 flex flex-col">
       <nav className="flex-1 px-2 py-0 flex flex-col gap-2">
         <div {...props} className={cn("flex flex-1 flex-col gap-2", className)}>
           <Link href={`/dashboard/stores/${storeId}`}>
@@ -353,17 +353,17 @@ export const StoreNav = ({ className, ...props }: ComponentProps<"div">) => {
               Store overview
             </Button>
           </Link>
-          <Link href={`/dashboard/stores/${storeId}/ads`}>
+          <Link href={`/dashboard/stores/${storeId}/inventory`}>
             <Button
               className={cn(
                 "w-full justify-start text-inherit text-sm bg-transparent",
-                pathname.startsWith(`/dashboard/stores/${storeId}/ads`)
+                pathname.startsWith(`/dashboard/stores/${storeId}/inventory`)
                   ? "bg-primary text-background"
                   : "bg-transparent hover:bg-secondary/50"
               )}
             >
               <BsMegaphone className="mr-2 h-4 w-4" />
-              My stock
+              Inventory
             </Button>
           </Link>
           <Link href={`/dashboard/stores/${storeId}/pos`}>

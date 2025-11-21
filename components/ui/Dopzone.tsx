@@ -1,13 +1,24 @@
 import { cn } from "@/lib/utils";
+import { Upload } from "lucide-react";
 import React, { useCallback, useEffect, useState } from "react";
 import { DropzoneProps, useDropzone } from "react-dropzone";
+import { types } from "util";
 
 interface Props extends DropzoneProps {
   className: string;
+  text?: string;
+  types?: string[];
+  maxSize?: number;
   onFilesChange: (files: { file: File; dataURL: string }[]) => void;
 }
 
-export default function Dropzone({ className, onFilesChange }: Props) {
+export default function Dropzone({
+  className,
+  onFilesChange,
+  text,
+  types,
+  maxSize,
+}: Props) {
   const [files, setFiles] = useState<{ file: File; dataURL: string }[]>([]);
   const onDrop = useCallback((acceptedFiles: File[]) => {
     acceptedFiles.forEach((file) => {
@@ -34,9 +45,15 @@ export default function Dropzone({ className, onFilesChange }: Props) {
       {isDragActive ? (
         <p>Drop the files here ...</p>
       ) : (
-        <p className="w-full break-words text-wrap whitespace-normal m-0 p-5 text-center text-gray-400">
-          Drag and drop files here, or click to select files
-        </p>
+        <div className="text-gray-400 flex justify-center items-center flex-col">
+          <Upload className="w-8 h-8 mx-auto" />
+          <p className="w-full break-words text-wrap whitespace-normal text-center">
+            {text ?? "Drag and drop files here, or click to select files"}
+          </p>
+          <p>
+            {types?.join(", ")}. {maxSize && <>Up to {maxSize}MB</>}
+          </p>
+        </div>
       )}
     </div>
   );

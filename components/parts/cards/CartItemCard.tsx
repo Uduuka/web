@@ -3,7 +3,7 @@ import PriceTag from "./PriceTag";
 import Button from "@/components/ui/Button";
 import { Minus, Plus, Trash } from "lucide-react";
 import { useAppStore } from "@/lib/store";
-import { calcCartItemSubTotal, forex, toNumber } from "@/lib/utils";
+import { calcCartItemSubTotal, toNumber } from "@/lib/utils";
 import { CartItem } from "@/lib/types";
 
 export default function CartItemCard({
@@ -15,12 +15,9 @@ export default function CartItemCard({
 }) {
   const {
     cart: { deleteItem, updateItem },
-    currency,
   } = useAppStore();
 
   const [specs, setSpecs] = useState<{ key: string; value: any }[]>([]);
-
-  const [updatingPrice, startUpdatingPrice] = useTransition();
 
   useEffect(() => {
     if (!item.specs) {
@@ -33,17 +30,6 @@ export default function CartItemCard({
     }));
     setSpecs(spcs);
   }, [item.specs]);
-
-  useEffect(() => {
-    startUpdatingPrice(async () => {
-      const exchangedPricing = (await forex([item.pricing], currency))[0];
-      updateItem?.({
-        ...item,
-        pricing: exchangedPricing,
-        subTotal: calcCartItemSubTotal(exchangedPricing, Number(item.qty)),
-      });
-    });
-  }, [currency]);
 
   const increamentItemQuantity = () => {
     let qty = toNumber(`${item.qty}`);
@@ -160,14 +146,13 @@ export default function CartItemCard({
         )}
       </div>
 
-      <div className="w-full flex gap-2 items-center justify-end px-2 pt-1 text-gray-500 border-t mt-2 border-gray-200">
-        <div className="self-end flex gap-2 items-center">
-          <span className="text-xs text-gray-400">Sub-total:</span>
-          {updatingPrice ? (
-            <span className="bg-gray-200 animate-pulse w-24 h-5 rounded-lg "></span>
-          ) : (
-            <PriceTag pricing={item.subTotal} />
-          )}
+      <div className="w-full flex gap-2 items-center justify-end pt-1 text-gray-500 border-t mt-2 border-gray-200">
+        <div className="self-end flex gap-2 items-center justify-end">
+          <p className="text-xs text-gray-400 w-24 text-right">Sub total:</p>
+          <PriceTag
+            pricing={calcCartItemSubTotal(item.pricing, item.qty as number)}
+            className="w-fit px-0"
+          />
         </div>
       </div>
     </div>

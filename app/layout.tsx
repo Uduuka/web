@@ -5,6 +5,7 @@ import Footer from "@/components/parts/layout/Footer";
 import Sidebar from "@/components/parts/layout/SideBar";
 import ActiveChats from "@/components/parts/buttons/ActiveChats";
 import BottomNav from "@/components/parts/layout/BottomNav";
+import { Toaster } from "@/components/ui/sonner";
 
 export default function RootLayout({
   children,
@@ -38,6 +39,7 @@ export default function RootLayout({
           <BottomNav />
           <ActiveChats />
         </Suspense>
+        <Toaster />
       </body>
     </html>
   );

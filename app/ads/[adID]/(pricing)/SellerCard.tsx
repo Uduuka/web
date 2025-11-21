@@ -36,7 +36,7 @@ export default function SellerCard({
   }
 
   return (
-    <div className="bg-white flex-1 p-5 rounded-lg col-span-4 sm:col-span-2">
+    <div className="bg-white flex-1 p-5 rounded-lg w-full">
       <h1 className="text-accent border-b ">Seller details</h1>
       {you && (
         <div className="flex-1 flex flex-col h-full py-5 ">

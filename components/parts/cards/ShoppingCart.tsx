@@ -1,14 +1,14 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useTransition } from "react";
 import ScrollArea from "../layout/ScrollArea";
 import CartItemCard from "./CartItemCard";
-import { Info } from "lucide-react";
 import Link from "next/link";
 import Button from "@/components/ui/Button";
 import PriceTag from "./PriceTag";
 import { useAppStore } from "@/lib/store";
-import { groupBy, toNumber } from "@/lib/utils";
-import { CartItem } from "@/lib/types";
+import { fetchCurrencyRates } from "@/lib/actions";
+import { Currency } from "@/lib/types";
+import { calcCartItemSubTotal } from "@/lib/utils";
 
 export default function ShoppingCart({
   mode = "dropdown",
@@ -22,13 +22,78 @@ export default function ShoppingCart({
     currency,
   } = useAppStore();
   const [cartTotal, setCartTotal] = useState(0);
+  const [conversionError, setConversionError] = useState<string | null>(null);
+  const [fetchingRates, startFecthingRates] = useTransition();
+  const [cartItems, setCartItems] = useState(items);
 
   useEffect(() => {
-    const subTotals = items.map((item) => item.subTotal.amount);
+    const currencyCodes = Array.from(
+      new Set<string>([
+        ...items.map((item) => item.subTotal.currency),
+        currency,
+      ])
+    );
 
-    setCartTotal(subTotals?.reduce((t, i) => t + i, 0));
-  }, [items]);
+    startFecthingRates(async () => {
+      const { data, error } = await fetchCurrencyRates(
+        currencyCodes as Currency[]
+      );
+      if (error) {
+        setConversionError("Failed to fetch currency rates");
+        return;
+      }
+      setCartItems(
+        items.map((item) => {
+          const fromRate =
+            data.find((d) => d.code === item.subTotal.currency)?.rate ?? 1;
+          const toRate = data.find((d) => d.code === currency)?.rate ?? 1;
+          return {
+            ...item,
+            pricing: {
+              currency,
+              amount: item.pricing.amount * (toRate / fromRate),
+              discount: item.pricing.discount
+                ? item.pricing.discount * (toRate / fromRate)
+                : undefined,
+              flashSale: item.pricing.flashSale
+                ? {
+                    ...item.pricing.flashSale,
+                    amount: item.pricing.flashSale.amount * (toRate / fromRate),
+                  }
+                : undefined,
+              scheme: "fixed",
+              details: item.pricing.details,
+            },
+            subTotal: calcCartItemSubTotal(
+              {
+                currency,
+                amount: item.pricing.amount * (toRate / fromRate),
+                discount: item.pricing.discount
+                  ? item.pricing.discount * (toRate / fromRate)
+                  : undefined,
+                flashSale: item.pricing.flashSale
+                  ? {
+                      ...item.pricing.flashSale,
+                      amount:
+                        item.pricing.flashSale.amount * (toRate / fromRate),
+                    }
+                  : undefined,
+                scheme: "fixed",
+                details: item.pricing.details,
+              },
+              item.qty as number
+            ),
+          };
+        })
+      );
+    });
+  }, [items, currency]);
 
+  useEffect(() => {
+    setCartTotal(
+      cartItems.map((i) => i.subTotal.amount)?.reduce((t, i) => t + i, 0)
+    );
+  }, [cartItems]);
   return (
     <>
       {store && (
@@ -43,8 +108,8 @@ export default function ShoppingCart({
         </div>
       )}
       <ScrollArea maxHeight="100%" className="!pb-0 flex-1">
-        {items.length > 0 ? (
-          items.map((item, i) => <CartItemCard item={item} key={i} />)
+        {cartItems.length > 0 ? (
+          cartItems.map((item, i) => <CartItemCard item={item} key={i} />)
         ) : successMessage ? (
           <div className="w-full text-center">
             <p className="text-center text-gray-400 p-5">{successMessage}</p>
@@ -56,7 +121,7 @@ export default function ShoppingCart({
           </p>
         )}
       </ScrollArea>
-      {items.length > 0 && (
+      {cartItems.length > 0 && (
         <div className="bg-orange-50">
           <div className="flex justify-end px-5 py-2 gap-5 items-center text-primary">
             <span className="text-2xl font-bold">Total:</span>
@@ -70,7 +135,7 @@ export default function ShoppingCart({
               }}
             />
           </div>
-          {items.length > 0 && mode === "dropdown" && (
+          {cartItems.length > 0 && mode === "dropdown" && (
             <div className="flex gap-5 justify-between py-3 px-5 border-t border-primary ">
               <Button
                 onClick={() => clearCart?.()}
