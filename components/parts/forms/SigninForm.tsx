@@ -70,7 +70,7 @@ export default function SigninForm() {
         To never miss on a deal near you.
       </p>
       {error && (
-        <p className="text-error w-full text-center">Invalid credentials</p>
+        <p className="text-error w-full text-center">Invalid credentials!</p>
       )}
       <div className="flex gap-5">
         <Button
