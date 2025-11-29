@@ -66,11 +66,11 @@ export default function SigninForm() {
       className="w-full max-w-xs space-y-5 bg-white rounded-lg min-h-96 md:-ml-20 p-5"
     >
       <h1 className="text-accent text-xl font-bold">Welcome back, sign in</h1>
-      <p className="text-sm -mt-5 text-gray-500">
-        To never miss on a deal near you.
-      </p>
+
       {error && (
-        <p className="text-error w-full text-center">Invalid credentials!</p>
+        <p className="text-error w-full text-center py-2 text-xs">
+          Invalid signin credentials!
+        </p>
       )}
       <div className="flex gap-5">
         <Button
