@@ -22,7 +22,7 @@ export default function SigninForm() {
   const handleSignin = () => {
     startSubmiting(async () => {
       const { error, data } = await signin({ email, password });
-      console.log({ error, data });
+
       if (error) {
         setError(error.message);
         return;
@@ -69,7 +69,9 @@ export default function SigninForm() {
       <p className="text-sm -mt-5 text-gray-500">
         To never miss on a deal near you.
       </p>
-      {error && <p className="text-error w-full text-center">{error}</p>}
+      {error && (
+        <p className="text-error w-full text-center">Invalid credentials</p>
+      )}
       <div className="flex gap-5">
         <Button
           onClick={handleSigninWithGoogle}
