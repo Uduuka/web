@@ -69,7 +69,7 @@ export default function SigninForm() {
       <p className="text-sm -mt-5 text-gray-500">
         To never miss on a deal near you.
       </p>
-      {error && <p className="text-error w-full text-center">{error}</p>}
+      {error && <p className="text-error w-full text-center">Invalid login credentials!</p>}
       <div className="flex gap-5">
         <Button
           onClick={handleSigninWithGoogle}
