@@ -22,7 +22,7 @@ export default function SigninForm() {
   const handleSignin = () => {
     startSubmiting(async () => {
       const { error, data } = await signin({ email, password });
-
+      console.log({ error, data });
       if (error) {
         setError(error.message);
         return;
