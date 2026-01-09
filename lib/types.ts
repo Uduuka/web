@@ -7,6 +7,7 @@ export interface Location {
 }
 
 export interface Listing {
+  qty: number | undefined;
   id: string;
   category_id?: string;
   sub_category_id?: string;
