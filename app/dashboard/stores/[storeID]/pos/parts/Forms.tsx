@@ -401,7 +401,9 @@ const RangePriceForm = ({ ad }: { ad: Listing }) => {
       <div className="px-5 pb-5 space-y-3">
         {ad.pricings?.map((pricing, index) => (
           <Button
-            className="w-full"
+            className={`w-full h-12 ${
+              cartItem.pricing === pricing && "bg-orange-100"
+            }`}
             key={index}
             onClick={() => {
               setCartItem({
@@ -412,6 +414,9 @@ const RangePriceForm = ({ ad }: { ad: Listing }) => {
             }}
           >
             <PriceTag className="" pricing={pricing} />
+            <span className="w-full max-w-20 line-clamp-1 text-xs text-gray-400">
+              {pricing.details.qty ?? 0} available
+            </span>
           </Button>
         ))}
       </div>
@@ -748,9 +753,9 @@ const UnitPriceForm = ({ ad }: { ad: Listing }) => {
       if (!cf) {
         return 1;
       }
-      return toNumber(`${ad.quantity}`) * cf;
+      return toNumber(`${ad.quantity ?? ad.qty}`) * cf;
     }
-    return toNumber(`${ad.quantity}`) * toNumber(ratio[u] ?? 1);
+    return toNumber(`${ad.quantity ?? ad.qty}`) * toNumber(ratio[u] ?? 1);
   };
 
   // Get comma-separated spec keys

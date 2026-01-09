@@ -21,6 +21,7 @@ export default function StoreStock({
   const [ad, setAd] = useState<Listing>();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const rowClicked = (ad: Listing) => {
+    
     setAd(ad);
     if (dialogRef.current) {
       dialogRef.current.showModal();

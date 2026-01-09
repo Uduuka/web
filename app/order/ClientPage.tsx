@@ -3,6 +3,7 @@
 import { PlaceOrder } from "@/components/parts/cards/PlaceOrder";
 import ShoppingCart from "@/components/parts/cards/ShoppingCart";
 import Button from "@/components/ui/Button";
+import { useAppStore } from "@/lib/store";
 import { Profile, Store } from "@/lib/types";
 import { Check } from "lucide-react";
 import Link from "next/link";
@@ -18,6 +19,9 @@ export default function ClientPage({
 }) {
   const [success, setSuccess] = useState<{ message: string; store: Store }>();
   const { data } = use(profilePromise);
+  const {
+    cart: { store },
+  } = useAppStore();
 
   return (
     <div className="p-5 flex gap-5 flex-col-reverse sm:flex-row md:flex-col-reverse lg:flex-row">
@@ -52,8 +56,15 @@ export default function ClientPage({
           <ShoppingCart mode="page" />
         )}
       </div>
-      <div className="w-full sm:max-w-[24rem] md:max-w-full lg:max-w-[24rem] bg-white h-fit p-5 rounded-lg">
+      <div className="w-full sm:max-w-[24rem] md:max-w-full space-y-5 lg:max-w-[24rem] bg-white h-fit p-5 rounded-lg">
         <PlaceOrder setSuccess={setSuccess} profile={data} />
+        {store && (
+          <Link href={`/stores/${store.id}`} className="w-full block">
+            <Button className="bg-transparent w-full line-clamp-1 text-primary border-2 hover:bg-primary hover:text-background border-primary">
+              Continue shopping
+            </Button>
+          </Link>
+        )}
       </div>
     </div>
   );
